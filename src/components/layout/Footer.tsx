@@ -117,6 +117,14 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/nosotros"
+                  className="text-slate-400 transition-colors hover:text-amber-300"
+                >
+                  {t("nav.about")}
+                </Link>
+              </li>
             </ul>
           </div>
 

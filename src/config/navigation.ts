@@ -186,11 +186,6 @@ export const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
-  {
-    kind: "tours",
-    labelKey: "nav.about",
-    href: "/nosotros",
-  },
 ];
 
 export function getNavItemCount(): number {

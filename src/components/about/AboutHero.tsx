@@ -47,16 +47,6 @@ export function AboutHero() {
             {t("hero.description")}
           </p>
         </div>
-
-        {/* CTA decorativo */}
-        <div className={`mt-12 scroll-animate ${isVisible ? "animate-fade-in-scale delay-500" : ""}`}>
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-8 py-4 backdrop-blur-sm">
-            <div className="size-3 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm font-semibold text-white">
-              {t("hero.badge")}
-            </span>
-          </div>
-        </div>
       </div>
     </section>
   );
