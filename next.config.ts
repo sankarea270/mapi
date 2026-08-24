@@ -7,8 +7,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: ".",
   },
+  output: 'export',
+  basePath: '/mapi',
+  assetPrefix: '/mapi/',
+  trailingSlash: true,
   images: {
     formats: ["image/avif", "image/webp"],
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "*.supabase.co" },

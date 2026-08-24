@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "export": "next build && next export",
+    "deploy": "npm run build",
     "start": "next start",
     "lint": "eslint",
     "seed:supabase": "tsx scripts/seed-supabase.ts"
