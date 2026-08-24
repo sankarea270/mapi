@@ -168,338 +168,195 @@
   }
 }
 
-/* ===== NUBES REALISTAS ===== */
+/* ===== NUBES ===== */
 
-/* Cloud drift keyframes - movimiento suave y realista */
-@keyframes cloud-drift-slow {
-  0%, 100% {
-    transform: translateX(0) translateY(0);
+/*
+ * Una sola travesía continua de izquierda a derecha: el viento es coherente
+ * para todas las nubes. Los `offset` negativos del componente reparten las
+ * posiciones iniciales para que el cielo ya esté poblado en el primer frame.
+ */
+@keyframes cloud-travel {
+  from {
+    transform: translate3d(-42vw, 0, 0);
   }
-  50% {
-    transform: translateX(60px) translateY(-25px);
+  to {
+    transform: translate3d(118vw, 0, 0);
   }
 }
 
-@keyframes cloud-drift-medium {
-  0%, 100% {
-    transform: translateX(0) translateY(0);
+/*
+ * Respiración lenta: las nubes reales se deforman mientras avanzan.
+ * El scaleX(var(--flip)) va dentro de los keyframes a propósito: si se deja
+ * solo en la regla estática, el transform de la animación lo sustituye y el
+ * espejado se pierde en cuanto arranca.
+ */
+@keyframes cloud-breathe {
+  0%,
+  100% {
+    transform: scaleX(var(--flip)) translateY(0) scale(1);
   }
   50% {
-    transform: translateX(-50px) translateY(-20px);
+    transform: scaleX(var(--flip)) translateY(-1.6%) scale(1.045);
   }
 }
 
-@keyframes cloud-drift-fast {
-  0%, 100% {
-    transform: translateX(0) translateY(0);
+@keyframes haze-drift {
+  0%,
+  100% {
+    transform: translate3d(-4%, 0, 0) scaleY(1);
+    opacity: 0.5;
   }
   50% {
-    transform: translateX(40px) translateY(-15px);
+    transform: translate3d(4%, -6%, 0) scaleY(1.12);
+    opacity: 0.78;
   }
 }
 
-@keyframes cloud-drift-reverse {
-  0%, 100% {
-    transform: translateX(0) translateY(0);
-  }
-  50% {
-    transform: translateX(-35px) translateY(-30px);
-  }
-}
-
-@keyframes cloud-float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes mist-pulse {
-  0%, 100% {
-    transform: translateY(0) scaleX(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translateY(-20px) scaleX(1.08);
-    opacity: 0.95;
-  }
-}
-
-/* Cloud layer container */
 .cloud-layer {
   pointer-events: none;
   position: absolute;
   inset: 0;
   z-index: 15;
-  overflow: visible;
+  overflow: hidden;
 }
 
-/* Estructura de nubes realistas volumétricas */
-.realistic-cloud {
+/* Ancladas por el pie: crecen hacia arriba y dejan libre el titular. */
+.cloud {
   position: absolute;
-  filter: blur(1px);
-}
-
-.cloud-part {
-  position: absolute;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.75) 40%, rgba(255,255,255,0.3) 70%, transparent 100%);
-  border-radius: 50%;
-  filter: blur(8px);
-}
-
-/* Nube 1 - Grande y densa izquierda inferior */
-.cloud-1 {
-  bottom: 8%;
-  left: 2%;
-  width: 580px;
-  height: 260px;
-  animation: cloud-drift-slow 28s ease-in-out infinite;
-}
-.cloud-1 .cloud-part-1 {
-  width: 230px;
-  height: 165px;
   left: 0;
-  top: 60px;
-}
-.cloud-1 .cloud-part-2 {
-  width: 270px;
-  height: 195px;
-  left: 160px;
-  top: 20px;
-}
-.cloud-1 .cloud-part-3 {
-  width: 220px;
-  height: 155px;
-  left: 340px;
-  top: 55px;
-}
-.cloud-1 .cloud-part-4 {
-  width: 190px;
-  height: 135px;
-  left: 115px;
-  top: 0;
+  bottom: var(--band);
+  width: var(--w);
+  will-change: transform;
+  animation: cloud-travel var(--dur) linear infinite;
+  animation-delay: var(--delay);
 }
 
-/* Nube 2 - Pequeña y dispersa izquierda centro */
-.cloud-2 {
-  bottom: 22%;
-  left: 4%;
-  width: 340px;
-  height: 150px;
-  animation: cloud-drift-fast 20s ease-in-out infinite 6s;
-}
-.cloud-2 .cloud-part-1 {
-  width: 135px;
-  height: 95px;
-  left: 0;
-  top: 30px;
-}
-.cloud-2 .cloud-part-2 {
-  width: 160px;
-  height: 115px;
-  left: 95px;
-  top: 12px;
-}
-.cloud-2 .cloud-part-3 {
-  width: 125px;
-  height: 85px;
-  left: 200px;
-  top: 35px;
+.cloud__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: scaleX(var(--flip));
+  animation: cloud-breathe 26s ease-in-out infinite;
+  animation-delay: var(--delay);
 }
 
-/* Nube 3 - Mediana voluminosa izquierda superior */
-.cloud-3 {
-  bottom: 35%;
-  left: 3%;
-  width: 480px;
-  height: 210px;
-  animation: cloud-drift-medium 32s ease-in-out infinite 12s;
-}
-.cloud-3 .cloud-part-1 {
-  width: 185px;
-  height: 130px;
-  left: 0;
-  top: 50px;
-}
-.cloud-3 .cloud-part-2 {
-  width: 210px;
-  height: 155px;
-  left: 130px;
-  top: 25px;
-}
-.cloud-3 .cloud-part-3 {
-  width: 180px;
-  height: 130px;
-  left: 270px;
-  top: 45px;
-}
-.cloud-3 .cloud-part-4 {
-  width: 150px;
-  height: 105px;
-  left: 95px;
-  top: 0;
+/*
+ * Estratos. El contraste y el tinte azulado van horneados en el gradiente
+ * SVG (ver DEPTH en CloudLayer.tsx); aquí solo la opacidad, para que la
+ * animación no obligue a repintar.
+ */
+.cloud--d0 {
+  opacity: 0.36;
 }
 
-/* Nube 4 - Muy grande y esponjosa derecha inferior */
-.cloud-4 {
-  bottom: 10%;
-  right: 2%;
-  width: 640px;
-  height: 280px;
-  animation: cloud-drift-reverse 25s ease-in-out infinite 4s;
-}
-.cloud-4 .cloud-part-1 {
-  width: 250px;
-  height: 180px;
-  right: 0;
-  top: 65px;
-}
-.cloud-4 .cloud-part-2 {
-  width: 285px;
-  height: 205px;
-  right: 180px;
-  top: 30px;
-}
-.cloud-4 .cloud-part-3 {
-  width: 235px;
-  height: 165px;
-  right: 380px;
-  top: 60px;
+.cloud--d1 {
+  opacity: 0.56;
 }
 
-/* Nube 5 - Compacta y densa derecha centro-alto */
-.cloud-5 {
-  bottom: 25%;
-  right: 4%;
-  width: 400px;
-  height: 180px;
-  animation: cloud-drift-medium 22s ease-in-out infinite 10s;
-}
-.cloud-5 .cloud-part-1 {
-  width: 155px;
-  height: 110px;
-  right: 0;
-  top: 42px;
-}
-.cloud-5 .cloud-part-2 {
-  width: 180px;
-  height: 130px;
-  right: 110px;
-  top: 25px;
-}
-.cloud-5 .cloud-part-3 {
-  width: 165px;
-  height: 115px;
-  right: 215px;
-  top: 38px;
-}
-.cloud-5 .cloud-part-4 {
-  width: 135px;
-  height: 95px;
-  right: 90px;
-  top: 0;
+.cloud--d2 {
+  opacity: 0.74;
 }
 
-/* Nube 6 - Alargada y ligera derecha superior */
-.cloud-6 {
-  bottom: 38%;
-  right: 3%;
-  width: 510px;
-  height: 170px;
-  animation: cloud-drift-slow 30s ease-in-out infinite 16s;
-}
-.cloud-6 .cloud-part-1 {
-  width: 165px;
-  height: 115px;
-  right: 0;
-  top: 30px;
-}
-.cloud-6 .cloud-part-2 {
-  width: 195px;
-  height: 140px;
-  right: 125px;
-  top: 15px;
-}
-.cloud-6 .cloud-part-3 {
-  width: 175px;
-  height: 120px;
-  right: 280px;
-  top: 25px;
-}
-
-/* Capa de neblina en la base - asimétrica */
-.mist-layer {
+/*
+ * Bruma del horizonte: funde la base del cielo con el paisaje de la foto.
+ * Se compone con alfa y no con `mix-blend-mode: screen`, porque .cloud-layer
+ * tiene z-index y crea contexto de apilamiento: el blend no alcanzaría la
+ * foto de fondo. Sobre una foto, blanco con alfa da el mismo resultado.
+ */
+.haze {
   position: absolute;
   bottom: 0;
-  background: linear-gradient(to top, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.4) 35%, rgba(255,255,255,0.15) 65%, transparent 100%);
-  filter: blur(14px);
-  mix-blend-mode: screen;
+  left: -6%;
+  width: 112%;
+  pointer-events: none;
 }
 
-.mist-left {
-  left: 0;
-  width: 55%;
-  height: 28vh;
-  border-radius: 65% 50% 0 0;
-  animation: mist-pulse 19s ease-in-out infinite;
+.haze--low {
+  height: 26vh;
+  background: linear-gradient(
+    to top,
+    rgba(232, 240, 250, 0.5) 0%,
+    rgba(232, 240, 250, 0.26) 38%,
+    rgba(232, 240, 250, 0.08) 68%,
+    transparent 100%
+  );
+  filter: blur(10px);
 }
 
-.mist-right {
-  right: 0;
-  width: 48%;
-  height: 25vh;
-  border-radius: 55% 70% 0 0;
-  animation: mist-pulse 23s ease-in-out infinite 7s;
+.haze--drift {
+  height: 19vh;
+  background: radial-gradient(
+      60% 100% at 22% 100%,
+      rgba(255, 255, 255, 0.42) 0%,
+      transparent 72%
+    ),
+    radial-gradient(52% 100% at 74% 100%, rgba(255, 255, 255, 0.34) 0%, transparent 70%);
+  filter: blur(16px);
+  animation: haze-drift 34s ease-in-out infinite;
 }
 
-.mist-center {
-  left: 40%;
-  width: 38%;
-  height: 20vh;
-  border-radius: 50% 50% 0 0;
-  animation: mist-pulse 26s ease-in-out infinite 14s;
-  opacity: 0.85;
-}
-
-/* Responsive - Nubes optimizadas para móviles */
 @media (max-width: 640px) {
-  .cloud-1 { width: 320px; height: 135px; left: -8%; }
-  .cloud-1 .cloud-part-1 { width: 125px; height: 85px; }
-  .cloud-1 .cloud-part-2 { width: 145px; height: 100px; left: 85px; }
-  .cloud-1 .cloud-part-3 { width: 115px; height: 80px; left: 180px; }
-  .cloud-1 .cloud-part-4 { width: 95px; height: 65px; left: 60px; }
-  
-  .cloud-2 { width: 170px; height: 75px; left: -3%; }
-  .cloud-2 .cloud-part-1 { width: 70px; height: 48px; }
-  .cloud-2 .cloud-part-2 { width: 80px; height: 55px; left: 50px; }
-  .cloud-2 .cloud-part-3 { width: 60px; height: 40px; left: 105px; }
-  
-  .cloud-3 { width: 260px; height: 110px; left: -5%; }
-  .cloud-3 .cloud-part-1 { width: 100px; height: 68px; }
-  .cloud-3 .cloud-part-2 { width: 110px; height: 78px; left: 68px; }
-  .cloud-3 .cloud-part-3 { width: 95px; height: 65px; left: 142px; }
-  .cloud-3 .cloud-part-4 { width: 75px; height: 52px; left: 50px; }
-  
-  .cloud-4 { width: 350px; height: 145px; right: -10%; }
-  .cloud-4 .cloud-part-1 { width: 135px; height: 95px; }
-  .cloud-4 .cloud-part-2 { width: 155px; height: 108px; right: 100px; }
-  .cloud-4 .cloud-part-3 { width: 125px; height: 85px; right: 210px; }
-  
-  .cloud-5 { width: 210px; height: 92px; right: -4%; }
-  .cloud-5 .cloud-part-1 { width: 80px; height: 55px; }
-  .cloud-5 .cloud-part-2 { width: 92px; height: 65px; right: 60px; }
-  .cloud-5 .cloud-part-3 { width: 83px; height: 58px; right: 115px; }
-  .cloud-5 .cloud-part-4 { width: 68px; height: 46px; right: 47px; }
-  
-  .cloud-6 { width: 280px; height: 85px; right: -6%; }
-  .cloud-6 .cloud-part-1 { width: 85px; height: 58px; }
-  .cloud-6 .cloud-part-2 { width: 100px; height: 70px; right: 68px; }
-  .cloud-6 .cloud-part-3 { width: 90px; height: 62px; right: 148px; }
-  
-  .mist-left, .mist-right { height: 17vh; }
-  .mist-center { height: 14vh; }
+  /*
+   * En móvil el hero es mucho más estrecho: menos nubes y más grandes.
+   * El titular además ocupa más alto al partirse en varias líneas, así que
+   * la banda protegida empieza antes y hay que subir las nubes.
+   */
+  .cloud {
+    width: calc(var(--w) * 2.1);
+    bottom: calc(var(--band) + 9%);
+  }
+  .cloud--d0 {
+    display: none;
+  }
+  .cloud__art {
+    animation-duration: 34s;
+  }
+  .haze--low {
+    height: 17vh;
+  }
+  .haze--drift {
+    height: 13vh;
+  }
+}
+
+/*
+ * Con movimiento reducido, la regla global deja las animaciones en su estado
+ * final: sin esto las nubes acabarían fuera de pantalla (118vw). Se colocan
+ * estáticas y repartidas.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .cloud {
+    animation: none !important;
+    transform: translate3d(var(--rest, 12vw), 0, 0);
+  }
+  .cloud__art {
+    animation: none !important;
+  }
+  .haze--drift {
+    animation: none !important;
+    opacity: 0.6;
+  }
+  .cloud:nth-child(2) {
+    --rest: 58vw;
+  }
+  .cloud:nth-child(3) {
+    --rest: 32vw;
+  }
+  .cloud:nth-child(4) {
+    --rest: 74vw;
+  }
+  .cloud:nth-child(5) {
+    --rest: 2vw;
+  }
+  .cloud:nth-child(6) {
+    --rest: 46vw;
+  }
+  .cloud:nth-child(7) {
+    --rest: 22vw;
+  }
+  .cloud:nth-child(8) {
+    --rest: 66vw;
+  }
 }
 
 /* Hero carousel fade transition */
