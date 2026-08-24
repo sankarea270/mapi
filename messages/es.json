@@ -1,0 +1,422 @@
+{
+  "meta": {
+    "title": "Mapi Travels — Agencia de viajes en Perú",
+    "description": "Tours y paquetes a Machu Picchu, Valle Sagrado, Cusco, Amazonía y más. Agencia peruana con atención 24/7 en español, inglés y portugués."
+  },
+  "brand": {
+    "tagline": "Agencia de viajes"
+  },
+  "topbar": {
+    "whatsapp": "WhatsApp",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "language": "Idioma",
+    "currency": "Moneda"
+  },
+  "nav": {
+    "navLabel": "Principal",
+    "whatsappFloat": "Chatear por WhatsApp",
+    "reserve": "Reservar",
+    "machuPicchu": "Machu Picchu",
+    "tours": "Tours",
+    "destinations": "Destinos",
+    "adventure": "Aventura",
+    "packages": "Paquetes",
+    "experiences": "Experiencias",
+    "travelGuide": "Guía de Viaje",
+    "about": "Nosotros",
+    "viewAll": "Ver todos",
+    "allTours": "Explorar los {count} tours",
+    "moreCategories": "Más categorías",
+    "featured": "Destacado",
+    "seeTour": "Ver tour",
+    "from": "Desde",
+    "search": "Buscar",
+    "searchPlaceholder": "Busca un tour, destino o experiencia…",
+    "searchEmpty": "Sin resultados para «{query}»",
+    "searchLoading": "Buscando…",
+    "searchHint": "Escribe para buscar entre los {count} tours",
+    "close": "Cerrar",
+    "menu": "Menú",
+    "plan": "Planifica",
+    "contact": "Contáctanos",
+    "seeAll": "Ver todo"
+  },
+  "destinos": {
+    "andesCusco": "Andes y Cusco",
+    "south": "Sur del Perú",
+    "north": "Amazonía y Norte",
+    "cusco": "Cusco",
+    "machuPicchu": "Machu Picchu",
+    "sacredValley": "Valle Sagrado",
+    "arequipa": "Arequipa",
+    "punoTiticaca": "Puno y el Lago Titicaca",
+    "nazca": "Nazca",
+    "colca": "Cañón del Colca",
+    "iquitos": "Iquitos",
+    "puertoMaldonado": "Puerto Maldonado",
+    "title": "Destinos en Perú",
+    "subtitle": "Desde la ciudadela de Machu Picchu hasta la Amazonía: explora cada rincón del Perú con nosotros.",
+    "count": "{count} destinos para explorar",
+    "toursCount": "{count} tours",
+    "back": "Volver a destinos",
+    "empty": "Pronto tendremos tours disponibles en este destino.",
+    "lima": "Lima",
+    "manu": "Reserva de Manu"
+  },
+  "aventura": {
+    "trekking": "Trekking y montaña",
+    "sports": "Deportes de aventura",
+    "rainbow": "Montaña de 7 Colores",
+    "humantay": "Laguna Humantay",
+    "palccoyo": "Palccoyo",
+    "incaTrail": "Camino Inca",
+    "rafting": "Rafting",
+    "bike": "Ciclismo de montaña",
+    "quad": "Cuatrimotos",
+    "zipline": "Tirolesa"
+  },
+  "paquetes": {
+    "circuits": "Circuitos clásicos",
+    "specials": "Viajes especiales",
+    "cuscoExpress": "Cusco Express 4D/3N",
+    "southPeru": "Sur del Perú 7D/6N",
+    "peruClassic": "Perú Clásico 10D/9N",
+    "northPeru": "Norte del Perú 6D/5N",
+    "honeymoon": "Luna de miel",
+    "family": "Viajes en familia",
+    "students": "Grupos y estudiantes",
+    "title": "Paquetes y Circuitos",
+    "subtitle": "Circuitos clásicos y viajes especiales armados por nuestros expertos, con todos los detalles incluidos.",
+    "count": "{count} paquetes disponibles",
+    "view": "Ver itinerario",
+    "back": "Volver a paquetes",
+    "book": "Reservar por WhatsApp",
+    "includedTours": "Tours incluidos"
+  },
+  "experiencias": {
+    "culture": "Cultura viva",
+    "gastronomy": "Gastronomía",
+    "photography": "Fotografía",
+    "weaving": "Textilería andina",
+    "festivals": "Fiestas y festivales",
+    "cooking": "Clase de cocina",
+    "foodTour": "Tour gastronómico",
+    "pisco": "Ruta del pisco",
+    "photoTour": "Tour fotográfico",
+    "starlight": "Astroturismo",
+    "title": "Experiencias",
+    "subtitle": "Cultura, gastronomía, fotografía y astroturismo: vive el Perú más allá de los tours clásicos.",
+    "count": "{count} experiencias para vivir",
+    "explore": "Explorar",
+    "back": "Volver a experiencias",
+    "empty": "Pronto tendremos tours disponibles en esta experiencia."
+  },
+  "guia": {
+    "before": "Antes de viajar",
+    "help": "Ayuda y FAQ",
+    "howToGet": "Cómo llegar",
+    "bestTime": "Mejor época para viajar",
+    "packing": "Qué llevar",
+    "safety": "Seguridad y salud",
+    "visa": "Visas y requisitos",
+    "faqLink": "Preguntas frecuentes",
+    "contactUs": "Contáctanos",
+    "title": "Guía de Viaje",
+    "subtitle": "Consejos prácticos antes de viajar: cómo llegar, clima, qué llevar, seguridad, visas y preguntas frecuentes.",
+    "count": "{count} artículos de ayuda",
+    "read": "Leer artículo",
+    "back": "Volver a la guía",
+    "cat": {
+      "como-llegar": "Cómo llegar",
+      "clima": "Clima",
+      "equipaje": "Equipaje",
+      "seguridad": "Seguridad",
+      "visas": "Visas",
+      "faq": "Preguntas frecuentes"
+    }
+  },
+  "hero": {
+    "badge": "Perú · Agencia de viajes",
+    "title": "Descubre el Perú que siempre soñaste",
+    "subtitle": "Tours privados y grupales a Machu Picchu, Valle Sagrado, Amazonía y más. Atención 24/7 en español, inglés y portugués.",
+    "ctaTours": "Explorar tours",
+    "ctaContact": "Reservar por WhatsApp"
+  },
+  "tours": {
+    "title": "Nuestros Tours",
+    "subtitle": "Explora nuestra selección de experiencias por todo el Perú: Machu Picchu, Valle Sagrado, Amazonía y más.",
+    "found": "{count} experiencias disponibles",
+    "searchPlaceholder": "Buscar tours, destinos...",
+    "searchLabel": "Buscar",
+    "sortLabel": "Ordenar por",
+    "sortRating": "Mejor valorados",
+    "sortPriceAsc": "Precio: menor a mayor",
+    "sortPriceDesc": "Precio: mayor a menor",
+    "sortName": "Nombre A-Z",
+    "allCategories": "Todos",
+    "results": "{count} experiencias",
+    "empty": "No encontramos tours que coincidan con tu búsqueda.",
+    "reset": "Limpiar filtros",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "pageInfo": "Página {current} de {total}",
+    "durationLabel": "Duración",
+    "durationAll": "Cualquier duración",
+    "durationDay": "1 día",
+    "duration2": "2 días",
+    "duration3": "3 días",
+    "duration4": "4+ días",
+    "priceMaxLabel": "Precio máximo",
+    "priceAll": "Cualquier precio",
+    "priceUpTo": "Hasta {value}",
+    "ratingLabel": "Valoración mínima",
+    "ratingAll": "Cualquier valoración",
+    "ratingAtLeast": "Desde {value}★"
+  },
+  "tourDetail": {
+    "book": "Reservar por WhatsApp",
+    "back": "Volver a todos los tours",
+    "notFound": "Tour no encontrado",
+    "duration": "Duración",
+    "price": "Precio",
+    "rating": "Valoración",
+    "overview": "Descripción",
+    "included": "¿Qué incluye?",
+    "itinerary": "Itinerario",
+    "related": "También te puede interesar",
+    "day": "Día",
+    "bookNow": "Reservar este tour",
+    "bookNowHint": "Completa el formulario y te confirmaremos disponibilidad por WhatsApp en menos de 24 horas.",
+    "breadcrumb": "Viaje",
+    "tabInfo": "Información",
+    "tabPlan": "Plan de la gira",
+    "tabLocation": "Ubicación",
+    "tabGallery": "Galería",
+    "tabReviews": "Reseñas",
+    "specialOffer": "Oferta especial",
+    "excellent": "Excelente",
+    "followUs": "Síguenos",
+    "locationVisit": "Ver destino",
+    "reserveSidebar": "Reserva esta visita",
+    "availability": "Consulta la disponibilidad",
+    "locationSubtitle": "Dónde se desarrolla esta experiencia",
+    "planSubtitle": "El detalle de cada día de tu aventura",
+    "reviewsSubtitle": "Lo que dicen los viajeros que ya vivieron esta experiencia",
+    "tabsAria": "Detalles del tour",
+    "smallGroups": "Máx. 12 personas",
+    "highlightGuia": "Guía experto local",
+    "highlightExperiencia": "Experiencia única",
+    "highlightConfirmacion": "Confirmación inmediata",
+    "highlightGrupo": "Pequeños grupos"
+  },
+  "reserva": {
+    "title": "Reserva tu viaje",
+    "subtitle": "Cuéntanos tu fecha y preferencias; confirmamos disponibilidad en menos de 24 horas, sin pagos en línea.",
+    "step": "Formulario de reserva",
+    "tour": "Tour o paquete",
+    "tourPlaceholder": "¿Qué experiencia quieres reservar?",
+    "date": "Fecha preferida",
+    "travelers": "Número de viajeros",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Juan Pérez",
+    "email": "Correo electrónico",
+    "whatsapp": "Tu WhatsApp",
+    "message": "Mensaje opcional",
+    "messagePlaceholder": "¿Algún detalle especial? (alergias, alturas, celebraciones...)",
+    "submit": "Enviar solicitud de reserva",
+    "submitting": "Enviando…",
+    "successTitle": "¡Solicitud recibida!",
+    "successBody": "Guarda tu código de reserva. Nuestro equipo te contactará por WhatsApp y email para confirmar disponibilidad.",
+    "whatsappConfirm": "Confirmar por WhatsApp",
+    "noPayment": "Sin pagos en línea por ahora: confirmamos cupos y coordinas el pago directamente con nuestro equipo.",
+    "errors": {
+      "date": "Selecciona una fecha para tu viaje.",
+      "travelers": "Indica al menos 1 viajero.",
+      "travelersMax": "Máximo 30 viajeros por reserva.",
+      "fullName": "Escribe tu nombre completo.",
+      "email": "Revisa el formato del correo.",
+      "whatsapp": "Escribe un número válido con código de país.",
+      "messageMax": "Mensaje demasiado largo (máx. 500 caracteres).",
+      "server": "Hubo un problema al enviar. Inténtalo de nuevo."
+    }
+  },
+  "reservas": {
+    "title": "Mis reservas",
+    "subtitle": "Seguimiento de las solicitudes enviadas desde este dispositivo: estado pendiente, confirmada o cancelada.",
+    "local": "Estado local de este navegador",
+    "empty": "Aún no has enviado reservas desde este dispositivo. ¡Empieza explorando nuestros tours!",
+    "date": "Fecha",
+    "travelers": "Viajeros",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "status": {
+      "pending": "Pendiente",
+      "confirmed": "Confirmada",
+      "cancelled": "Cancelada"
+    }
+  },
+  "share": {
+    "title": "Compartir",
+    "x": "Compartir en X",
+    "facebook": "Compartir en Facebook",
+    "whatsapp": "Compartir por WhatsApp",
+    "copy": "Copiar enlace",
+    "copied": "¡Enlace copiado!"
+  },
+  "newsletter": {
+    "title": "Recibe ofertas y consejos de viaje",
+    "subtitle": "Únete a nuestra newsletter y recibe promociones exclusivas, nuevos itinerarios y guías de viaje por Perú.",
+    "placeholder": "Tu correo electrónico",
+    "submit": "Suscribirme",
+    "success": "¡Gracias por suscribirte! Revisa tu correo para confirmar.",
+    "invalid": "Escribe un correo válido.",
+    "error": "Hubo un problema. Inténtalo de nuevo."
+  },
+  "reviews": {
+    "badge": "Opiniones reales",
+    "title": "Lo que dicen nuestros viajeros",
+    "subtitle": "Miles de viajeros ya descubrieron Perú con nosotros. Estas son algunas de sus experiencias."
+  },
+  "social": {
+    "badge": "Síguenos",
+    "title": "El Perú en nuestro feed",
+    "subtitle": "Compartimos momentos reales de nuestros tours en Instagram, Facebook y TikTok todos los días.",
+    "follow": "Seguir en Instagram"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "subtitle": "Cuéntanos tu viaje ideal y te responderemos en menos de 24 horas.",
+    "quick": "Contacto directo",
+    "hours": "Horario de atención",
+    "formTitle": "Envíanos un mensaje",
+    "name": "Nombre completo",
+    "email": "Correo electrónico",
+    "whatsapp": "Tu WhatsApp",
+    "message": "¿En qué te ayudamos?",
+    "submit": "Enviar por WhatsApp"
+  },
+  "footer": {
+    "description": "Agencia peruana de viajes especializada en tours a Machu Picchu, Cusco, Valle Sagrado, Amazonía y todo el Perú.",
+    "navigation": "Navegación",
+    "destinations": "Destinos populares",
+    "contact": "Contacto",
+    "hours": "Horario",
+    "rights": "Todos los derechos reservados.",
+    "terms": "Términos y condiciones",
+    "privacy": "Política de privacidad",
+    "paymentMethods": "Métodos de pago",
+    "security": "Seguridad",
+    "refund": "Reembolso hasta 48h"
+  },
+  "whyTravel": {
+    "badge": "Experiencia de calidad",
+    "title": "¿Por qué viajar con Mapi Travels?",
+    "subtitle": "Nuestra trayectoria y compromiso nos convierten en la mejor opción para descubrir el Perú.",
+    "trust": {
+      "title": "Confianza en cada viaje",
+      "desc": "Nuestra experiencia como agencia autorizada garantiza que cada servicio turístico se cumpla tal como lo prometemos. Desde la reserva hasta el final del viaje, acompañamos cada paso con transparencia y profesionalismo."
+    },
+    "reputation": {
+      "title": "Reputación reconocida internacionalmente",
+      "desc": "Miles de viajeros y premios oficiales respaldan nuestra trayectoria. Cada tour refleja el prestigio que hemos construido, siendo recomendados y reconocidos por instituciones nacionales e internacionales."
+    },
+    "satisfaction": {
+      "title": "Satisfacción en cada experiencia",
+      "desc": "Diseñamos itinerarios auténticos que superan expectativas. Nuestros servicios turísticos están pensados para dejar recuerdos inolvidables y la certeza de haber vivido lo mejor del Perú."
+    },
+    "impact": {
+      "title": "Impacto responsable y comunidad",
+      "desc": "Nuestros tours integran prácticas sostenibles que protegen el patrimonio cultural y natural del Perú. Al trabajar con proveedores locales y comunidades, generamos experiencias auténticas que aportan valor al destino y al viajero."
+    }
+  },
+  "about": {
+    "meta": {
+      "title": "Sobre Nosotros - Mapi Travels",
+      "description": "Conoce la historia, misión y equipo de Mapi Travels. Agencia autorizada especializada en tours a Machu Picchu y todo el Perú."
+    },
+    "hero": {
+      "title": "Sobre Nosotros",
+      "subtitle": "Conectando corazones con el Perú auténtico",
+      "description": "Desde 2012, somos la agencia de confianza que transforma viajes en experiencias inolvidables, compartiendo la magia y cultura del Perú con viajeros de todo el mundo.",
+      "badge": "Más de 10 años de experiencia"
+    },
+    "missionVision": {
+      "title": "Nuestra Esencia",
+      "subtitle": "Los valores que nos definen y guían cada paso de nuestro camino",
+      "mission": {
+        "title": "Misión",
+        "description": "Brindar experiencias turísticas excepcionales que conecten a viajeros de todo el mundo con la riqueza cultural, histórica y natural del Perú, promoviendo el turismo responsable y sostenible."
+      },
+      "vision": {
+        "title": "Visión",
+        "description": "Ser la agencia de viajes líder en Perú, reconocida internacionalmente por la excelencia en nuestros servicios, la autenticidad de nuestras experiencias y nuestro compromiso con el desarrollo sostenible del turismo."
+      },
+      "values": {
+        "title": "Valores",
+        "description": "Integridad, respeto por la cultura local, compromiso con la excelencia, responsabilidad ambiental y pasión por mostrar lo mejor del Perú a cada viajero que confía en nosotros."
+      }
+    },
+    "stats": {
+      "title": "Nuestros Logros",
+      "subtitle": "Números que reflejan años de dedicación y excelencia",
+      "tours": {
+        "title": "Tours Diseñados",
+        "subtitle": "Para ti"
+      },
+      "destinations": {
+        "title": "Destinos",
+        "subtitle": "Por conocer"
+      },
+      "team": {
+        "title": "Colaboradores",
+        "subtitle": "A tu servicio"
+      },
+      "happyTravelers": {
+        "title": "Viajeros Felices",
+        "subtitle": "Experiencias inolvidables"
+      }
+    },
+    "certifications": {
+      "title": "Certificaciones y Avales",
+      "subtitle": "Respaldados por las instituciones más importantes del turismo peruano",
+      "description": "Contamos con todas las autorizaciones y certificaciones necesarias para operar como agencia de viajes y operador turístico en el Perú, garantizando la seguridad y calidad de nuestros servicios."
+    },
+    "team": {
+      "title": "Nuestro Equipo",
+      "subtitle": "Profesionales apasionados por mostrar lo mejor del Perú"
+    },
+    "companyInfo": {
+      "title": "Información Legal",
+      "subtitle": "Transparencia y confianza en cada detalle",
+      "businessName": {
+        "label": "Razón Social"
+      },
+      "ruc": {
+        "label": "Número de RUC"
+      },
+      "activity": {
+        "label": "Actividad Económica"
+      },
+      "license": {
+        "label": "Licencia de Funcionamiento"
+      },
+      "additional": {
+        "title": "Información Adicional"
+      },
+      "authorization": {
+        "label": "Certificado de Autorización"
+      },
+      "address": {
+        "label": "Dirección"
+      },
+      "phone": {
+        "label": "Teléfono"
+      },
+      "email": {
+        "label": "Correo Electrónico"
+      },
+      "legalNote": "Toda la información presentada es verídica y está respaldada por documentos oficiales. Mapi Travels opera bajo estricto cumplimiento de las normativas peruanas de turismo."
+    }
+  }
+}

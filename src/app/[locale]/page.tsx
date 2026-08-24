@@ -1,0 +1,119 @@
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { routing } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
+import { whatsappLink, siteConfig } from "@/config/site";
+import { buildMetadata } from "@/lib/seo";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
+import { SocialFeed } from "@/components/social/SocialFeed";
+import { HeroCarousel } from "@/components/home/HeroCarousel";
+import { CloudLayer } from "@/components/home/CloudLayer";
+import { WhyTravelWith } from "@/components/home/WhyTravelWith";
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  return buildMetadata({
+    locale,
+    title: t("title"),
+    description: t("description"),
+    path: "/",
+  });
+}
+
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("hero");
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TravelAgency",
+    name: `${siteConfig.name} ${siteConfig.nameSuffix}`,
+    description: t("subtitle"),
+    url: buildMetadata({ locale, title: "", path: "/" }).alternates?.canonical,
+    telephone: siteConfig.phone.display,
+    email: siteConfig.email,
+    address: { "@type": "PostalAddress", addressLocality: "Cusco", addressCountry: "PE" },
+    sameAs: Object.values(siteConfig.socials).map((s) => s.href),
+  };
+
+  return (
+    <>
+      <div className="relative">
+        <section
+          data-hero-sentinel
+          className="relative flex min-h-[92dvh] items-center justify-center overflow-hidden bg-slate-950"
+        >
+          <HeroCarousel />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/30 to-slate-950/70" />
+
+          <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 py-28 text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-amber-300 backdrop-blur"
+              style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
+            >
+              {t("badge")}
+            </span>
+            <h1
+              className="mt-6 font-heading text-5xl font-medium leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl"
+              style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
+            >
+              <span className="bg-gradient-to-r from-slate-100 via-amber-100 to-slate-100 bg-clip-text text-transparent">
+                {t("title")}
+              </span>
+            </h1>
+            <p
+              className="mt-5 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg"
+              style={{ animation: "text-reveal 0.8s ease-out both 0.6s" }}
+            >
+              {t("subtitle")}
+            </p>
+            <div
+              className="mt-9 flex flex-col gap-3 sm:flex-row"
+              style={{ animation: "text-reveal 0.8s ease-out both 0.8s" }}
+            >
+              <Link
+                href="/tours"
+                className="rounded-full bg-amber-400 px-8 py-3.5 text-sm font-bold text-slate-900 shadow-lg shadow-amber-400/25 transition hover:bg-amber-300 hover:scale-105"
+              >
+                {t("ctaTours")}
+              </Link>
+              <a
+                href={whatsappLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20 hover:scale-105"
+              >
+                {t("ctaContact")}
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Nubes FUERA del overflow-hidden */}
+        <CloudLayer />
+      </div>
+
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+
+    <WhyTravelWith />
+    <SocialFeed />
+    <ReviewsSection />
+    </>
+  );
+}

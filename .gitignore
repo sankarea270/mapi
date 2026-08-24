@@ -36,6 +36,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# backups de Sanity
+/backups/
+
+# Chrome descargado para auditorías Lighthouse
+/chrome/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
