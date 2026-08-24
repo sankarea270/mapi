@@ -8,6 +8,9 @@ import { buildMetadata, pageUrl } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
 import { FilterBar } from "@/components/tours/FilterBar";
 
+// Force static rendering
+export const dynamic = 'force-static';
+
 const PER_PAGE = 12;
 const SORTS = ["rating", "price-asc", "price-desc", "name"] as const;
 const DURATION_BUCKETS = ["1", "2", "3", "4+"] as const;
@@ -33,25 +36,20 @@ export async function generateMetadata({
 
 interface ToursPageProps {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function ToursPage({ params, searchParams }: ToursPageProps) {
+export default async function ToursPage({ params }: ToursPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const sp = await searchParams;
-  const q = typeof sp.q === "string" ? sp.q.trim() : "";
-  const categorySlug = typeof sp.categoria === "string" ? sp.categoria : "";
-  const orden = SORTS.includes(sp.orden as (typeof SORTS)[number])
-    ? (sp.orden as (typeof SORTS)[number])
-    : "rating";
-  const duracion = DURATION_BUCKETS.includes(sp.duracion as (typeof DURATION_BUCKETS)[number])
-    ? (sp.duracion as (typeof DURATION_BUCKETS)[number])
-    : "";
-  const maxPrice = Number(sp.precio_max) > 0 ? Number(sp.precio_max) : 0;
-  const minRating = Number(sp.rating_min) > 0 ? Number(sp.rating_min) : 0;
-  const page = Math.max(1, Number(sp.page) || 1);
+  // Static defaults for generation
+  const q = "";
+  const categorySlug = "";
+  const orden: string = "rating";
+  const duracion = "";
+  const maxPrice = 0;
+  const minRating = 0;
+  const page = 1;
 
   const categories = await getCategoriesWithTours();
   const allTours = categories.flatMap((c) => c.tours);
@@ -112,27 +110,6 @@ export default async function ToursPage({ params, searchParams }: ToursPageProps
     })),
   };
 
-  const buildHref = (patch: Record<string, string | undefined>) => {
-    const params = new URLSearchParams();
-    const next = {
-      q,
-      categoria: categorySlug,
-      orden,
-      duracion,
-      precio_max: maxPrice ? String(maxPrice) : "",
-      rating_min: minRating ? String(minRating) : "",
-      ...patch,
-    };
-    if (next.q) params.set("q", next.q);
-    if (next.categoria) params.set("categoria", next.categoria);
-    if (next.orden) params.set("orden", next.orden);
-    if (next.duracion) params.set("duracion", next.duracion);
-    if (next.precio_max) params.set("precio_max", next.precio_max);
-    if (next.rating_min) params.set("rating_min", next.rating_min);
-    const query = params.toString();
-    return query ? `?${query}` : "";
-  };
-
   return (
     <div className="min-h-dvh bg-slate-50">
       <div className="border-b border-slate-100 bg-white">
@@ -188,40 +165,6 @@ export default async function ToursPage({ params, searchParams }: ToursPageProps
               );
             })}
           </div>
-        )}
-
-        {totalPages > 1 && (
-          <nav className="mt-12 flex items-center justify-between" aria-label="pagination">
-            <Link
-              href={
-                currentPage > 2
-                  ? buildHref({ page: String(currentPage - 1) })
-                  : buildHref({ page: undefined })
-              }
-              scroll={false}
-              className={`inline-flex items-center gap-1 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                currentPage <= 1
-                  ? "pointer-events-none border-slate-200 text-slate-300"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-amber-500 hover:text-amber-700"
-              }`}
-            >
-              {t("prev")}
-            </Link>
-            <span className="text-sm font-medium text-slate-500">
-              {t("pageInfo", { current: currentPage, total: totalPages })}
-            </span>
-            <Link
-              href={buildHref({ page: String(currentPage + 1) })}
-              scroll={false}
-              className={`inline-flex items-center gap-1 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                currentPage >= totalPages
-                  ? "pointer-events-none border-slate-200 text-slate-300"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-amber-500 hover:text-amber-700"
-              }`}
-            >
-              {t("next")}
-            </Link>
-          </nav>
         )}
       </section>
 
