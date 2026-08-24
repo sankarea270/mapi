@@ -13,7 +13,7 @@ export function Logo({ light = false, compact = false }: { light?: boolean; comp
     <Link href="/" className="group flex shrink-0 items-center gap-2.5">
       <div className="relative size-12 shrink-0 overflow-hidden rounded-xl transition-transform duration-300 group-hover:rotate-6">
         <Image
-          src="/mapilogo.png"
+          src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/mapilogo.png`}
           alt="Mapi Travels Logo"
           fill
           className="object-contain"

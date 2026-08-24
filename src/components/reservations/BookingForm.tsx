@@ -15,7 +15,7 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) {
-  const t = useTranslations("booking");
+  const t = useTranslations("reserva");
   const [form, setForm] = useState({
     tourName: tourName,
     date: new Date().toISOString().split('T')[0],
@@ -62,7 +62,7 @@ Mis datos:
         {tourSlug && (
           <div>
             <label className="block text-sm font-semibold text-slate-700">
-              {t("tourName")}
+              {t("tour")}
             </label>
             <div className="mt-1.5">
               <input
@@ -70,7 +70,7 @@ Mis datos:
                 value={form.tourName}
                 onChange={(e) => setForm({...form, tourName: e.target.value})}
                 className="block w-full rounded-xl border border-slate-200 px-4 py-3 text-sm transition-colors placeholder:text-slate-400 focus:border-amber-400 focus:outline-none"
-                placeholder={t("tourNamePlaceholder")}
+                placeholder={t("tourPlaceholder")}
               />
             </div>
           </div>
@@ -182,12 +182,12 @@ Mis datos:
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 text-sm font-bold text-slate-900 shadow-md shadow-amber-400/20 transition-colors hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <MessageCircle className="size-4" />
-          {pending ? t("sending") : t("sendWhatsapp")}
+          {pending ? t("submitting") : t("whatsappConfirm")}
         </button>
       </form>
 
       <p className="mt-4 text-xs text-slate-500">
-        {t("whatsappNote")}
+        {t("noPayment")}
       </p>
     </div>
   );

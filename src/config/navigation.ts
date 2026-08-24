@@ -75,24 +75,24 @@ export const NAV_ITEMS: NavItem[] = [
   {
     kind: "links",
     labelKey: "nav.adventure",
-    href: "/aventura",
+    href: "/tours?categoria=aventura",
     sections: [
       {
         titleKey: "aventura.trekking",
         links: [
-          { labelKey: "aventura.rainbow", href: "/tours?categoria=rainbow-mountain" },
-          { labelKey: "aventura.humantay", href: "/tours?categoria=humantay" },
-          { labelKey: "aventura.palccoyo", href: "/tours?categoria=palccoyo" },
-          { labelKey: "aventura.incaTrail", href: "/tours?categoria=camino-inca" },
+          { labelKey: "aventura.rainbow", href: "/tours/rainbow-mountain" },
+          { labelKey: "aventura.humantay", href: "/tours/laguna-humantay" },
+          { labelKey: "aventura.palccoyo", href: "/tours/palccoyo" },
+          { labelKey: "aventura.incaTrail", href: "/tours/camino-inca-clasico" },
         ],
       },
       {
         titleKey: "aventura.sports",
         links: [
-          { labelKey: "aventura.rafting", href: "/aventura/rafting" },
-          { labelKey: "aventura.bike", href: "/aventura/ciclismo" },
-          { labelKey: "aventura.quad", href: "/aventura/cuatrimotos" },
-          { labelKey: "aventura.zipline", href: "/aventura/tirolesa" },
+          { labelKey: "aventura.rafting", href: "/tours/rafting-urubamba" },
+          { labelKey: "aventura.bike", href: "/tours/bicicleta-malaga" },
+          { labelKey: "aventura.quad", href: "/tours/cuatrimotos-valle" },
+          { labelKey: "aventura.zipline", href: "/tours/tirolesa-qeswachaka" },
         ],
       },
     ],

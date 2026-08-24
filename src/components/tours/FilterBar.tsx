@@ -1,22 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Search, X } from "lucide-react";
-import { usePathname, useRouter } from "@/i18n/navigation";
 import type { TourCategory } from "@/types/tour";
 import { pickLocalized } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+export interface TourFilters {
+  q: string;
+  categoria: string;
+  orden: string;
+  duracion: string;
+  precio_max: string;
+  rating_min: string;
+}
+
 interface FilterBarProps {
   categories: TourCategory[];
   locale: string;
-  initialQuery: string;
-  initialCategory: string;
-  initialSort: string;
-  initialDuration: string;
-  initialMaxPrice: string;
-  initialMinRating: string;
+  filters: TourFilters;
+  onChange: (patch: Partial<TourFilters>) => void;
 }
 
 const SORT_OPTIONS = ["rating", "price-asc", "price-desc", "name"] as const;
@@ -30,44 +34,20 @@ const PRICE_CAPS = ["", "100", "200", "300", "500", "1000"] as const;
 const RATINGS = ["", "4.5", "4.8", "5.0"] as const;
 const DURATIONS = ["", "1", "2", "3", "4+"] as const;
 
-export function FilterBar({
-  categories,
-  locale,
-  initialQuery,
-  initialCategory,
-  initialSort,
-  initialDuration,
-  initialMaxPrice,
-  initialMinRating,
-}: FilterBarProps) {
+export function FilterBar({ categories, locale, filters, onChange }: FilterBarProps) {
   const t = useTranslations("tours");
-  const router = useRouter();
-  const pathname = usePathname();
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useState(filters.q);
 
-  const updateParams = (patch: Record<string, string>) => {
-    const params = new URLSearchParams();
-    const next = {
-      q: query,
-      categoria: initialCategory,
-      orden: initialSort,
-      duracion: initialDuration,
-      precio_max: initialMaxPrice,
-      rating_min: initialMinRating,
-      ...patch,
-    };
-    if (next.q) params.set("q", next.q);
-    if (next.categoria) params.set("categoria", next.categoria);
-    if (next.orden) params.set("orden", next.orden);
-    if (next.duracion) params.set("duracion", next.duracion);
-    if (next.precio_max) params.set("precio_max", next.precio_max);
-    if (next.rating_min) params.set("rating_min", next.rating_min);
-    router.replace(`${pathname}?${params.toString()}`);
-  };
+  // La query puede venir de la URL o de un reset externo.
+  useEffect(() => {
+    setQuery(filters.q);
+  }, [filters.q]);
+
+  const updateParams = (patch: Partial<TourFilters>) => onChange(patch);
 
   const submitQuery = (e: React.FormEvent) => {
     e.preventDefault();
-    updateParams({});
+    onChange({ q: query });
   };
 
   const durationLabel = (value: string) =>
@@ -101,7 +81,7 @@ export function FilterBar({
           )}
         </div>
         <select
-          value={initialSort}
+          value={filters.orden}
           onChange={(e) => updateParams({ orden: e.target.value })}
           aria-label={t("sortLabel")}
           className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
@@ -113,7 +93,7 @@ export function FilterBar({
           ))}
         </select>
         <select
-          value={initialDuration}
+          value={filters.duracion}
           onChange={(e) => updateParams({ duracion: e.target.value })}
           aria-label={t("durationLabel")}
           className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
@@ -126,7 +106,7 @@ export function FilterBar({
           ))}
         </select>
         <select
-          value={initialMaxPrice}
+          value={filters.precio_max}
           onChange={(e) => updateParams({ precio_max: e.target.value })}
           aria-label={t("priceMaxLabel")}
           className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
@@ -139,7 +119,7 @@ export function FilterBar({
           ))}
         </select>
         <select
-          value={initialMinRating}
+          value={filters.rating_min}
           onChange={(e) => updateParams({ rating_min: e.target.value })}
           aria-label={t("ratingLabel")}
           className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30"
@@ -159,7 +139,7 @@ export function FilterBar({
           onClick={() => updateParams({ categoria: "" })}
           className={cn(
             "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-            !initialCategory
+            !filters.categoria
               ? "border-amber-600 bg-amber-600 text-white"
               : "border-slate-200 bg-white text-slate-600 hover:border-amber-500 hover:text-amber-700"
           )}
@@ -173,7 +153,7 @@ export function FilterBar({
             onClick={() => updateParams({ categoria: category.slug })}
             className={cn(
               "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-              initialCategory === category.slug
+              filters.categoria === category.slug
                 ? "border-amber-600 bg-amber-600 text-white"
                 : "border-slate-200 bg-white text-slate-600 hover:border-amber-500 hover:text-amber-700"
             )}
