@@ -5,7 +5,10 @@ import { DESTINATIONS } from "@/data/destinations";
 import { PACKAGES } from "@/data/packages";
 import { EXPERIENCES } from "@/data/experiences";
 import { GUIDES } from "@/data/guides";
-import { BASE_URL } from "@/lib/seo";
+
+export const dynamic = 'force-static'
+
+const BASE_URL = "https://sankarea270.github.io/mapi";
 
 function localePrefix(locale: string): string {
   return locale === routing.defaultLocale ? "" : `/${locale}`;
