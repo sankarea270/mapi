@@ -854,20 +854,6 @@ html {
 
 /* ===== BANDA DE CIERRE ===== */
 
-/* Filete que se dibuja de izquierda a derecha al cargar la banda. */
-@keyframes rule-draw {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-.journey-rule {
-  transform-origin: left center;
-  animation: rule-draw 1.1s cubic-bezier(0.22, 0.68, 0.35, 1) both;
-}
-
 /*
  * Lámina de marca.
  *
@@ -884,7 +870,7 @@ html {
 @keyframes plate-in {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.985);
+    transform: translateY(38px) scale(0.94) rotate(-1.2deg);
   }
   to {
     opacity: 1;
@@ -902,24 +888,24 @@ html {
   }
 }
 
-/* Acercamiento lento y continuo, para que la lámina no quede congelada. */
+/*
+ * Flotación continua: la lámina sube y baja mientras se acerca muy poco a
+ * poco, para que no quede congelada. Va sobre la imagen y no sobre el
+ * contenedor, así no pisa el transform de la entrada.
+ */
 @keyframes plate-drift {
   0%,
   100% {
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
   50% {
-    transform: scale(1.028);
+    transform: translateY(-10px) scale(1.022);
   }
 }
 @media (prefers-reduced-motion: no-preference) {
   .journey-plate__img {
-    animation: plate-drift 26s ease-in-out infinite;
+    animation: plate-drift 9s ease-in-out infinite;
+    will-change: transform;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .journey-rule {
-    animation: none !important;
-  }
-}

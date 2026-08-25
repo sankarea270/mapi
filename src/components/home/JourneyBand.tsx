@@ -16,11 +16,7 @@ import { getTranslations } from "next-intl/server";
  * falta JavaScript ni en la carga ni al hacer scroll.
  */
 
-const PHOTO_CANDIDATES = [
-  "camino-machu-picchu.webp",
-  "camino-machu-picchu.jpg",
-  "camino-machu-picchu.png",
-];
+const PHOTO_CANDIDATES = ["mapi.webp", "mapi.png", "mapi.jpg"];
 
 function findPhoto(): string | null {
   for (const name of PHOTO_CANDIDATES) {
@@ -39,18 +35,17 @@ export async function JourneyBand() {
 
   return (
     <section className="bg-white">
-      <span aria-hidden="true" className="journey-rule block h-0.5 bg-teal-600" />
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
-        <div className="journey-plate mx-auto w-full max-w-2xl">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+        <div className="journey-plate mx-auto w-full max-w-xl">
           <Image
             src={photo}
             alt={t("badge")}
-            width={1122}
-            height={1402}
-            sizes="(min-width: 768px) 42rem, 100vw"
+            width={1200}
+            height={856}
+            sizes="(min-width: 640px) 36rem, 100vw"
             /* Dimensiones intrínsecas + h-auto: la lámina conserva su
-               proporción 4:5 a cualquier ancho sin recortar la composición,
-               que lleva el logo y el lema dentro. */
+               proporción sin recortar la composición, que lleva dentro el
+               logo y el lema. */
             className="journey-plate__img h-auto w-full"
           />
         </div>
