@@ -242,24 +242,51 @@
 }
 
 /*
- * Los bancos bajos oscilan en el sitio en lugar de desfilar: tienen que
- * cubrir la base de forma continua, y una travesía dejaría huecos.
+ * Apertura de telón: al cargar, los bancos de cada costado se apartan hacia
+ * afuera y descubren el centro del encuadre. Se ejecuta una sola vez y sobre
+ * el envoltorio exterior, para no chocar con la deriva continua del interior.
  */
-@keyframes mist-sway {
+@keyframes mist-part-left {
+  from {
+    transform: translate3d(26%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes mist-part-right {
+  from {
+    transform: translate3d(-26%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Deriva lenta hacia afuera, ya instalado el banco en su costado. */
+@keyframes mist-breathe-left {
   0%,
   100% {
-    transform: translate3d(-4vw, 0, 0);
+    transform: translate3d(-2.5%, 0, 0);
   }
   50% {
-    transform: translate3d(4vw, 0, 0);
+    transform: translate3d(2%, -1.5%, 0);
+  }
+}
+@keyframes mist-breathe-right {
+  0%,
+  100% {
+    transform: translate3d(2.5%, 0, 0);
+  }
+  50% {
+    transform: translate3d(-2%, -1.5%, 0);
   }
 }
 
 /*
- * Respiración: la niebla se hincha y se deshincha despacio. El
- * scaleX(var(--flip)) va dentro de los keyframes a propósito; si se deja
- * solo en la regla estática, el transform de la animación lo sustituye y el
- * espejado se pierde en cuanto arranca.
+ * Respiración del dibujo. El scaleX(var(--flip)) va dentro de los keyframes
+ * a propósito: si se deja solo en la regla estática, el transform de la
+ * animación lo sustituye y el espejado se pierde al arrancar.
  */
 @keyframes mist-breathe {
   0%,
@@ -275,11 +302,11 @@
   0%,
   100% {
     transform: translate3d(-3%, 0, 0) scaleY(1);
-    opacity: 0.55;
+    opacity: 0.45;
   }
   50% {
     transform: translate3d(3%, -4%, 0) scaleY(1.14);
-    opacity: 0.82;
+    opacity: 0.68;
   }
 }
 
@@ -300,29 +327,41 @@
 .mist {
   position: absolute;
   bottom: var(--band);
-  left: 50%;
   width: var(--w);
-  margin-left: calc(var(--w) / -2);
   will-change: transform;
 }
 
+/* Costados: el centro queda despejado para que se vea la foto. */
+.mist--left {
+  left: 0;
+  animation: mist-part-left 2.6s cubic-bezier(0.16, 0.72, 0.3, 1) both;
+}
+.mist--right {
+  right: 0;
+  animation: mist-part-right 2.6s cubic-bezier(0.16, 0.72, 0.3, 1) both;
+}
 .mist--travel {
   left: 0;
-  margin-left: 0;
   animation: mist-travel var(--dur) linear infinite;
   animation-delay: var(--delay);
 }
 
-.mist--sway {
-  animation: mist-sway var(--dur) ease-in-out infinite;
+/* Nivel intermedio: deriva continua, ya abierto el telón. */
+.mist__drift {
+  animation: var(--drift, none) var(--dur) ease-in-out infinite;
   animation-delay: var(--delay);
+}
+.mist--left .mist__drift {
+  --drift: mist-breathe-left;
+}
+.mist--right .mist__drift {
+  --drift: mist-breathe-right;
 }
 
 /*
  * Altura derivada del ancho por la proporción del viewBox (2000x240), no
  * fijada en CSS. Forzar la altura obligaba a `preserveAspectRatio="none"`,
- * que estiraba el dibujo y aplastaba los borregos; el grosor del banco se
- * regula con su ancho.
+ * que estiraba el dibujo y aplastaba los borregos.
  */
 .mist__art {
   display: block;
@@ -333,16 +372,17 @@
   transform-origin: bottom center;
 }
 
+/* Translucidez: el grueso del alfa ya va en el gradiente del SVG. */
 .mist--d0 {
-  opacity: 0.26;
+  opacity: 0.5;
 }
 
 .mist--d1 {
-  opacity: 0.46;
+  opacity: 0.66;
 }
 
 .mist--d2 {
-  opacity: 0.68;
+  opacity: 0.82;
 }
 
 /* Halo difuso que asienta la niebla sobre el paisaje de la foto. */
@@ -389,9 +429,9 @@
     display: none;
   }
   /* El ancho fija el grosor: en móvil hay que exagerarlo mucho. */
-  .mist--sway {
-    width: 300vw;
-    margin-left: -150vw;
+  .mist--left,
+  .mist--right {
+    width: calc(var(--w) * 2.4);
   }
   .haze--low {
     height: 22vh;
@@ -407,18 +447,16 @@
  */
 @media (prefers-reduced-motion: reduce) {
   .mist,
+  .mist__drift,
   .mist__art,
   .haze--drift {
     animation: none !important;
   }
   .mist--travel {
-    transform: translate3d(var(--rest, 10vw), 0, 0);
+    transform: translate3d(var(--rest, 8vw), 0, 0);
   }
   .mist--travel:nth-of-type(2) {
-    --rest: 52vw;
-  }
-  .mist--travel:nth-of-type(3) {
-    --rest: 30vw;
+    --rest: 48vw;
   }
   .mist__art {
     transform: scaleX(var(--flip));
@@ -675,4 +713,95 @@ html {
 .underline-grow {
   transform-origin: left center;
   animation: underline-grow 0.32s cubic-bezier(0.22, 0.68, 0.35, 1) both;
+}
+
+/* ===== CLIMA Y TEMPORADA ===== */
+
+/* El sol gira despacio; a esta velocidad se percibe vivo, no inquieto. */
+@keyframes sun-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.sun-rays {
+  animation: sun-spin 46s linear infinite;
+}
+
+/* Gota: cae, se estira al final y desaparece antes de tocar el borde. */
+@keyframes rain-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.rain-drop {
+  animation: rain-fall 1.5s cubic-bezier(0.4, 0, 0.8, 0.5) infinite;
+}
+
+/* La nube deriva y se hincha ligeramente, sin salirse del encuadre. */
+@keyframes cloud-bob {
+  0%,
+  100% {
+    transform: translateX(-2px) scale(1);
+  }
+  50% {
+    transform: translateX(2px) scale(1.05);
+  }
+}
+.cloud-bob {
+  animation: cloud-bob 7s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Entrada del dibujo al cambiar de mes: se remonta con `key`. */
+@keyframes glyph-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.season-glyph {
+  animation: glyph-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+/* ===== PREGUNTAS FRECUENTES ===== */
+
+/*
+ * Despliegue por altura con `grid-template-rows: 0fr -> 1fr`: anima hasta la
+ * altura real del contenido sin fijar un max-height a ojo, que o corta el
+ * texto largo o deja la transición muerta en el corto.
+ */
+.faq-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.22, 0.68, 0.35, 1);
+}
+.faq-body[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.faq-body > div {
+  overflow: hidden;
+}
+
+/* Hoja de calendario del itinerario: se inclina al pasar por encima. */
+.day-leaf {
+  transform-origin: top center;
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.2),
+    box-shadow 0.35s ease;
+}
+.group:hover .day-leaf {
+  transform: rotate(-3deg) translateY(-2px);
+  box-shadow: 0 8px 18px -8px rgb(34 66 72 / 0.45);
 }

@@ -422,5 +422,73 @@
       },
       "legalNote": "Todas as informações apresentadas são verdadeiras e apoiadas por documentos oficiais. A Mapi Travels opera sob rigoroso cumprimento das regulamentações peruanas de turismo."
     }
+  },
+  "season": {
+    "badge": "Quando ir",
+    "title": "Clima e temporada",
+    "lead": "Médias típicas da região, não uma previsão. Servem para escolher o mês, não para fazer a mala.",
+    "best": "Melhor época",
+    "day": "Dia",
+    "night": "Noite",
+    "rain": "Chuva",
+    "crowd": "Movimento",
+    "altitude": "Altitude",
+    "recommended": "Recomendado",
+    "months": [
+      "Jan",
+      "Fev",
+      "Mar",
+      "Abr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Set",
+      "Out",
+      "Nov",
+      "Dez"
+    ],
+    "monthsLong": [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ],
+    "rainLevels": [
+      "Seco",
+      "Alguma chuva",
+      "Chuvas frequentes",
+      "Temporada de chuvas"
+    ],
+    "crowdLevels": [
+      "Tranquilo",
+      "Moderado",
+      "Movimentado",
+      "Alta temporada"
+    ],
+    "note": "Aproximado"
+  },
+  "faq": {
+    "badge": "Antes de reservar",
+    "title": "Perguntas frequentes",
+    "qSeason": "Qual é a melhor época para fazer este tour?",
+    "qAltitude": "Preciso me aclimatar à altitude?",
+    "aAltitude": "O percurso fica em torno dos {alt} m acima do nível do mar. Se você vem do litoral, o habitual é dedicar um ou dois dias à aclimatação antes de começar: caminhar sem pressa, beber muita água e deixar o álcool para depois. Conte-nos seu itinerário e ajustamos o ritmo do primeiro dia.",
+    "qIncluded": "O que o preço inclui?",
+    "aIncludedIntro": "O preço de {price} por pessoa cobre:",
+    "aIncludedNone": "Escreva para nós e detalhamos ponto a ponto o que o preço de {price} por pessoa cobre para as datas que você tem em mente.",
+    "qGroup": "Com quantas pessoas vou compartilhar o tour?",
+    "aGroup": "Trabalhamos em grupos pequenos, de no máximo 12 pessoas, para que o guia possa cuidar de todos. Se preferir um serviço privado, avise ao reservar e cotamos à parte.",
+    "qBooking": "Como confirmo a reserva e quando pago?",
+    "qDuration": "Quanto dura e como se divide?",
+    "aDuration": "A experiência dura {duration}. Na aba «Plano do passeio» você tem o detalhe do que se faz em cada trecho."
   }
 }

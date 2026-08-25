@@ -27,6 +27,8 @@ import { whatsappLink, siteConfig } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
 import { DESTINATIONS } from "@/data/destinations";
+import { SeasonPanel } from "@/components/tours/SeasonPanel";
+import { TourFaq } from "@/components/tours/TourFaq";
 import { REVIEWS } from "@/data/reviews";
 import { TourCard } from "@/components/tours/TourCard";
 import { TourTabs } from "@/components/tours/TourTabs";
@@ -93,6 +95,7 @@ export default async function TourDetailPage({
   const allReviews = tourReviews.length > 0 ? tourReviews : REVIEWS;
 
   const t = await getTranslations("tourDetail");
+  const tReserva = await getTranslations("reserva");
   const tn = await getTranslations("nav");
   const l = locale as "es" | "en" | "pt";
   const name = pickLocalized(tour.name, l);
@@ -335,6 +338,13 @@ export default async function TourDetailPage({
                           </ul>
                         </div>
                       )}
+
+                      <div className="mt-12">
+                        <SeasonPanel
+                          categorySlug={tour.categorySlug}
+                          locale={locale}
+                        />
+                      </div>
                     </div>
                   ),
                 },
@@ -351,7 +361,7 @@ export default async function TourDetailPage({
                           una parada por día. La metáfora es un mapa de ruta,
                           no una pila de tarjetas. */}
                       <div className="relative">
-                        <div className="route-line absolute bottom-2 left-[7px] top-2 w-px" />
+                        <div className="route-line absolute bottom-4 left-[27px] top-6 w-px" />
                         <ol>
                           {tour.itinerary && tour.itinerary.length > 0 ? (
                             tour.itinerary.map((item, index) => (
@@ -360,15 +370,23 @@ export default async function TourDetailPage({
                                 style={{ ["--i" as string]: index }}
                                 className="rise-in group relative flex gap-6 pb-9 last:pb-0"
                               >
+                                {/* Hoja de calendario: cabecera con el rótulo
+                                    del día y cifra grande debajo. Da la
+                                    referencia temporal de un vistazo, cosa
+                                    que un punto en la línea no hacía. */}
                                 <span
                                   aria-hidden="true"
-                                  className="relative z-10 mt-1.5 size-[15px] shrink-0 rounded-full border-2 border-white bg-teal-600 ring-1 ring-teal-600 transition-colors group-hover:bg-amber-500 group-hover:ring-amber-500"
-                                />
-                                <div className="flex-1">
-                                  <p className="eyebrow text-teal-700">
-                                    {t("day")} {index + 1}
-                                  </p>
-                                  <h3 className="mt-1.5 font-heading text-lg font-bold text-slate-900">
+                                  className="day-leaf relative z-10 w-14 shrink-0 overflow-hidden rounded-md bg-white text-center ring-1 ring-slate-200"
+                                >
+                                  <span className="block bg-slate-900 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
+                                    {t("day")}
+                                  </span>
+                                  <span className="block py-1.5 font-heading text-xl font-bold tabular-nums text-slate-900">
+                                    {index + 1}
+                                  </span>
+                                </span>
+                                <div className="flex-1 pt-1">
+                                  <h3 className="font-heading text-lg font-bold text-slate-900">
                                     {pickLocalized(item.title, l)}
                                   </h3>
                                   <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600">
@@ -384,6 +402,12 @@ export default async function TourDetailPage({
                           )}
                         </ol>
                       </div>
+
+                      <TourFaq
+                        tour={tour}
+                        locale={locale}
+                        bookingPolicy={tReserva("noPayment")}
+                      />
                     </div>
                   ),
                 },

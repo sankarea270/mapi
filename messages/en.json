@@ -422,5 +422,73 @@
       },
       "legalNote": "All information presented is truthful and backed by official documents. Mapi Travels operates under strict compliance with Peruvian tourism regulations."
     }
+  },
+  "season": {
+    "badge": "When to go",
+    "title": "Weather and season",
+    "lead": "Typical averages for the area, not a forecast. Useful for picking a month, not for packing.",
+    "best": "Best time",
+    "day": "Day",
+    "night": "Night",
+    "rain": "Rain",
+    "crowd": "Crowds",
+    "altitude": "Altitude",
+    "recommended": "Recommended",
+    "months": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "monthsLong": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "rainLevels": [
+      "Dry",
+      "Some rain",
+      "Frequent rain",
+      "Rainy season"
+    ],
+    "crowdLevels": [
+      "Quiet",
+      "Moderate",
+      "Busy",
+      "Peak season"
+    ],
+    "note": "Approximate"
+  },
+  "faq": {
+    "badge": "Before you book",
+    "title": "Frequently asked questions",
+    "qSeason": "When is the best time for this tour?",
+    "qAltitude": "Do I need to acclimatise to the altitude?",
+    "aAltitude": "The route stays around {alt} m above sea level. If you are coming from the coast, it is usual to spend a day or two acclimatising first: walk slowly, drink plenty of water and leave the alcohol for later. Tell us your itinerary and we will adjust the pace of the first day.",
+    "qIncluded": "What does the price include?",
+    "aIncludedIntro": "The price of {price} per person covers:",
+    "aIncludedNone": "Write to us and we will break down exactly what the {price} per person covers for the dates you have in mind.",
+    "qGroup": "How many people will I share the tour with?",
+    "aGroup": "We work in small groups of up to 12 people so the guide can look after everyone. If you would rather have a private service, tell us when booking and we will quote it separately.",
+    "qBooking": "How do I confirm the booking and when do I pay?",
+    "qDuration": "How long is it and how is it structured?",
+    "aDuration": "The experience lasts {duration}. The «Tour plan» tab breaks down what happens in each stage."
   }
 }

@@ -106,10 +106,11 @@ interface MistSpec {
   /** Ancho en vw. */
   width: number;
   /**
-   * "sway" oscila en el sitio: para la base, que debe cubrir siempre de lado
-   * a lado. "travel" cruza el encuadre: para los jirones altos.
+   * "left"/"right" anclan el banco a un costado: al cargar se apartan hacia
+   * afuera, abriendo el centro para que se vea la foto. "travel" cruza el
+   * encuadre entero, para los jirones altos.
    */
-  mode: "sway" | "travel";
+  mode: "left" | "right" | "travel";
   duration: number;
   offset: number;
   flip?: boolean;
@@ -123,17 +124,16 @@ const MIST: readonly MistSpec[] = [
   // Jirones altos: cruzan el encuadre, finos y casi disueltos.
   { shape: 4, depth: 0, seed: 27, band: 26, width: 62, mode: "travel", duration: 172, offset: 40 },
   { shape: 2, depth: 0, seed: 11, band: 22, width: 70, mode: "travel", duration: 148, offset: 96, flip: true },
-  { shape: 4, depth: 0, seed: 63, band: 18, width: 66, mode: "travel", duration: 190, offset: 150 },
 
-  // Bancos medios.
-  { shape: 2, depth: 1, seed: 41, band: 12, width: 98, mode: "sway", duration: 74, offset: 0, flip: true },
-  { shape: 1, depth: 1, seed: 19, band: 8, width: 108, mode: "sway", duration: 92, offset: 26 },
-  { shape: 0, depth: 1, seed: 52, band: 5, width: 116, mode: "sway", duration: 108, offset: 52, flip: true },
+  // Bancos medios, ya repartidos a los costados.
+  { shape: 2, depth: 1, seed: 41, band: 13, width: 66, mode: "left", duration: 74, offset: 0 },
+  { shape: 1, depth: 1, seed: 19, band: 10, width: 72, mode: "right", duration: 92, offset: 26, flip: true },
 
-  // Base densa: siempre presente, se sale por abajo y queda recortada.
-  { shape: 3, depth: 2, seed: 8, band: 0, width: 132, mode: "sway", duration: 86, offset: 12 },
-  { shape: 0, depth: 2, seed: 77, band: -4, width: 146, mode: "sway", duration: 116, offset: 44, flip: true },
-  { shape: 3, depth: 2, seed: 95, band: -8, width: 160, mode: "sway", duration: 98, offset: 70 },
+  // Base: dos cortinas que se apartan y dejan el centro despejado.
+  { shape: 3, depth: 2, seed: 8, band: 1, width: 78, mode: "left", duration: 86, offset: 12 },
+  { shape: 0, depth: 2, seed: 77, band: -3, width: 84, mode: "right", duration: 116, offset: 44, flip: true },
+  { shape: 0, depth: 2, seed: 95, band: -6, width: 74, mode: "left", duration: 98, offset: 70, flip: true },
+  { shape: 3, depth: 2, seed: 33, band: -8, width: 80, mode: "right", duration: 104, offset: 30 },
 ];
 
 /**
@@ -187,6 +187,7 @@ function MistBank({ spec, index }: { spec: MistSpec; index: number }) {
         } as React.CSSProperties
       }
     >
+      <div className="mist__drift">
       <svg
         className="mist__art"
         viewBox="0 0 2000 240"
@@ -229,22 +230,25 @@ function MistBank({ spec, index }: { spec: MistSpec; index: number }) {
             volumen; un único gradiente sobre todo el grupo lo deja plano.
           */}
           <radialGradient id={`${uid}-body`} cx="0.38" cy="0.28" r="0.75">
-            <stop offset="0%" stopColor={stops[0]} />
-            <stop offset="45%" stopColor={stops[1]} />
-            <stop offset="100%" stopColor={stops[2]} />
+            {/* El alfa va aquí y no solo en la opacidad de la capa: así la
+                foto se ve A TRAVÉS del banco, en vez de quedar tapada por un
+                velo blanco uniforme. */}
+            <stop offset="0%" stopColor={stops[0]} stopOpacity="0.78" />
+            <stop offset="45%" stopColor={stops[1]} stopOpacity="0.52" />
+            <stop offset="100%" stopColor={stops[2]} stopOpacity="0.28" />
           </radialGradient>
 
           {/* Hondonadas: copia desplazada a contraluz, bajo el cuerpo. */}
           <radialGradient id={`${uid}-shadow`} cx="0.5" cy="0.45" r="0.62">
-            <stop offset="0%" stopColor={stops[3]} stopOpacity="0.85" />
-            <stop offset="70%" stopColor={stops[3]} stopOpacity="0.4" />
+            <stop offset="0%" stopColor={stops[3]} stopOpacity="0.5" />
+            <stop offset="70%" stopColor={stops[3]} stopOpacity="0.22" />
             <stop offset="100%" stopColor={stops[3]} stopOpacity="0" />
           </radialGradient>
 
           {/* Crestas al sol, desplazadas hacia la luz. */}
           <radialGradient id={`${uid}-lit`} cx="0.36" cy="0.26" r="0.55">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.62" />
-            <stop offset="60%" stopColor="#ffffff" stopOpacity="0.18" />
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.4" />
+            <stop offset="60%" stopColor="#ffffff" stopOpacity="0.12" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
           </radialGradient>
 
@@ -284,6 +288,7 @@ function MistBank({ spec, index }: { spec: MistSpec; index: number }) {
           </g>
         </g>
       </svg>
+      </div>
     </div>
   );
 }
