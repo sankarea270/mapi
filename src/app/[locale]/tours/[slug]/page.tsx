@@ -14,10 +14,6 @@ import {
   Camera,
   Map,
   MessageSquare,
-  Shield,
-  Zap,
-  Heart,
-  X,
 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -141,11 +137,13 @@ export default async function TourDetailPage({
     },
   };
 
+  /* Sin iconos: cuatro promesas cortas, numeradas. Shield/Users/Zap/Heart
+     no añadían nada que el propio texto no dijera ya. */
   const highlights = [
-    { icon: Shield, label: t("highlightGuia") },
-    { icon: Users, label: t("highlightGrupo") },
-    { icon: Zap, label: t("highlightConfirmacion") },
-    { icon: Heart, label: t("highlightExperiencia") },
+    t("highlightGuia"),
+    t("highlightGrupo"),
+    t("highlightConfirmacion"),
+    t("highlightExperiencia"),
   ];
 
   return (
@@ -254,26 +252,36 @@ export default async function TourDetailPage({
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="min-w-0">
+            {/* Entradilla: texto grande con filete turquesa, como el sumario
+                de un reportaje. La píldora con degradado que había antes
+                encajonaba el texto y competía con la ficha de datos. */}
             {tour.excerpt && (
-              <div className="mb-10 rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50 p-6 sm:p-8">
-                <p className="text-base leading-relaxed text-slate-700 sm:text-lg">
-                  {pickLocalized(tour.excerpt, l)}
-                </p>
-              </div>
+              <p className="mb-10 border-l-2 border-teal-500 pl-6 text-lg leading-relaxed text-slate-700 sm:text-xl sm:leading-relaxed">
+                {pickLocalized(tour.excerpt, l)}
+              </p>
             )}
 
-            <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {highlights.map((h, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 text-center ring-1 ring-slate-100 transition-all hover:shadow-md hover:ring-amber-100"
-                >
-                  <div className="grid size-10 place-items-center rounded-xl bg-amber-100 text-amber-700">
-                    <h.icon className="size-5" />
+            {/* Banda de compromisos. El turquesa de marca pasa aquí a primer
+                plano y ancla el bloque; las promesas van numeradas y
+                separadas por filete, sin iconos. */}
+            <div className="promise-band mb-12 overflow-hidden rounded-lg bg-teal-700">
+              <div className="grid divide-y divide-white/15 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+                {highlights.map((label, i) => (
+                  <div
+                    key={label}
+                    style={{ ["--i" as string]: i }}
+                    className="promise rise-in group relative px-6 py-5 sm:[&:nth-child(-n+2)]:border-b sm:[&:nth-child(-n+2)]:border-white/15 sm:[&:nth-child(2n)]:border-l sm:[&:nth-child(2n)]:border-white/15 lg:border-b-0! lg:[&:nth-child(2n)]:border-l-0"
+                  >
+                    <span className="eyebrow tabular-nums text-teal-300">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p className="mt-2 font-heading text-[15px] font-bold leading-snug text-white">
+                      {label}
+                    </p>
+                    <span className="absolute inset-x-6 bottom-3 h-px origin-left scale-x-0 bg-amber-400 transition-transform duration-500 group-hover:scale-x-100" />
                   </div>
-                  <p className="text-xs font-semibold text-slate-700">{h.label}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <TourTabs

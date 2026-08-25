@@ -27,7 +27,7 @@ export function TourCard({ tour, categoryName, locale, fromLabel }: TourCardProp
           sizes="(min-width: 1280px) 25vw, (min-width: 640px) 33vw, 100vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <span className="absolute left-3 top-3 rounded-full bg-amber-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-900">
+        <span className="absolute left-3 top-3 rounded-full bg-teal-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
           {categoryName}
         </span>
         <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-900 shadow-sm">
@@ -51,7 +51,7 @@ export function TourCard({ tour, categoryName, locale, fromLabel }: TourCardProp
               {formatPrice(tour.price, locale, "USD")}
             </span>
           </p>
-          <span className="grid size-9 place-items-center rounded-full bg-slate-100 text-slate-600 transition-colors group-hover:bg-primary group-hover:text-white">
+          <span className="grid size-9 place-items-center rounded-full bg-slate-100 text-slate-600 transition-colors group-hover:bg-teal-600 group-hover:text-white">
             <ArrowRight className="size-4" />
           </span>
         </div>
