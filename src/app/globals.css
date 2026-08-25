@@ -869,91 +869,57 @@ html {
 }
 
 /*
- * La traza de vuelo se dibuja con dashoffset. El patrón de puntos ya usa
- * stroke-dasharray, así que la longitud animada va en una segunda capa: se
- * anima el offset de un trazo continuo largo que descubre los puntos.
+ * Lámina de marca.
+ *
+ * La entrada es CSS puro y ligada al scroll con `animation-timeline: view()`.
+ * La versión anterior partía de `opacity: 0` y solo se revelaba cuando un
+ * IntersectionObserver añadía una clase: si ese observador no llegaba a
+ * dispararse —pestaña en segundo plano, JS que falla, navegador antiguo— la
+ * imagen quedaba invisible para siempre. El contenido no puede depender de
+ * JavaScript para verse.
+ *
+ * Ahora la lámina es visible por defecto y la animación solo se aplica donde
+ * el navegador la soporta; donde no, simplemente se ve.
  */
-@keyframes trace-draw {
-  from {
-    stroke-dashoffset: 420;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-.flight-trace {
-  stroke-dasharray: 3 10;
-  animation: trace-draw 2.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
-}
-
-@keyframes dot-pop {
+@keyframes plate-in {
   from {
     opacity: 0;
-    transform: scale(0);
+    transform: translateY(30px) scale(0.985);
   }
   to {
     opacity: 1;
-    transform: scale(1);
-  }
-}
-.flight-origin {
-  transform-origin: 18px 168px;
-  animation: dot-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) 0.25s both;
-}
-
-/*
- * El avión sigue la misma curva con `offset-path`. Donde no haya soporte,
- * simplemente no se desplaza: la traza y las pisadas sostienen la escena.
- */
-@keyframes plane-fly {
-  from {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  to {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-}
-.flight-plane {
-  offset-path: path("M 18 168 C 90 96, 200 74, 286 44");
-  offset-rotate: auto;
-  animation: plane-fly 2.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
-}
-
-/* Pisada: se posa con un ligero rebote y se queda. */
-@keyframes step-down {
-  from {
-    opacity: 0;
-    transform: translateY(-9px) scale(0.8);
-  }
-  60% {
-    opacity: 0.62;
-  }
-  to {
-    opacity: 0.55;
     transform: none;
   }
 }
-.footprint {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: step-down 0.65s cubic-bezier(0.3, 0.8, 0.4, 1.2) both;
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .journey-plate {
+      animation: plate-in linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 60%;
+    }
+  }
+}
+
+/* Acercamiento lento y continuo, para que la lámina no quede congelada. */
+@keyframes plate-drift {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.028);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .journey-plate__img {
+    animation: plate-drift 26s ease-in-out infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .journey-rule,
-  .flight-trace,
-  .flight-origin,
-  .flight-plane,
-  .footprint {
+  .journey-rule {
     animation: none !important;
-    opacity: 1;
-  }
-  .flight-trace {
-    stroke-dashoffset: 0;
   }
 }
