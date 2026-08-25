@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Star, Send, User, Mail, Phone } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { siteConfig } from "@/config/site";
+import { siteConfig, whatsappLink } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
@@ -13,6 +11,7 @@ import {
   TikTokIcon,
   YouTubeIcon,
 } from "@/components/layout/SocialIcons";
+import { cn } from "@/lib/utils";
 import type { Tour } from "@/types/tour";
 
 const socialIcons = {
@@ -22,6 +21,8 @@ const socialIcons = {
   youtube: YouTubeIcon,
 } as const;
 
+const TRAVELERS = [1, 2, 3, 4, 5, 6] as const;
+
 interface TourSidebarProps {
   tour: Tour;
   name: string;
@@ -29,178 +30,214 @@ interface TourSidebarProps {
   locale: string;
 }
 
-export function TourSidebar({
-  tour,
-  name,
-  categoryName,
-  locale,
-}: TourSidebarProps) {
+/**
+ * Panel de reserva del tour, resuelto como un billete: cabecera oscura con
+ * el precio, troquel perforado y cuerpo con el formulario. Se aleja del
+ * patrón de tarjeta redondeada con orbe borroso detrás, que es lo que hace
+ * que una página parezca generada.
+ *
+ * Antes los campos no tenían estado y el botón era un `type="button"` sin
+ * manejador: el formulario no enviaba nada. Ahora valida y compone el
+ * mensaje de WhatsApp, igual que el formulario de la página de reservas.
+ */
+export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
   const t = useTranslations("tourDetail");
+  const tr = useTranslations("reserva");
   const l = locale as "es" | "en" | "pt";
   const duration = pickLocalized(tour.duration, l);
-  const [date, setDate] = useState("");
-  const [tickets, setTickets] = useState(2);
 
-  const whatsappLink = `https://wa.me/${siteConfig.phone.tel.replace(/\D/g, "")}?text=${encodeURIComponent(`Hola, me interesa el tour "${name}". ¿Tienen disponibilidad?`)}`;
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    date: "",
+    travelers: 2,
+    message: "",
+  });
+  const [touched, setTouched] = useState(false);
+
+  const errors = {
+    fullName: form.fullName.trim().length < 2 ? tr("errors.fullName") : "",
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? "" : tr("errors.email"),
+    date: form.date ? "" : tr("errors.date"),
+  };
+  const isValid = !errors.fullName && !errors.email && !errors.date;
+
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
+    setForm((f) => ({ ...f, [key]: value }));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched(true);
+    if (!isValid) return;
+    const lines = [
+      `${tr("title")}: ${name}`,
+      `${tr("date")}: ${form.date}`,
+      `${tr("travelers")}: ${form.travelers}`,
+      `${tr("fullName")}: ${form.fullName}`,
+      `${tr("email")}: ${form.email}`,
+      form.message ? `${tr("message")}: ${form.message}` : "",
+    ].filter(Boolean);
+    window.open(whatsappLink(lines.join("\n")), "_blank", "noopener,noreferrer");
+  };
+
+  const field =
+    "w-full border-0 border-b border-slate-200 bg-transparent px-0 py-2.5 text-[15px] text-slate-900 placeholder:text-slate-300 outline-none transition-colors focus:border-teal-500";
 
   return (
-    <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-2xl shadow-slate-900/20">
-        <div className="absolute -right-8 -top-8 size-32 rounded-full bg-amber-400/10 blur-2xl" />
-        <div className="absolute -bottom-4 -left-4 size-24 rounded-full bg-amber-400/5 blur-xl" />
-
-        <div className="relative">
-          <span className="inline-block rounded-full bg-amber-400/20 px-3 py-1 text-xs font-medium uppercase tracking-wider text-amber-300">
-            {t("specialOffer")}
-          </span>
-
-          <div className="mt-5 flex items-baseline gap-3">
-            <span className="font-heading text-4xl font-extrabold tracking-tight">
-              {formatPrice(tour.price, l, "USD")}
-            </span>
-            <span className="text-sm text-slate-400">/ persona</span>
-          </div>
-
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <Star className="size-4 fill-current text-amber-400" />
-              <span className="font-medium">{tour.rating.toFixed(1)}</span>
-              <span className="text-sm text-slate-400">{t("excellent")}</span>
-            </div>
-            <span className="h-4 w-px bg-slate-600" />
-            <div className="flex items-center gap-1.5 text-sm text-slate-300">
-              <Clock className="size-3.5" />
-              {duration}
-            </div>
-          </div>
-
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#25D366] to-[#128C7E] text-sm font-bold text-white shadow-lg shadow-[#25D366]/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-[#25D366]/30"
-          >
-            <Send className="size-4" />
-            {t("availability")}
-          </a>
-        </div>
-      </div>
-
+    <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
       <div
         id="reservar"
-        className="scroll-mt-28 overflow-hidden rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-100 sm:p-7"
+        className="ticket-notch scroll-mt-28 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200"
+        style={{ ["--notch" as string]: "#f4f8f9", ["--notch-y" as string]: "168px" }}
       >
-        <h2 className="font-heading text-xl font-bold text-slate-900">
-          {t("reserveSidebar")}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-500">
-          {t("bookNowHint")}
-        </p>
-        <div className="mt-6 space-y-5">
-          <div>
-            <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-slate-400">
-              Nombre
-            </label>
-            <div className="relative">
-              <User className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-300" />
-              <input
-                id="sidebar-name"
-                type="text"
-                placeholder="Tu nombre completo"
-                className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-              />
+        {/* Cabecera: el precio manda, en cifra grande y sin adornos. */}
+        <div className="bg-slate-900 px-6 pb-6 pt-5 text-white">
+          <p className="eyebrow text-teal-300">{t("specialOffer")}</p>
+          <div className="mt-3 flex items-end justify-between gap-4">
+            <div className="flex items-baseline gap-2">
+              <span className="font-heading text-[2.6rem] font-bold leading-none tracking-tight">
+                {formatPrice(tour.price, l, "USD")}
+              </span>
+              <span className="text-sm text-slate-300">/ {tr("travelers").toLowerCase()}</span>
             </div>
           </div>
-          <div>
-            <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-slate-400">
-              Correo electrónico
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-300" />
-              <input
-                id="sidebar-email"
-                type="email"
-                placeholder="tu@correo.com"
-                className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-              />
-            </div>
+          <div className="mt-5 flex items-center gap-5 border-t border-white/15 pt-4 text-sm">
+            <span className="text-slate-300">
+              <span className="text-white">{tour.rating.toFixed(1)}</span> / 5
+            </span>
+            <span className="h-3 w-px bg-white/20" />
+            <span className="text-slate-300">{duration}</span>
           </div>
-          <DatePicker
-            value={date}
-            onChange={setDate}
-            label="Fecha"
-          />
-          <div>
-            <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-slate-400">
-              Entradas
-            </label>
-            <div className="flex gap-2">
-              {["1", "2", "3", "4", "5", "6+"].map((num) => (
-                <button
-                  key={num}
-                  type="button"
-                  onClick={() => setTickets(parseInt(num.replace("+", "")))}
-                  className={`flex-1 rounded-xl py-3 text-sm font-medium transition-all ${
-                    tickets === parseInt(num.replace("+", "")) || (num === "6+" && tickets >= 6)
-                      ? "bg-amber-400 text-slate-900 shadow-md shadow-amber-400/20"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-slate-400">
-              Mensaje
-            </label>
-            <textarea
-              id="sidebar-message"
-              rows={3}
-              placeholder="¿Algún detalle especial?"
-              className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-            />
-          </div>
-          <button
-            type="button"
-            className="flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-400 text-sm font-bold text-slate-900 shadow-lg shadow-amber-400/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-400/30"
-          >
-            <Send className="size-4" />
-            {t("availability")}
-          </button>
-          <p className="text-center text-xs text-slate-400">
-            Sin compromiso · Resposta en 24h
-          </p>
         </div>
+
+        <div className="perforation" />
+
+        <form onSubmit={submit} noValidate className="px-6 pb-6 pt-6">
+          <h2 className="font-heading text-lg font-bold text-slate-900">
+            {t("reserveSidebar")}
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+            {t("bookNowHint")}
+          </p>
+
+          <div className="mt-7 space-y-6">
+            <div>
+              <label htmlFor="sb-name" className="eyebrow text-slate-400">
+                {tr("fullName")}
+              </label>
+              <input
+                id="sb-name"
+                type="text"
+                value={form.fullName}
+                onChange={(e) => set("fullName", e.target.value)}
+                placeholder={tr("fullNamePlaceholder")}
+                className={cn(field, touched && errors.fullName && "border-red-400")}
+              />
+              {touched && errors.fullName && (
+                <p className="mt-1.5 text-xs text-red-600">{errors.fullName}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="sb-email" className="eyebrow text-slate-400">
+                {tr("email")}
+              </label>
+              <input
+                id="sb-email"
+                type="email"
+                value={form.email}
+                onChange={(e) => set("email", e.target.value)}
+                placeholder={tr("emailPlaceholder")}
+                className={cn(field, touched && errors.email && "border-red-400")}
+              />
+              {touched && errors.email && (
+                <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>
+              )}
+            </div>
+
+            <DatePicker
+              value={form.date}
+              onChange={(d) => set("date", d)}
+              label={tr("date")}
+            />
+            {touched && errors.date && (
+              <p className="-mt-4 text-xs text-red-600">{errors.date}</p>
+            )}
+
+            <div>
+              <span className="eyebrow text-slate-400">{tr("travelers")}</span>
+              {/* Segmentado con filete, en vez de seis botones sueltos. */}
+              <div className="mt-2.5 flex overflow-hidden rounded-md ring-1 ring-slate-200">
+                {TRAVELERS.map((n) => {
+                  const on = form.travelers === n;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => set("travelers", n)}
+                      aria-pressed={on}
+                      className={cn(
+                        "flex-1 border-r border-slate-200 py-2.5 text-sm font-semibold transition-colors last:border-r-0",
+                        on
+                          ? "bg-slate-900 text-white"
+                          : "bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                    >
+                      {n === 6 ? "6+" : n}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="sb-msg" className="eyebrow text-slate-400">
+                {tr("message")}
+              </label>
+              <textarea
+                id="sb-msg"
+                rows={2}
+                value={form.message}
+                onChange={(e) => set("message", e.target.value)}
+                placeholder={tr("messagePlaceholder")}
+                className={cn(field, "resize-none")}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-md bg-amber-500 py-3.5 text-sm font-bold tracking-wide text-slate-900 transition-colors hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+            >
+              {tr("whatsappConfirm")}
+            </button>
+            <p className="text-center text-xs leading-relaxed text-slate-400">
+              {tr("noPayment")}
+            </p>
+          </div>
+        </form>
       </div>
 
-      <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 p-6 ring-1 ring-amber-100">
-        <h2 className="font-heading text-lg font-bold text-slate-900">
+      <div className="rounded-lg border border-slate-200 px-6 py-5">
+        <h2 className="font-heading text-base font-bold text-slate-900">
           {t("followUs")}
         </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Síguenos para ver más destinos
-        </p>
-        <div className="mt-4 flex gap-2.5">
-          {(Object.keys(socialIcons) as Array<keyof typeof socialIcons>).map(
-            (key) => {
-              const Icon = socialIcons[key];
-              const social = siteConfig.socials[key];
-              return (
-                <a
-                  key={key}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.label}
-                  className="grid size-11 place-items-center rounded-xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-100 transition-all hover:-translate-y-0.5 hover:bg-amber-400 hover:text-slate-900 hover:shadow-md hover:shadow-amber-400/20"
-                >
-                  <Icon className="size-4.5" />
-                </a>
-              );
-            }
-          )}
+        <div className="mt-4 flex gap-2">
+          {(Object.keys(socialIcons) as Array<keyof typeof socialIcons>).map((key) => {
+            const Icon = socialIcons[key];
+            const social = siteConfig.socials[key];
+            return (
+              <a
+                key={key}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                className="grid size-10 place-items-center rounded-md text-slate-500 ring-1 ring-slate-200 transition-colors hover:bg-slate-900 hover:text-white hover:ring-slate-900"
+              >
+                <Icon className="size-4" />
+              </a>
+            );
+          })}
         </div>
       </div>
     </aside>

@@ -149,7 +149,7 @@ const DEPTH = {
     freq: "0.013 0.019",
     octaves: 4,
     fade: [0.32, 0.74],
-    stops: ["#f4f8fc", "#dfe8f2", "#c3d0de", "#8fa0b4"],
+    stops: ["#dbe7ea", "#c4d6db", "#a8c2c9", "#6e8a92"],
   },
   1: {
     displace: 80,
@@ -157,7 +157,7 @@ const DEPTH = {
     freq: "0.009 0.015",
     octaves: 5,
     fade: [0.2, 0.62],
-    stops: ["#ffffff", "#eaf1f8", "#c9d6e4", "#7f91a8"],
+    stops: ["#eaf2f4", "#d2e2e6", "#b2c9d0", "#5f7d86"],
   },
   2: {
     displace: 96,
@@ -165,7 +165,7 @@ const DEPTH = {
     freq: "0.007 0.012",
     octaves: 5,
     fade: [0.1, 0.48],
-    stops: ["#ffffff", "#f0f5fa", "#ccd8e6", "#75879e"],
+    stops: ["#f2f7f8", "#dde9ec", "#bcd0d6", "#547079"],
   },
 } as const;
 
@@ -243,8 +243,8 @@ function MistBank({ spec, index }: { spec: MistSpec; index: number }) {
 
           {/* Crestas al sol, desplazadas hacia la luz. */}
           <radialGradient id={`${uid}-lit`} cx="0.36" cy="0.26" r="0.55">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.92" />
-            <stop offset="60%" stopColor="#ffffff" stopOpacity="0.3" />
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.62" />
+            <stop offset="60%" stopColor="#ffffff" stopOpacity="0.18" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
           </radialGradient>
 

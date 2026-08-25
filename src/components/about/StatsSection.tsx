@@ -75,8 +75,6 @@ export function StatsSection() {
     >
       {/* Elementos decorativos de fondo */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-10 left-10 size-32 rounded-full bg-amber-200/30 blur-xl" />
-        <div className="absolute bottom-10 right-10 size-40 rounded-full bg-blue-200/30 blur-xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">

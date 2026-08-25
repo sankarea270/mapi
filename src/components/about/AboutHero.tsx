@@ -27,8 +27,6 @@ export function AboutHero() {
 
       {/* Elementos decorativos */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-20 -right-20 size-64 rounded-full bg-amber-500/20 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-20 -left-20 size-64 rounded-full bg-blue-500/20 blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
       </div>
 
       {/* Contenido principal */}

@@ -25,7 +25,7 @@ export function TourTabs({
       <div
         role="tablist"
         aria-label={ariaLabel}
-        className="sticky top-16 z-30 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white/95 px-4 backdrop-blur-md sm:px-0"
+        className="sticky top-16 z-30 flex gap-7 overflow-x-auto border-b border-slate-200 bg-white/95 px-4 backdrop-blur-md sm:px-0"
       >
         {tabs.map((tab) => {
           const selected = tab.id === active?.id;
@@ -38,23 +38,22 @@ export function TourTabs({
               aria-controls={`panel-${tab.id}`}
               onClick={() => setActiveId(tab.id)}
               className={cn(
-                "relative flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-inset",
-                selected
-                  ? "text-slate-900"
-                  : "text-slate-400 hover:text-slate-600"
+                "eyebrow relative shrink-0 py-4 transition-colors outline-none focus-visible:text-teal-700",
+                selected ? "text-slate-900" : "text-slate-400 hover:text-slate-700"
               )}
             >
-              {tab.icon}
               {tab.label}
               {selected && (
-                <span className="absolute inset-x-4 -bottom-px h-[3px] rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500" />
+                /* Filete que crece desde el origen: el movimiento indica de
+                   dónde viene la selección, en vez de aparecer de golpe. */
+                <span className="underline-grow absolute inset-x-0 -bottom-px h-0.5 bg-amber-500" />
               )}
             </button>
           );
         })}
       </div>
 
-      <div className="rounded-b-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-8">
+      <div className="bg-white py-8 sm:py-10">
         {tabs.map((tab) => (
           <div
             key={tab.id}

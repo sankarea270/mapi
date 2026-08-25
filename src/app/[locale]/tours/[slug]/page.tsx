@@ -282,83 +282,57 @@ export default async function TourDetailPage({
                   icon: <Compass className="size-4" />,
                   content: (
                     <div>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-5">
-                          <div className="grid size-12 place-items-center rounded-xl bg-amber-100 text-amber-700">
-                            <Clock className="size-5" />
+                      {/* Ficha de datos: rotulo en versalita sobre el dato,
+                          separados por filete. Sustituye a las cuatro cajas
+                          con icono en cuadrado, que no aportaban informacion
+                          que el propio rotulo no diera ya. */}
+                      <dl className="grid grid-cols-2 gap-x-10 border-y border-slate-200 sm:grid-cols-4">
+                        {[
+                          { k: t("duration"), v: duration },
+                          { k: t("highlightGrupo"), v: t("smallGroups") },
+                          {
+                            k: t("tabLocation"),
+                            v: destination
+                              ? pickLocalized(destination.name, l)
+                              : categoryName,
+                          },
+                          { k: t("rating"), v: `${tour.rating.toFixed(1)} / 5` },
+                        ].map((item, index) => (
+                          <div
+                            key={item.k}
+                            style={{ ["--i" as string]: index }}
+                            className="rise-in py-5"
+                          >
+                            <dt className="eyebrow text-slate-400">{item.k}</dt>
+                            <dd className="mt-1.5 font-heading text-lg font-bold text-slate-900">
+                              {item.v}
+                            </dd>
                           </div>
-                          <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                              {t("duration")}
-                            </p>
-                            <p className="font-semibold text-slate-900">
-                              {duration}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-5">
-                          <div className="grid size-12 place-items-center rounded-xl bg-amber-100 text-amber-700">
-                            <Users className="size-5" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                              {t("highlightGrupo")}
-                            </p>
-                            <p className="font-semibold text-slate-900">
-                              {t("smallGroups")}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-5">
-                          <div className="grid size-12 place-items-center rounded-xl bg-amber-100 text-amber-700">
-                            <MapPin className="size-5" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                              {t("tabLocation")}
-                            </p>
-                            <p className="font-semibold text-slate-900">
-                              {destination
-                                ? pickLocalized(destination.name, l)
-                                : categoryName}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-5">
-                          <div className="grid size-12 place-items-center rounded-xl bg-amber-100 text-amber-700">
-                            <Star className="size-5" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                              {t("rating")}
-                            </p>
-                            <p className="font-semibold text-slate-900">
-                              {tour.rating.toFixed(1)} / 5
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                        ))}
+                      </dl>
 
                       {tour.included && tour.included.length > 0 && (
                         <div className="mt-10">
                           <h2 className="font-heading text-2xl font-bold text-slate-900">
                             {t("included")}
                           </h2>
-                          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                          {/* Lista a dos columnas separada por filetes, en
+                              lugar de tarjetas con degradado: se lee como una
+                              ficha impresa y deja respirar el contenido. */}
+                          <ul className="mt-6 grid gap-x-10 sm:grid-cols-2">
                             {tour.included.map((item, index) => (
-                              <div
+                              <li
                                 key={index}
-                                className="flex items-start gap-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 p-4 ring-1 ring-emerald-100"
+                                style={{ ["--i" as string]: index }}
+                                className="rise-in flex items-baseline gap-3 border-b border-slate-100 py-3.5"
                               >
-                                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-white shadow-sm shadow-emerald-500/30">
-                                  <Check className="size-3.5" />
-                                </span>
-                                <span className="text-sm font-medium text-slate-700">
+                                <Check className="size-3.5 shrink-0 translate-y-0.5 text-teal-600" />
+                                <span className="text-[15px] leading-relaxed text-slate-700">
                                   {pickLocalized(item, l)}
                                 </span>
-                              </div>
+                              </li>
                             ))}
-                          </div>
+                          </ul>
                         </div>
                       )}
                     </div>
@@ -373,26 +347,36 @@ export default async function TourDetailPage({
                       <p className="mb-6 text-sm font-medium text-slate-500">
                         {t("planSubtitle")}
                       </p>
+                      {/* Itinerario como línea de ruta: un trazo continuo con
+                          una parada por día. La metáfora es un mapa de ruta,
+                          no una pila de tarjetas. */}
                       <div className="relative">
-                        <div className="absolute left-[22px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 via-amber-300 to-slate-200" />
-                        <ol className="space-y-6">
+                        <div className="route-line absolute bottom-2 left-[7px] top-2 w-px" />
+                        <ol>
                           {tour.itinerary && tour.itinerary.length > 0 ? (
                             tour.itinerary.map((item, index) => (
-                                <li key={index} className="relative flex gap-5">
-                                  <span className="relative z-10 grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-400 text-base font-extrabold text-white shadow-lg shadow-amber-400/30">
-                                    {index + 1}
-                                  </span>
-                                  <div className="flex-1 rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-100 transition-all hover:bg-white hover:shadow-md hover:ring-amber-100">
-                                    <h3 className="font-heading text-lg font-bold text-slate-900">
-                                      {t("day")} {index + 1}:{" "}
-                                      {pickLocalized(item.title, l)}
-                                    </h3>
-                                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                                      {pickLocalized(item.description, l)}
-                                    </p>
-                                  </div>
-                                </li>
-                              ))
+                              <li
+                                key={index}
+                                style={{ ["--i" as string]: index }}
+                                className="rise-in group relative flex gap-6 pb-9 last:pb-0"
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className="relative z-10 mt-1.5 size-[15px] shrink-0 rounded-full border-2 border-white bg-teal-600 ring-1 ring-teal-600 transition-colors group-hover:bg-amber-500 group-hover:ring-amber-500"
+                                />
+                                <div className="flex-1">
+                                  <p className="eyebrow text-teal-700">
+                                    {t("day")} {index + 1}
+                                  </p>
+                                  <h3 className="mt-1.5 font-heading text-lg font-bold text-slate-900">
+                                    {pickLocalized(item.title, l)}
+                                  </h3>
+                                  <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600">
+                                    {pickLocalized(item.description, l)}
+                                  </p>
+                                </div>
+                              </li>
+                            ))
                           ) : (
                             <li className="text-sm text-slate-500">
                               {t("planSubtitle")}

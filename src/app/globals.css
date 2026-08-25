@@ -4,6 +4,66 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * ===== PALETA DE MARCA =====
+ *
+ * Los cuatro colores de marca son:
+ *   #224248  petróleo profundo   -> neutro oscuro
+ *   #325E6A  azul pizarra        -> neutro medio
+ *   #44A1A4  turquesa            -> color de apoyo
+ *   #FF9A00  ámbar               -> acento y llamadas a la acción
+ *   blanco
+ *
+ * En lugar de reemplazar las ~765 clases de color repartidas por 60
+ * componentes, se redefinen aquí las rampas que ya usaba el proyecto. Es una
+ * única fuente de verdad: `slate-*` deja de ser el gris azulado de Tailwind y
+ * pasa a ser la rampa petróleo de marca, y `amber-*` la rampa ámbar. Cambiar
+ * un valor aquí repinta toda la aplicación de forma coherente.
+ *
+ * `emerald-*` se deja intacto: es el verde de WhatsApp y de los estados de
+ * éxito, y son colores que el usuario reconoce por convención.
+ */
+@theme {
+  /* Neutro: blanco -> #325E6A -> #224248 */
+  --color-slate-50: #f4f8f9;
+  --color-slate-100: #e6eff1;
+  --color-slate-200: #c9dbdf;
+  --color-slate-300: #a3c0c7;
+  --color-slate-400: #74a0aa;
+  --color-slate-500: #4e808d;
+  --color-slate-600: #3c6c78;
+  --color-slate-700: #325e6a;
+  --color-slate-800: #2a4e57;
+  --color-slate-900: #224248;
+  --color-slate-950: #14282d;
+
+  /* Acento: rampa construida alrededor de #FF9A00 */
+  --color-amber-50: #fff7eb;
+  --color-amber-100: #ffebcc;
+  --color-amber-200: #ffd899;
+  --color-amber-300: #ffc266;
+  --color-amber-400: #ffae33;
+  --color-amber-500: #ff9a00;
+  --color-amber-600: #e08600;
+  --color-amber-700: #b86d00;
+  --color-amber-800: #8f5500;
+  --color-amber-900: #6b4000;
+  --color-amber-950: #3d2400;
+
+  /* Apoyo: rampa alrededor de #44A1A4, para acentos fríos y datos. */
+  --color-teal-50: #eff9f9;
+  --color-teal-100: #d6f0f0;
+  --color-teal-200: #aee1e2;
+  --color-teal-300: #7fcccd;
+  --color-teal-400: #55b2b5;
+  --color-teal-500: #44a1a4;
+  --color-teal-600: #37868a;
+  --color-teal-700: #2e6b70;
+  --color-teal-800: #275659;
+  --color-teal-900: #22484b;
+  --color-teal-950: #12292b;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -49,24 +109,25 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.47 0.095 186);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Tokens de shadcn alineados con la paleta de marca. */
+  --background: #ffffff;
+  --foreground: #224248;
+  --card: #ffffff;
+  --card-foreground: #224248;
+  --popover: #ffffff;
+  --popover-foreground: #224248;
+  --primary: #325e6a;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f8f9;
+  --secondary-foreground: #224248;
+  --muted: #f4f8f9;
+  --muted-foreground: #4e808d;
+  --accent: #eff9f9;
+  --accent-foreground: #22484b;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.6 0.11 186);
+  --border: #c9dbdf;
+  --input: #c9dbdf;
+  --ring: #44a1a4;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -90,8 +151,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.62 0.11 186);
-  --primary-foreground: oklch(0.11 0 0);
+  --primary: #44a1a4;
+  --primary-foreground: #14282d;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -273,15 +334,15 @@
 }
 
 .mist--d0 {
-  opacity: 0.34;
+  opacity: 0.26;
 }
 
 .mist--d1 {
-  opacity: 0.6;
+  opacity: 0.46;
 }
 
 .mist--d2 {
-  opacity: 0.88;
+  opacity: 0.68;
 }
 
 /* Halo difuso que asienta la niebla sobre el paisaje de la foto. */
@@ -302,9 +363,9 @@
   height: 30vh;
   background: linear-gradient(
     to top,
-    rgba(236, 243, 251, 0.6) 0%,
-    rgba(236, 243, 251, 0.3) 40%,
-    rgba(236, 243, 251, 0.09) 70%,
+    rgba(214, 232, 236, 0.42) 0%,
+    rgba(214, 232, 236, 0.2) 40%,
+    rgba(214, 232, 236, 0.06) 70%,
     transparent 100%
   );
   filter: blur(12px);
@@ -314,10 +375,10 @@
   height: 22vh;
   background: radial-gradient(
       62% 100% at 24% 100%,
-      rgba(255, 255, 255, 0.46) 0%,
+      rgba(235, 244, 246, 0.3) 0%,
       transparent 72%
     ),
-    radial-gradient(54% 100% at 76% 100%, rgba(255, 255, 255, 0.38) 0%, transparent 70%);
+    radial-gradient(54% 100% at 76% 100%, rgba(235, 244, 246, 0.24) 0%, transparent 70%);
   filter: blur(18px);
   animation: haze-drift 38s ease-in-out infinite;
 }
@@ -523,3 +584,95 @@ html {
 .delay-400 { animation-delay: 0.4s; }
 .delay-500 { animation-delay: 0.5s; }
 .delay-600 { animation-delay: 0.6s; }
+
+/* ===== LENGUAJE VISUAL =====
+ *
+ * Piezas compartidas del rediseño. La intención es alejarse del patrón
+ * genérico —tarjeta muy redondeada, sombra difusa, orbe de color borroso
+ * detrás, botón con degradado— y apoyarse en recursos de edición impresa:
+ * filete fino, versalita espaciada, troquel de billete y línea de ruta.
+ */
+
+/* Versalita de rótulo. Sustituye al icono dentro del campo. */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+/*
+ * Troquel de billete: dos muescas enfrentadas en el costado. El color se
+ * pasa con --notch para que coincida con el fondo sobre el que se apoya.
+ */
+.ticket-notch {
+  position: relative;
+}
+.ticket-notch::before,
+.ticket-notch::after {
+  content: "";
+  position: absolute;
+  top: var(--notch-y, 50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--notch, #f4f8f9);
+  transform: translateY(-50%);
+}
+.ticket-notch::before {
+  left: -10px;
+}
+.ticket-notch::after {
+  right: -10px;
+}
+
+/* Filete perforado, como el corte de un billete. */
+.perforation {
+  height: 1px;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-slate-200) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+/* Línea de ruta del itinerario, con degradado que se apaga al final. */
+.route-line {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-teal-500) 0%,
+    var(--color-teal-400) 45%,
+    var(--color-slate-200) 100%
+  );
+}
+
+/* Aparición escalonada; el retardo lo fija cada elemento con --i. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise-in {
+  animation: rise-in 0.55s cubic-bezier(0.22, 0.68, 0.35, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* Subrayado que crece desde el origen: para pestañas y enlaces. */
+@keyframes underline-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.underline-grow {
+  transform-origin: left center;
+  animation: underline-grow 0.32s cubic-bezier(0.22, 0.68, 0.35, 1) both;
+}

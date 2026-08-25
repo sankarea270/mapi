@@ -70,31 +70,35 @@ export function DatePicker({ value, onChange, hasError, label }: DatePickerProps
 
   return (
     <div ref={ref} className="relative">
-      <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-slate-400">
-        {label}
-      </label>
+      <label className="eyebrow block text-slate-400">{label}</label>
+      {/* Campo con filete inferior, igual que el resto del formulario: sin la
+          caja de icono, que es lo que daba el aire de plantilla. */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex w-full items-center gap-3 rounded-2xl border bg-white px-4 py-3.5 text-left transition-all",
+          "flex w-full items-center justify-between gap-3 border-0 border-b bg-transparent px-0 py-2.5 text-left transition-colors",
           hasError
-            ? "border-red-300 ring-2 ring-red-500/20"
+            ? "border-red-400"
             : isOpen
-              ? "border-amber-400 ring-2 ring-amber-400/20"
-              : "border-slate-200 hover:border-slate-300 hover:ring-2 hover:ring-slate-100"
+              ? "border-teal-500"
+              : "border-slate-200 hover:border-slate-400"
         )}
       >
-        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
-          <CalendarDays className="size-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          {value ? (
-            <p className="truncate text-sm font-medium text-slate-900">{displayDate}</p>
-          ) : (
-            <p className="text-sm text-slate-400">Selecciona una fecha</p>
+        <span
+          className={cn(
+            "truncate text-[15px]",
+            value ? "text-slate-900" : "text-slate-300"
           )}
-        </div>
+        >
+          {value ? displayDate : label}
+        </span>
+        <CalendarDays
+          className={cn(
+            "size-4 shrink-0 transition-colors",
+            isOpen ? "text-teal-600" : "text-slate-300"
+          )}
+        />
       </button>
 
       {isOpen && (

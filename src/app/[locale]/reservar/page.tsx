@@ -30,29 +30,14 @@ export default async function ReservarPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("reserva");
 
   return (
     <div className="min-h-dvh bg-slate-50">
-      <div className="border-b border-slate-100 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
-            {t("step")}
-          </p>
-          <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            {t("title")}
-          </h1>
-          <p className="mt-3 max-w-2xl text-base text-slate-500">{t("subtitle")}</p>
-        </div>
-      </div>
 
-      <section className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-8">
-          <BookingForm />
-        </div>
-        <p className="mt-6 text-center text-sm leading-relaxed text-slate-500">
-          {t("noPayment")}
-        </p>
+      {/* El formulario ya trae su propia caja, cabecera y nota de "sin pagos
+          en línea": envolverlo en otra tarjeta duplicaba ambos textos. */}
+      <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <BookingForm />
       </section>
     </div>
   );
