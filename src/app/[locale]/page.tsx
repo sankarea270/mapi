@@ -58,9 +58,16 @@ export default async function HomePage({
           className="relative flex min-h-[92dvh] items-center justify-center overflow-hidden bg-slate-950"
         >
           <HeroCarousel />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/30 to-slate-950/70" />
 
-          <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 py-28 text-center">
+          {/* Orden de capas: foto (z-10) -> velo -> neblina (z-11) -> texto
+              (z-20) -> controles (z-30). La neblina va ENCIMA del velo porque
+              debe leerse densa y luminosa; debajo, el 70% de negro del velo
+              en la base la apagaría. A cambio, los bancos opacos se quedan
+              por debajo de la fila de botones y solo suben jirones finos. */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/30 to-slate-950/70" />
+          <CloudLayer />
+
+          <div className="relative z-20 mx-auto flex max-w-3xl flex-col items-center px-4 py-28 text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-amber-300 backdrop-blur"
               style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
             >
@@ -94,16 +101,16 @@ export default async function HomePage({
                 href={whatsappLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20 hover:scale-105"
+                // Fondo oscuro y no translúcido-claro: con texto blanco sobre
+                // bg-white/10 el botón dependía de tener algo oscuro detrás y
+                // desaparecía sobre la neblina (y sobre las fotos claras).
+                className="rounded-full border border-white/40 bg-slate-950/45 px-8 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-slate-950/65 hover:scale-105"
               >
                 {t("ctaContact")}
               </a>
             </div>
           </div>
         </section>
-
-        {/* Nubes FUERA del overflow-hidden */}
-        <CloudLayer />
       </div>
 
     <script

@@ -1,162 +1,182 @@
 /**
- * Capa de nubes del hero.
+ * Neblina del hero.
  *
- * Las nubes se dibujan como SVG y se deforman con feTurbulence +
- * feDisplacementMap: eso rompe la silueta elíptica y produce el borde
- * irregular y algodonoso de un cúmulo real. El filtro se rasteriza una sola
- * vez; la animación es únicamente `transform`, así que el coste por frame es
- * el de componer una capa (barato incluso en móvil).
+ * No son nubes de cielo: son bancos de niebla apoyados en la base del
+ * encuadre, como la que se queda en el fondo de un valle andino. Se dibujan
+ * en SVG y se deforman con feTurbulence + feDisplacementMap, que es lo que
+ * da el borde deshilachado; una elipse difuminada se lee como mancha, y el
+ * ruido fractal no. El filtro se rasteriza una vez y la animación es solo
+ * `transform`, así que el coste por frame es componer una capa.
  *
- * Coherencia visual con la foto de fondo:
- *  - Una sola dirección de luz (sol arriba-izquierda) en todas las nubes:
- *    corona blanca arriba-izquierda, vientre azulado abajo-derecha.
- *  - Un solo sentido de viento (izquierda -> derecha) para todas.
- *  - Tres estratos de profundidad: las lejanas son pequeñas, lentas, más
- *    tenues y más azules (bruma atmosférica); las cercanas, grandes, rápidas
- *    y contrastadas. Ese gradiente es lo que da sensación de cielo real.
+ * Reglas de la composición:
+ *  - Densidad creciente hacia abajo: los bancos de la base son opacos y
+ *    anchos; según suben, se adelgazan y pierden opacidad hasta desaparecer.
+ *  - Cada banco se disuelve hacia arriba con una máscara vertical, para que
+ *    no tenga un borde superior definido: eso es lo que separa "niebla" de
+ *    "nube recortada".
+ *  - Los de abajo oscilan en el sitio (siempre cubren la base) y los altos
+ *    cruzan de lado a lado: la niebla repta, no desfila.
+ *  - Una sola dirección de luz, desde arriba, coherente en todos.
+ *
+ * La capa se monta DENTRO del hero y por debajo del texto (z-20), porque a
+ * esta altura del encuadre coincide con el titular y lo taparía al pasar.
  */
 
 type Puff = readonly [cx: number, cy: number, rx: number, ry: number];
 
-/** Siluetas dibujadas a mano sobre un viewBox de 1000x420. */
+/**
+ * Siluetas sobre un viewBox de 2000x240, con la masa concentrada abajo para
+ * que la máscara pueda disolver la parte alta.
+ *
+ * La caja es larga y baja a propósito, y el SVG se dibuja con su proporción
+ * natural. Antes se forzaba `preserveAspectRatio="none"` con una altura fija
+ * en CSS: eso estiraba la caja al ancho del banco (1000x300 metidos en
+ * 1330x149), aplastaba los borregos en churretes horizontales y deformaba el
+ * ruido, con lo que el banco se leía como una banda lisa en vez de niebla.
+ * Los radios se mantienen cercanos a circulares por el mismo motivo.
+ */
 const SHAPES: readonly (readonly Puff[])[] = [
-  // 0 · Cúmulo ancho de base plana
+  // 0 · Banco ancho y denso, con base corrida
   [
-    [250, 268, 195, 118],
-    [430, 218, 220, 150],
-    [625, 258, 180, 120],
-    [372, 168, 142, 112],
-    [772, 282, 132, 96],
-    [148, 292, 122, 82],
-    [500, 320, 330, 62],
+    [120, 170, 150, 105],
+    [300, 155, 165, 118],
+    [480, 168, 155, 108],
+    [660, 150, 175, 125],
+    [850, 165, 160, 112],
+    [1040, 152, 170, 120],
+    [1230, 168, 158, 110],
+    [1420, 156, 168, 118],
+    [1610, 170, 150, 104],
+    [1800, 160, 160, 112],
+    [1950, 172, 140, 98],
+    [1000, 206, 1010, 64],
   ],
-  // 1 · Cúmulo alto con torre a la izquierda
+  // 1 · Banco irregular, con levantamientos
   [
-    [300, 200, 165, 145],
-    [455, 258, 195, 128],
-    [615, 292, 150, 100],
-    [205, 288, 135, 92],
-    [372, 132, 108, 88],
-    [420, 330, 280, 54],
+    [160, 155, 150, 120],
+    [350, 180, 130, 88],
+    [560, 140, 180, 142],
+    [780, 172, 140, 96],
+    [1000, 150, 165, 126],
+    [1220, 182, 128, 86],
+    [1450, 142, 175, 138],
+    [1680, 170, 145, 100],
+    [1900, 160, 150, 110],
+    [1000, 210, 1010, 58],
   ],
-  // 2 · Jirón alargado y bajo
+  // 2 · Velo fino
   [
-    [260, 250, 175, 82],
-    [450, 232, 205, 95],
-    [640, 252, 165, 78],
-    [800, 268, 118, 58],
-    [140, 268, 118, 60],
+    [200, 188, 170, 54],
+    [480, 180, 160, 50],
+    [780, 190, 150, 46],
+    [1100, 182, 165, 52],
+    [1420, 188, 155, 48],
+    [1750, 184, 160, 50],
+    [1980, 190, 130, 42],
   ],
-  // 3 · Grupo compacto y esponjoso
+  // 3 · Masa alta y volumétrica
   [
-    [390, 232, 172, 132],
-    [545, 262, 158, 112],
-    [268, 278, 132, 95],
-    [462, 152, 112, 92],
-    [660, 292, 108, 74],
-    [430, 322, 245, 52],
+    [180, 148, 160, 128],
+    [400, 168, 145, 102],
+    [640, 128, 195, 155],
+    [900, 158, 165, 124],
+    [1160, 142, 180, 140],
+    [1420, 166, 150, 104],
+    [1680, 140, 180, 140],
+    [1920, 160, 155, 116],
+    [1000, 204, 1010, 68],
   ],
-  // 4 · Banco disperso, tipo cirro bajo
+  // 4 · Jirones sueltos, para las capas altas
   [
-    [320, 244, 190, 70],
-    [520, 228, 168, 62],
-    [690, 246, 140, 55],
-    [180, 258, 128, 50],
+    [250, 180, 175, 52],
+    [620, 172, 160, 46],
+    [1000, 184, 168, 50],
+    [1380, 176, 150, 44],
+    [1750, 186, 145, 42],
   ],
 ];
 
-interface CloudSpec {
-  /** Silueta de SHAPES. */
+interface MistSpec {
   shape: number;
-  /** Estrato: 0 = lejano, 1 = medio, 2 = cercano. */
+  /** 0 = velo alto y tenue · 1 = banco medio · 2 = base densa. */
   depth: 0 | 1 | 2;
-  /** Semilla del ruido: cambia el recorte del borde. */
   seed: number;
-  /**
-   * Distancia del borde INFERIOR de la nube al pie del hero, en %. Anclar por
-   * abajo y no por arriba es deliberado: la nube crece hacia arriba, así que
-   * agrandarla nunca la mete en la zona del titular. El techo del hero la
-   * recorta, que es justo como entra un cúmulo grande en un encuadre real.
-   */
+  /** Distancia del borde inferior del banco al pie del hero, en %. */
   band: number;
-  /** Ancho relativo al viewport. */
+  /** Ancho en vw. */
   width: number;
-  /** Duración de la travesía completa, en segundos. */
+  /**
+   * "sway" oscila en el sitio: para la base, que debe cubrir siempre de lado
+   * a lado. "travel" cruza el encuadre: para los jirones altos.
+   */
+  mode: "sway" | "travel";
   duration: number;
-  /** Desfase negativo para que el cielo ya esté poblado al cargar. */
   offset: number;
-  /** Espejado horizontal, para no repetir siluetas idénticas. */
   flip?: boolean;
 }
 
 /**
- * Todas las nubes viven en el tercio superior. La capa se pinta por encima
- * del titular (z-index 15 contra z-10), así que la franja del texto y los
- * botones —del 31% al 83% del hero— tiene que quedar despejada; el pie lo
- * cubre la bruma, que sí es lo bastante tenue para pasar por detrás.
- *
- * Dentro del cielo, lo cercano va más abajo, más grande y más rápido, y lo
- * lejano más arriba, más pequeño y más lento: es lo que hace la perspectiva
- * real al mirar un cielo, y es lo que da la sensación de profundidad.
- *
- * Los `offset` están calculados para que en el primer frame las nubes queden
- * repartidas a lo ancho y no agrupadas.
+ * Ordenados de arriba (tenue) a abajo (denso). Hay más capas abajo a
+ * propósito: es lo que acumula la niebla contra el suelo.
  */
-const CLOUDS: readonly CloudSpec[] = [
-  { shape: 2, depth: 0, seed: 11, band: 86, width: 24, duration: 186, offset: 58 },
-  { shape: 4, depth: 0, seed: 27, band: 81, width: 20, duration: 168, offset: 95 },
-  { shape: 0, depth: 0, seed: 5, band: 83, width: 26, duration: 174, offset: 136, flip: true },
-  { shape: 1, depth: 1, seed: 41, band: 78, width: 34, duration: 118, offset: 22 },
-  { shape: 3, depth: 1, seed: 63, band: 75, width: 30, duration: 126, offset: 61, flip: true },
-  { shape: 0, depth: 1, seed: 19, band: 76, width: 36, duration: 112, offset: 79 },
-  { shape: 3, depth: 2, seed: 77, band: 71, width: 48, duration: 78, offset: 20, flip: true },
-  { shape: 1, depth: 2, seed: 8, band: 72, width: 52, duration: 68, offset: 44 },
+const MIST: readonly MistSpec[] = [
+  // Jirones altos: cruzan el encuadre, finos y casi disueltos.
+  { shape: 4, depth: 0, seed: 27, band: 26, width: 62, mode: "travel", duration: 172, offset: 40 },
+  { shape: 2, depth: 0, seed: 11, band: 22, width: 70, mode: "travel", duration: 148, offset: 96, flip: true },
+  { shape: 4, depth: 0, seed: 63, band: 18, width: 66, mode: "travel", duration: 190, offset: 150 },
+
+  // Bancos medios.
+  { shape: 2, depth: 1, seed: 41, band: 12, width: 98, mode: "sway", duration: 74, offset: 0, flip: true },
+  { shape: 1, depth: 1, seed: 19, band: 8, width: 108, mode: "sway", duration: 92, offset: 26 },
+  { shape: 0, depth: 1, seed: 52, band: 5, width: 116, mode: "sway", duration: 108, offset: 52, flip: true },
+
+  // Base densa: siempre presente, se sale por abajo y queda recortada.
+  { shape: 3, depth: 2, seed: 8, band: 0, width: 132, mode: "sway", duration: 86, offset: 12 },
+  { shape: 0, depth: 2, seed: 77, band: -4, width: 146, mode: "sway", duration: 116, offset: 44, flip: true },
+  { shape: 3, depth: 2, seed: 95, band: -8, width: 160, mode: "sway", duration: 98, offset: 70 },
 ];
 
 /**
- * Parámetros por estrato. La bruma atmosférica se hornea en el gradiente en
- * vez de aplicarse como filtro CSS: un `filter` sobre un elemento animado se
- * reevalúa por frame, y aquí hay nueve. Así la animación queda en transform +
- * opacity, que la GPU compone sin repintar.
- *
- * Lejano  -> menos contraste, más azul, más difuminado.
- * Cercano -> blanco brillante arriba, vientre marcado abajo.
+ * Parámetros por estrato. `fade` marca dónde empieza a verse el banco dentro
+ * de su caja: cuanto más alto está, más se disuelve. El tinte va horneado en
+ * el gradiente y no como filter CSS, que con nueve capas animadas se
+ * reevaluaría por frame.
  */
 const DEPTH = {
   0: {
-    displace: 46,
+    displace: 62,
     blur: 5,
-    freq: "0.0075 0.013",
-    octaves: 3,
-    stops: ["#f2f6fb", "#e8eff7", "#d5e0ed", "#c2d0e2"],
-    lit: 0.5,
+    freq: "0.013 0.019",
+    octaves: 4,
+    fade: [0.32, 0.74],
+    stops: ["#f4f8fc", "#dfe8f2", "#c3d0de", "#8fa0b4"],
   },
   1: {
-    displace: 62,
-    blur: 3.5,
-    freq: "0.0062 0.011",
-    octaves: 4,
-    stops: ["#fdfeff", "#f4f8fc", "#dfe8f3", "#bccbe0"],
-    lit: 0.75,
+    displace: 80,
+    blur: 3.2,
+    freq: "0.009 0.015",
+    octaves: 5,
+    fade: [0.2, 0.62],
+    stops: ["#ffffff", "#eaf1f8", "#c9d6e4", "#7f91a8"],
   },
   2: {
-    displace: 78,
-    blur: 2.5,
-    freq: "0.0052 0.009",
-    octaves: 4,
-    stops: ["#ffffff", "#f7fafd", "#d8e3f0", "#adbfd6"],
-    lit: 0.95,
+    displace: 96,
+    blur: 2.2,
+    freq: "0.007 0.012",
+    octaves: 5,
+    fade: [0.1, 0.48],
+    stops: ["#ffffff", "#f0f5fa", "#ccd8e6", "#75879e"],
   },
 } as const;
 
-function Cloud({ spec, index }: { spec: CloudSpec; index: number }) {
-  const uid = `cl${index}`;
-  const { displace, blur, freq, octaves, stops, lit } = DEPTH[spec.depth];
+function MistBank({ spec, index }: { spec: MistSpec; index: number }) {
+  const uid = `mist${index}`;
+  const { displace, blur, freq, octaves, fade, stops } = DEPTH[spec.depth];
   const puffs = SHAPES[spec.shape];
 
   return (
     <div
-      className={`cloud cloud--d${spec.depth}`}
+      className={`mist mist--${spec.mode} mist--d${spec.depth}`}
       style={
         {
           "--band": `${spec.band}%`,
@@ -168,8 +188,8 @@ function Cloud({ spec, index }: { spec: CloudSpec; index: number }) {
       }
     >
       <svg
-        className="cloud__art"
-        viewBox="0 0 1000 420"
+        className="mist__art"
+        viewBox="0 0 2000 240"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
@@ -177,10 +197,10 @@ function Cloud({ spec, index }: { spec: CloudSpec; index: number }) {
         <defs>
           <filter
             id={`${uid}-f`}
-            x="-20%"
-            y="-35%"
-            width="140%"
-            height="180%"
+            x="-15%"
+            y="-45%"
+            width="130%"
+            height="190%"
             colorInterpolationFilters="sRGB"
           >
             <feTurbulence
@@ -201,33 +221,66 @@ function Cloud({ spec, index }: { spec: CloudSpec; index: number }) {
             <feGaussianBlur in="rough" stdDeviation={blur} />
           </filter>
 
-          {/* Sol arriba-izquierda: corona blanca -> vientre azul de cielo. */}
-          <linearGradient id={`${uid}-body`} x1="0.3" y1="0.02" x2="0.62" y2="1">
+          {/*
+            Gradientes en objectBoundingBox (por defecto): al referenciarlos
+            desde varias elipses, CADA una recibe el gradiente mapeado a su
+            propia caja. Eso da a cada borrego su cresta iluminada y su
+            hondonada en sombra, que es lo que hace que el banco tenga
+            volumen; un único gradiente sobre todo el grupo lo deja plano.
+          */}
+          <radialGradient id={`${uid}-body`} cx="0.38" cy="0.28" r="0.75">
             <stop offset="0%" stopColor={stops[0]} />
-            <stop offset="38%" stopColor={stops[1]} />
-            <stop offset="68%" stopColor={stops[2]} />
-            <stop offset="100%" stopColor={stops[3]} />
-          </linearGradient>
+            <stop offset="45%" stopColor={stops[1]} />
+            <stop offset="100%" stopColor={stops[2]} />
+          </radialGradient>
 
-          {/* Realce especular del borde iluminado. */}
-          <radialGradient id={`${uid}-lit`} cx="0.34" cy="0.24" r="0.62">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity={lit} />
-            <stop offset="55%" stopColor="#ffffff" stopOpacity={lit * 0.37} />
+          {/* Hondonadas: copia desplazada a contraluz, bajo el cuerpo. */}
+          <radialGradient id={`${uid}-shadow`} cx="0.5" cy="0.45" r="0.62">
+            <stop offset="0%" stopColor={stops[3]} stopOpacity="0.85" />
+            <stop offset="70%" stopColor={stops[3]} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={stops[3]} stopOpacity="0" />
+          </radialGradient>
+
+          {/* Crestas al sol, desplazadas hacia la luz. */}
+          <radialGradient id={`${uid}-lit`} cx="0.36" cy="0.26" r="0.55">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.92" />
+            <stop offset="60%" stopColor="#ffffff" stopOpacity="0.3" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
           </radialGradient>
+
+          {/*
+            Disolución vertical: sin esto el banco tendría un borde superior
+            recortado y se leería como nube, no como niebla.
+          */}
+          <linearGradient id={`${uid}-fade`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#000000" />
+            <stop offset={`${fade[0] * 100}%`} stopColor="#2b2b2b" />
+            <stop offset={`${fade[1] * 100}%`} stopColor="#d8d8d8" />
+            <stop offset="100%" stopColor="#ffffff" />
+          </linearGradient>
+          <mask id={`${uid}-m`}>
+            <rect x="0" y="0" width="2000" height="240" fill={`url(#${uid}-fade)`} />
+          </mask>
         </defs>
 
-        <g filter={`url(#${uid}-f)`}>
-          <g fill={`url(#${uid}-body)`}>
-            {puffs.map(([cx, cy, rx, ry], i) => (
-              <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} />
-            ))}
-          </g>
-          {/* Segunda pasada, desplazada hacia el sol, para el volumen. */}
-          <g fill={`url(#${uid}-lit)`} transform="translate(-26 -34)">
-            {puffs.slice(0, 4).map(([cx, cy, rx, ry], i) => (
-              <ellipse key={i} cx={cx} cy={cy} rx={rx * 0.82} ry={ry * 0.78} />
-            ))}
+        <g mask={`url(#${uid}-m)`}>
+          <g filter={`url(#${uid}-f)`}>
+            {/* Sombra -> cuerpo -> cresta: el orden es el que construye el relieve. */}
+            <g fill={`url(#${uid}-shadow)`} transform="translate(16 22)">
+              {puffs.map(([cx, cy, rx, ry], i) => (
+                <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} />
+              ))}
+            </g>
+            <g fill={`url(#${uid}-body)`}>
+              {puffs.map(([cx, cy, rx, ry], i) => (
+                <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} />
+              ))}
+            </g>
+            <g fill={`url(#${uid}-lit)`} transform="translate(-12 -18)">
+              {puffs.map(([cx, cy, rx, ry], i) => (
+                <ellipse key={i} cx={cx} cy={cy} rx={rx * 0.84} ry={ry * 0.8} />
+              ))}
+            </g>
           </g>
         </g>
       </svg>
@@ -238,12 +291,11 @@ function Cloud({ spec, index }: { spec: CloudSpec; index: number }) {
 export function CloudLayer() {
   return (
     <div className="cloud-layer" aria-hidden="true">
-      {CLOUDS.map((spec, i) => (
-        <Cloud key={i} spec={spec} index={i} />
-      ))}
-
-      {/* Bruma de horizonte: funde la base del cielo con el paisaje. */}
+      {/* Halo difuso pegado al suelo: asienta los bancos sobre el paisaje. */}
       <div className="haze haze--low" />
+      {MIST.map((spec, i) => (
+        <MistBank key={i} spec={spec} index={i} />
+      ))}
       <div className="haze haze--drift" />
     </div>
   );

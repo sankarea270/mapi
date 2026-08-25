@@ -168,47 +168,57 @@
   }
 }
 
-/* ===== NUBES ===== */
+/* ===== NEBLINA DEL HERO ===== */
 
-/*
- * Una sola travesía continua de izquierda a derecha: el viento es coherente
- * para todas las nubes. Los `offset` negativos del componente reparten las
- * posiciones iniciales para que el cielo ya esté poblado en el primer frame.
- */
-@keyframes cloud-travel {
+/* Los jirones altos cruzan el encuadre de lado a lado. */
+@keyframes mist-travel {
   from {
-    transform: translate3d(-42vw, 0, 0);
+    transform: translate3d(-55vw, 0, 0);
   }
   to {
-    transform: translate3d(118vw, 0, 0);
+    transform: translate3d(130vw, 0, 0);
   }
 }
 
 /*
- * Respiración lenta: las nubes reales se deforman mientras avanzan.
- * El scaleX(var(--flip)) va dentro de los keyframes a propósito: si se deja
+ * Los bancos bajos oscilan en el sitio en lugar de desfilar: tienen que
+ * cubrir la base de forma continua, y una travesía dejaría huecos.
+ */
+@keyframes mist-sway {
+  0%,
+  100% {
+    transform: translate3d(-4vw, 0, 0);
+  }
+  50% {
+    transform: translate3d(4vw, 0, 0);
+  }
+}
+
+/*
+ * Respiración: la niebla se hincha y se deshincha despacio. El
+ * scaleX(var(--flip)) va dentro de los keyframes a propósito; si se deja
  * solo en la regla estática, el transform de la animación lo sustituye y el
  * espejado se pierde en cuanto arranca.
  */
-@keyframes cloud-breathe {
+@keyframes mist-breathe {
   0%,
   100% {
-    transform: scaleX(var(--flip)) translateY(0) scale(1);
+    transform: scaleX(var(--flip)) translateY(0) scaleY(1);
   }
   50% {
-    transform: scaleX(var(--flip)) translateY(-1.6%) scale(1.045);
+    transform: scaleX(var(--flip)) translateY(-2.5%) scaleY(1.09);
   }
 }
 
 @keyframes haze-drift {
   0%,
   100% {
-    transform: translate3d(-4%, 0, 0) scaleY(1);
-    opacity: 0.5;
+    transform: translate3d(-3%, 0, 0) scaleY(1);
+    opacity: 0.55;
   }
   50% {
-    transform: translate3d(4%, -6%, 0) scaleY(1.12);
-    opacity: 0.78;
+    transform: translate3d(3%, -4%, 0) scaleY(1.14);
+    opacity: 0.82;
   }
 }
 
@@ -216,53 +226,65 @@
   pointer-events: none;
   position: absolute;
   inset: 0;
-  z-index: 15;
+  /*
+   * Por encima de la foto y del velo oscuro, pero por debajo del titular
+   * (z-20) y de los controles del carrusel (z-30): la niebla ocupa la misma
+   * franja que el texto y lo taparía al pasar.
+   */
+  z-index: 11;
   overflow: hidden;
 }
 
-/* Ancladas por el pie: crecen hacia arriba y dejan libre el titular. */
-.cloud {
+/* Anclados por el pie: crecen hacia arriba desde la base del encuadre. */
+.mist {
   position: absolute;
-  left: 0;
   bottom: var(--band);
+  left: 50%;
   width: var(--w);
+  margin-left: calc(var(--w) / -2);
   will-change: transform;
-  animation: cloud-travel var(--dur) linear infinite;
+}
+
+.mist--travel {
+  left: 0;
+  margin-left: 0;
+  animation: mist-travel var(--dur) linear infinite;
   animation-delay: var(--delay);
 }
 
-.cloud__art {
+.mist--sway {
+  animation: mist-sway var(--dur) ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+/*
+ * Altura derivada del ancho por la proporción del viewBox (2000x240), no
+ * fijada en CSS. Forzar la altura obligaba a `preserveAspectRatio="none"`,
+ * que estiraba el dibujo y aplastaba los borregos; el grosor del banco se
+ * regula con su ancho.
+ */
+.mist__art {
   display: block;
   width: 100%;
   height: auto;
-  transform: scaleX(var(--flip));
-  animation: cloud-breathe 26s ease-in-out infinite;
+  animation: mist-breathe 30s ease-in-out infinite;
   animation-delay: var(--delay);
+  transform-origin: bottom center;
 }
 
-/*
- * Estratos. El contraste y el tinte azulado van horneados en el gradiente
- * SVG (ver DEPTH en CloudLayer.tsx); aquí solo la opacidad, para que la
- * animación no obligue a repintar.
- */
-.cloud--d0 {
-  opacity: 0.36;
+.mist--d0 {
+  opacity: 0.34;
 }
 
-.cloud--d1 {
-  opacity: 0.56;
+.mist--d1 {
+  opacity: 0.6;
 }
 
-.cloud--d2 {
-  opacity: 0.74;
+.mist--d2 {
+  opacity: 0.88;
 }
 
-/*
- * Bruma del horizonte: funde la base del cielo con el paisaje de la foto.
- * Se compone con alfa y no con `mix-blend-mode: screen`, porque .cloud-layer
- * tiene z-index y crea contexto de apilamiento: el blend no alcanzaría la
- * foto de fondo. Sobre una foto, blanco con alfa da el mismo resultado.
- */
+/* Halo difuso que asienta la niebla sobre el paisaje de la foto. */
 .haze {
   position: absolute;
   bottom: 0;
@@ -271,91 +293,77 @@
   pointer-events: none;
 }
 
+/*
+ * Se compone con alfa y no con `mix-blend-mode: screen`, porque .cloud-layer
+ * tiene z-index y crea contexto de apilamiento: el blend no alcanzaría la
+ * foto de fondo. Sobre una foto, blanco con alfa da el mismo resultado.
+ */
 .haze--low {
-  height: 26vh;
+  height: 30vh;
   background: linear-gradient(
     to top,
-    rgba(232, 240, 250, 0.5) 0%,
-    rgba(232, 240, 250, 0.26) 38%,
-    rgba(232, 240, 250, 0.08) 68%,
+    rgba(236, 243, 251, 0.6) 0%,
+    rgba(236, 243, 251, 0.3) 40%,
+    rgba(236, 243, 251, 0.09) 70%,
     transparent 100%
   );
-  filter: blur(10px);
+  filter: blur(12px);
 }
 
 .haze--drift {
-  height: 19vh;
+  height: 22vh;
   background: radial-gradient(
-      60% 100% at 22% 100%,
-      rgba(255, 255, 255, 0.42) 0%,
+      62% 100% at 24% 100%,
+      rgba(255, 255, 255, 0.46) 0%,
       transparent 72%
     ),
-    radial-gradient(52% 100% at 74% 100%, rgba(255, 255, 255, 0.34) 0%, transparent 70%);
-  filter: blur(16px);
-  animation: haze-drift 34s ease-in-out infinite;
+    radial-gradient(54% 100% at 76% 100%, rgba(255, 255, 255, 0.38) 0%, transparent 70%);
+  filter: blur(18px);
+  animation: haze-drift 38s ease-in-out infinite;
 }
 
 @media (max-width: 640px) {
-  /*
-   * En móvil el hero es mucho más estrecho: menos nubes y más grandes.
-   * El titular además ocupa más alto al partirse en varias líneas, así que
-   * la banda protegida empieza antes y hay que subir las nubes.
-   */
-  .cloud {
-    width: calc(var(--w) * 2.1);
-    bottom: calc(var(--band) + 9%);
-  }
-  .cloud--d0 {
+  /* En móvil el hero es más estrecho y alto: bancos más gruesos, sin velos. */
+  .mist--d0 {
     display: none;
   }
-  .cloud__art {
-    animation-duration: 34s;
+  /* El ancho fija el grosor: en móvil hay que exagerarlo mucho. */
+  .mist--sway {
+    width: 300vw;
+    margin-left: -150vw;
   }
   .haze--low {
-    height: 17vh;
+    height: 22vh;
   }
   .haze--drift {
-    height: 13vh;
+    height: 16vh;
   }
 }
 
 /*
  * Con movimiento reducido, la regla global deja las animaciones en su estado
- * final: sin esto las nubes acabarían fuera de pantalla (118vw). Se colocan
- * estáticas y repartidas.
+ * final: sin esto los jirones altos acabarían fuera de pantalla (130vw).
  */
 @media (prefers-reduced-motion: reduce) {
-  .cloud {
-    animation: none !important;
-    transform: translate3d(var(--rest, 12vw), 0, 0);
-  }
-  .cloud__art {
-    animation: none !important;
-  }
+  .mist,
+  .mist__art,
   .haze--drift {
     animation: none !important;
-    opacity: 0.6;
   }
-  .cloud:nth-child(2) {
-    --rest: 58vw;
+  .mist--travel {
+    transform: translate3d(var(--rest, 10vw), 0, 0);
   }
-  .cloud:nth-child(3) {
-    --rest: 32vw;
+  .mist--travel:nth-of-type(2) {
+    --rest: 52vw;
   }
-  .cloud:nth-child(4) {
-    --rest: 74vw;
+  .mist--travel:nth-of-type(3) {
+    --rest: 30vw;
   }
-  .cloud:nth-child(5) {
-    --rest: 2vw;
+  .mist__art {
+    transform: scaleX(var(--flip));
   }
-  .cloud:nth-child(6) {
-    --rest: 46vw;
-  }
-  .cloud:nth-child(7) {
-    --rest: 22vw;
-  }
-  .cloud:nth-child(8) {
-    --rest: 66vw;
+  .haze--drift {
+    opacity: 0.65;
   }
 }
 
