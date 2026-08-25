@@ -2,7 +2,8 @@ import Image from "next/image";
 import { ArrowRight, Clock, Star } from "lucide-react";
 import type { Tour } from "@/types/tour";
 import { Link } from "@/i18n/navigation";
-import { pickLocalized, formatPrice } from "@/lib/format";
+import { pickLocalized } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 
 interface TourCardProps {
   tour: Tour;
@@ -45,12 +46,13 @@ export function TourCard({ tour, categoryName, locale, fromLabel }: TourCardProp
           {pickLocalized(tour.duration, locale)}
         </div>
         <div className="mt-auto flex items-center justify-between pt-4">
-          <p className="text-sm text-slate-400">
-            {fromLabel}{" "}
-            <span className="text-lg font-extrabold text-slate-900">
-              {formatPrice(tour.price, locale, "USD")}
-            </span>
-          </p>
+          <Price
+            amount={tour.price}
+            locale={locale}
+            size="md"
+            prefix={fromLabel}
+            className="text-slate-900"
+          />
           <span className="grid size-9 place-items-center rounded-full bg-slate-100 text-slate-600 transition-colors group-hover:bg-teal-600 group-hover:text-white">
             <ArrowRight className="size-4" />
           </span>

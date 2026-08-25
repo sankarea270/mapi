@@ -8,6 +8,7 @@ import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { CloudLayer } from "@/components/home/CloudLayer";
+import { JourneyBand } from "@/components/home/JourneyBand";
 import { WhyTravelWith } from "@/components/home/WhyTravelWith";
 
 export function generateStaticParams() {
@@ -121,6 +122,7 @@ export default async function HomePage({
     <WhyTravelWith />
     <SocialFeed />
     <ReviewsSection />
+    <JourneyBand />
     </>
   );
 }

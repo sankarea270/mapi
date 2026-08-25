@@ -490,5 +490,12 @@
     "qBooking": "¿Cómo confirmo la reserva y cuándo pago?",
     "qDuration": "¿Cuánto dura y cómo se reparte?",
     "aDuration": "La experiencia dura {duration}. En la pestaña «Plan de la gira» tienes el desglose de lo que se hace en cada tramo."
+  },
+  "journey": {
+    "badge": "Tu camino empieza aquí",
+    "title": "Del primer mensaje a la primera huella",
+    "lead": "Te acompañamos desde que eliges la fecha hasta que vuelves a casa: ruta, permisos, traslados y un guía local que conoce el terreno.",
+    "ctaTours": "Ver todos los tours",
+    "ctaPlan": "Planificar mi viaje"
   }
 }

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { siteConfig, whatsappLink } from "@/config/site";
-import { pickLocalized, formatPrice } from "@/lib/format";
+import { pickLocalized } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
   FacebookIcon,
@@ -93,13 +94,14 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
         {/* Cabecera: el precio manda, en cifra grande y sin adornos. */}
         <div className="bg-slate-900 px-6 pb-6 pt-5 text-white">
           <p className="eyebrow text-teal-300">{t("specialOffer")}</p>
-          <div className="mt-3 flex items-end justify-between gap-4">
-            <div className="flex items-baseline gap-2">
-              <span className="font-heading text-[2.6rem] font-bold leading-none tracking-tight">
-                {formatPrice(tour.price, l, "USD")}
-              </span>
-              <span className="text-sm text-slate-300">/ {tr("travelers").toLowerCase()}</span>
-            </div>
+          <div className="mt-3">
+            <Price
+              amount={tour.price}
+              locale={l}
+              size="xl"
+              onDark
+              suffix={`/ ${tr("travelers").toLowerCase()}`}
+            />
           </div>
           <div className="mt-5 flex items-center gap-5 border-t border-white/15 pt-4 text-sm">
             <span className="text-slate-300">

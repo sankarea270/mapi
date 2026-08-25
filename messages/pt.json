@@ -490,5 +490,12 @@
     "qBooking": "Como confirmo a reserva e quando pago?",
     "qDuration": "Quanto dura e como se divide?",
     "aDuration": "A experiência dura {duration}. Na aba «Plano do passeio» você tem o detalhe do que se faz em cada trecho."
+  },
+  "journey": {
+    "badge": "Seu caminho começa aqui",
+    "title": "Da primeira mensagem à primeira pegada",
+    "lead": "Acompanhamos você desde a escolha da data até a volta para casa: rota, permissões, traslados e um guia local que conhece o terreno.",
+    "ctaTours": "Ver todos os tours",
+    "ctaPlan": "Planejar minha viagem"
   }
 }

@@ -1,4 +1,4 @@
-import { Clock, Mail, MessageCircle, Phone, CreditCard, Shield, Banknote } from "lucide-react";
+import { Clock, Mail, MessageCircle, Phone, Shield, Banknote } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { NAV_ITEMS } from "@/config/navigation";
 import { siteConfig, whatsappLink } from "@/config/site";
@@ -28,13 +28,10 @@ const footerDestinations = [
   { labelKey: "destinos.iquitos", href: "/destinos/iquitos" },
 ];
 
-const paymentMethods = [
-  { name: "Visa", icon: "💳" },
-  { name: "Mastercard", icon: "💳" },
-  { name: "PayPal", icon: "🅿️" },
-  { name: "Yape", icon: "📱" },
-  { name: "Plin", icon: "📱" },
-];
+/* Solo el nombre: el emoji que había aquí ni se pintaba —se dibujaba un
+   icono genérico de tarjeta para los cinco— y un 💳 repetido para Visa,
+   Mastercard, PayPal, Yape y Plin no distingue nada. La marca escrita sí. */
+const paymentMethods = ["Visa", "Mastercard", "PayPal", "Yape", "Plin"];
 
 export default function Footer() {
   const t = useTranslations();
@@ -89,13 +86,13 @@ export default function Footer() {
                 {t("footer.paymentMethods")}
               </h4>
               <div className="flex flex-wrap gap-2">
-                {paymentMethods.map((method) => (
+                {paymentMethods.map((method, i) => (
                   <span
-                    key={method.name}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300"
+                    key={method}
+                    style={{ ["--i" as string]: i }}
+                    className="rise-in rounded border border-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-300 transition-colors hover:border-amber-400/60 hover:text-white"
                   >
-                    <CreditCard className="size-3.5" />
-                    {method.name}
+                    {method}
                   </span>
                 ))}
               </div>

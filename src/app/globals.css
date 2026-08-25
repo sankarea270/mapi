@@ -851,3 +851,109 @@ html {
     display: none;
   }
 }
+
+/* ===== BANDA DE CIERRE ===== */
+
+/* Filete que se dibuja de izquierda a derecha al cargar la banda. */
+@keyframes rule-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.journey-rule {
+  transform-origin: left center;
+  animation: rule-draw 1.1s cubic-bezier(0.22, 0.68, 0.35, 1) both;
+}
+
+/*
+ * La traza de vuelo se dibuja con dashoffset. El patrón de puntos ya usa
+ * stroke-dasharray, así que la longitud animada va en una segunda capa: se
+ * anima el offset de un trazo continuo largo que descubre los puntos.
+ */
+@keyframes trace-draw {
+  from {
+    stroke-dashoffset: 420;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.flight-trace {
+  stroke-dasharray: 3 10;
+  animation: trace-draw 2.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+}
+
+@keyframes dot-pop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.flight-origin {
+  transform-origin: 18px 168px;
+  animation: dot-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) 0.25s both;
+}
+
+/*
+ * El avión sigue la misma curva con `offset-path`. Donde no haya soporte,
+ * simplemente no se desplaza: la traza y las pisadas sostienen la escena.
+ */
+@keyframes plane-fly {
+  from {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+.flight-plane {
+  offset-path: path("M 18 168 C 90 96, 200 74, 286 44");
+  offset-rotate: auto;
+  animation: plane-fly 2.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+}
+
+/* Pisada: se posa con un ligero rebote y se queda. */
+@keyframes step-down {
+  from {
+    opacity: 0;
+    transform: translateY(-9px) scale(0.8);
+  }
+  60% {
+    opacity: 0.62;
+  }
+  to {
+    opacity: 0.55;
+    transform: none;
+  }
+}
+.footprint {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: step-down 0.65s cubic-bezier(0.3, 0.8, 0.4, 1.2) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-rule,
+  .flight-trace,
+  .flight-origin,
+  .flight-plane,
+  .footprint {
+    animation: none !important;
+    opacity: 1;
+  }
+  .flight-trace {
+    stroke-dashoffset: 0;
+  }
+}

@@ -490,5 +490,12 @@
     "qBooking": "How do I confirm the booking and when do I pay?",
     "qDuration": "How long is it and how is it structured?",
     "aDuration": "The experience lasts {duration}. The «Tour plan» tab breaks down what happens in each stage."
+  },
+  "journey": {
+    "badge": "Your path starts here",
+    "title": "From the first message to the first footprint",
+    "lead": "We are with you from the moment you pick a date until you get home: route, permits, transfers and a local guide who knows the ground.",
+    "ctaTours": "See all tours",
+    "ctaPlan": "Plan my trip"
   }
 }
