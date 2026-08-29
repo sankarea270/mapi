@@ -497,5 +497,10 @@
     "lead": "We are with you from the moment you pick a date until you get home: route, permits, transfers and a local guide who knows the ground.",
     "ctaTours": "See all tours",
     "ctaPlan": "Plan my trip"
+  },
+  "credentials": {
+    "badge": "Official backing",
+    "title": "Licensed and registered",
+    "lead": "We operate with the tourism-sector permits required by the Peruvian State."
   }
 }

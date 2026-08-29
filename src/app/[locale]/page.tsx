@@ -9,6 +9,7 @@ import { SocialFeed } from "@/components/social/SocialFeed";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { CloudLayer } from "@/components/home/CloudLayer";
 import { JourneyBand } from "@/components/home/JourneyBand";
+import { Credentials } from "@/components/about/Credentials";
 import { WhyTravelWith } from "@/components/home/WhyTravelWith";
 
 export function generateStaticParams() {
@@ -119,6 +120,7 @@ export default async function HomePage({
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
 
+    <Credentials variant="strip" locale={locale} />
     <WhyTravelWith />
     <SocialFeed />
     <ReviewsSection />

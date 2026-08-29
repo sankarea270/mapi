@@ -41,7 +41,7 @@ export default async function AboutPage({
       <AboutHero />
       <MissionVision />
       <StatsSection />
-      <CertificationsSection />
+      <CertificationsSection locale={locale} />
       <TeamSection />
       <CompanyInfo />
     </>

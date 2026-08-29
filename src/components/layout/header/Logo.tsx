@@ -11,11 +11,15 @@ export function Logo({ light = false, compact = false }: { light?: boolean; comp
 
   return (
     <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-      <div className="relative size-12 shrink-0 overflow-hidden rounded-xl transition-transform duration-300 group-hover:rotate-6">
+      {/* Solo el pin del logo: la pieza completa lleva el rótulo "GoToMapi
+          PERÚ" dentro y, a tamaño de cabecera, ese texto quedaría ilegible y
+          además duplicaría el nombre que ya va al lado. */}
+      <div className="relative size-16 shrink-0 transition-transform duration-300 group-hover:-rotate-3">
         <Image
-          src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/mapilogo.png`}
-          alt="Mapi Travels Logo"
+          src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/gotomapi-mark.webp`}
+          alt="GoToMapi Perú"
           fill
+          sizes="64px"
           className="object-contain"
           priority
         />

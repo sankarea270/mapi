@@ -7,61 +7,63 @@
 /*
  * ===== PALETA DE MARCA =====
  *
- * Los cuatro colores de marca son:
- *   #224248  petróleo profundo   -> neutro oscuro
- *   #325E6A  azul pizarra        -> neutro medio
- *   #44A1A4  turquesa            -> color de apoyo
- *   #FF9A00  ámbar               -> acento y llamadas a la acción
- *   blanco
+ * Derivada del logo GoToMapi Perú. Los dos colores se muestrearon del propio
+ * archivo, no se eligieron a ojo:
+ *   #036564  petróleo  -> el pin y las montañas (color dominante)
+ *   #D88527  naranja   -> el arco y la palabra "Mapi"
  *
- * En lugar de reemplazar las ~765 clases de color repartidas por 60
- * componentes, se redefinen aquí las rampas que ya usaba el proyecto. Es una
- * única fuente de verdad: `slate-*` deja de ser el gris azulado de Tailwind y
- * pasa a ser la rampa petróleo de marca, y `amber-*` la rampa ámbar. Cambiar
- * un valor aquí repinta toda la aplicación de forma coherente.
+ * En lugar de tocar las ~765 clases de color repartidas por 60 componentes,
+ * se redefinen aquí las rampas que ya usaba el proyecto. Es una única fuente
+ * de verdad: `slate-*` es el neutro petróleo, `amber-*` el naranja de marca y
+ * `teal-*` el petróleo saturado para acentos.
+ *
+ * El neutro va menos saturado que el petróleo del logo a propósito: con la
+ * saturación del logo, cada párrafo de la web saldría teñido de verde y el
+ * texto largo se vuelve incómodo de leer. El color pleno se reserva para
+ * `teal-*`, que es donde tiene que destacar.
  *
  * `emerald-*` se deja intacto: es el verde de WhatsApp y de los estados de
- * éxito, y son colores que el usuario reconoce por convención.
+ * éxito, colores que el usuario reconoce por convención.
  */
 @theme {
-  /* Neutro: blanco -> #325E6A -> #224248 */
-  --color-slate-50: #f4f8f9;
-  --color-slate-100: #e6eff1;
-  --color-slate-200: #c9dbdf;
-  --color-slate-300: #a3c0c7;
-  --color-slate-400: #74a0aa;
-  --color-slate-500: #4e808d;
-  --color-slate-600: #3c6c78;
-  --color-slate-700: #325e6a;
-  --color-slate-800: #2a4e57;
-  --color-slate-900: #224248;
-  --color-slate-950: #14282d;
+  /* Neutro: blanco -> petróleo desaturado */
+  --color-slate-50: #f3f8f8;
+  --color-slate-100: #e4efee;
+  --color-slate-200: #c6dcdb;
+  --color-slate-300: #9dc2c1;
+  --color-slate-400: #6ba0a0;
+  --color-slate-500: #457f7e;
+  --color-slate-600: #2c6a69;
+  --color-slate-700: #1d5655;
+  --color-slate-800: #164544;
+  --color-slate-900: #0f3736;
+  --color-slate-950: #072221;
 
-  /* Acento: rampa construida alrededor de #FF9A00 */
-  --color-amber-50: #fff7eb;
-  --color-amber-100: #ffebcc;
-  --color-amber-200: #ffd899;
-  --color-amber-300: #ffc266;
-  --color-amber-400: #ffae33;
-  --color-amber-500: #ff9a00;
-  --color-amber-600: #e08600;
-  --color-amber-700: #b86d00;
-  --color-amber-800: #8f5500;
-  --color-amber-900: #6b4000;
-  --color-amber-950: #3d2400;
+  /* Acento: rampa construida alrededor del naranja del logo, #D88527 */
+  --color-amber-50: #fdf6ec;
+  --color-amber-100: #fae9ce;
+  --color-amber-200: #f5d19e;
+  --color-amber-300: #efb86c;
+  --color-amber-400: #e6a047;
+  --color-amber-500: #d88527;
+  --color-amber-600: #b96e1d;
+  --color-amber-700: #955718;
+  --color-amber-800: #734315;
+  --color-amber-900: #573312;
+  --color-amber-950: #301c09;
 
-  /* Apoyo: rampa alrededor de #44A1A4, para acentos fríos y datos. */
-  --color-teal-50: #eff9f9;
-  --color-teal-100: #d6f0f0;
-  --color-teal-200: #aee1e2;
-  --color-teal-300: #7fcccd;
-  --color-teal-400: #55b2b5;
-  --color-teal-500: #44a1a4;
-  --color-teal-600: #37868a;
-  --color-teal-700: #2e6b70;
-  --color-teal-800: #275659;
-  --color-teal-900: #22484b;
-  --color-teal-950: #12292b;
+  /* Apoyo: petróleo pleno del logo, para clasificar y para datos. */
+  --color-teal-50: #effaf9;
+  --color-teal-100: #d2f1ef;
+  --color-teal-200: #a6e3e0;
+  --color-teal-300: #71cecb;
+  --color-teal-400: #2fa9a6;
+  --color-teal-500: #0a7b79;
+  --color-teal-600: #036564;
+  --color-teal-700: #04524f;
+  --color-teal-800: #064241;
+  --color-teal-900: #073534;
+  --color-teal-950: #032120;
 }
 
 @theme inline {
@@ -111,23 +113,23 @@
 :root {
   /* Tokens de shadcn alineados con la paleta de marca. */
   --background: #ffffff;
-  --foreground: #224248;
+  --foreground: #0f3736;
   --card: #ffffff;
-  --card-foreground: #224248;
+  --card-foreground: #0f3736;
   --popover: #ffffff;
-  --popover-foreground: #224248;
-  --primary: #325e6a;
+  --popover-foreground: #0f3736;
+  --primary: #036564;
   --primary-foreground: #ffffff;
-  --secondary: #f4f8f9;
-  --secondary-foreground: #224248;
-  --muted: #f4f8f9;
-  --muted-foreground: #4e808d;
-  --accent: #eff9f9;
-  --accent-foreground: #22484b;
+  --secondary: #f3f8f8;
+  --secondary-foreground: #0f3736;
+  --muted: #f3f8f8;
+  --muted-foreground: #457f7e;
+  --accent: #effaf9;
+  --accent-foreground: #04524f;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #c9dbdf;
-  --input: #c9dbdf;
-  --ring: #44a1a4;
+  --border: #c6dcdb;
+  --input: #c6dcdb;
+  --ring: #036564;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -151,8 +153,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: #44a1a4;
-  --primary-foreground: #14282d;
+  --primary: #2fa9a6;
+  --primary-foreground: #072221;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -655,7 +657,7 @@ html {
   width: 20px;
   height: 20px;
   border-radius: 9999px;
-  background: var(--notch, #f4f8f9);
+  background: var(--notch, #f3f8f8);
   transform: translateY(-50%);
 }
 .ticket-notch::before {
@@ -885,27 +887,6 @@ html {
       animation-timeline: view();
       animation-range: entry 5% entry 60%;
     }
-  }
-}
-
-/*
- * Flotación continua: la lámina sube y baja mientras se acerca muy poco a
- * poco, para que no quede congelada. Va sobre la imagen y no sobre el
- * contenedor, así no pisa el transform de la entrada.
- */
-@keyframes plate-drift {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-10px) scale(1.022);
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .journey-plate__img {
-    animation: plate-drift 9s ease-in-out infinite;
-    will-change: transform;
   }
 }
 

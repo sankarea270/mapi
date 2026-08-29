@@ -89,7 +89,7 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
       <div
         id="reservar"
         className="ticket-notch scroll-mt-28 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200"
-        style={{ ["--notch" as string]: "#f4f8f9", ["--notch-y" as string]: "168px" }}
+        style={{ ["--notch" as string]: "#f3f8f8", ["--notch-y" as string]: "168px" }}
       >
         {/* Cabecera: el precio manda, en cifra grande y sin adornos. */}
         <div className="bg-slate-900 px-6 pb-6 pt-5 text-white">

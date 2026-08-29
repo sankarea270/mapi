@@ -497,5 +497,10 @@
     "lead": "Te acompañamos desde que eliges la fecha hasta que vuelves a casa: ruta, permisos, traslados y un guía local que conoce el terreno.",
     "ctaTours": "Ver todos los tours",
     "ctaPlan": "Planificar mi viaje"
+  },
+  "credentials": {
+    "badge": "Respaldo oficial",
+    "title": "Autorizados y registrados",
+    "lead": "Operamos con los permisos del sector turismo que exige el Estado peruano."
   }
 }
