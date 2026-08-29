@@ -32,7 +32,8 @@ export function Logo({ light = false, compact = false }: { light?: boolean; comp
           )}
         >
           {siteConfig.name}
-          <span className="text-amber-400"> {siteConfig.nameSuffix}</span>
+          {/* Sin espacio: en el logotipo es una sola palabra. */}
+          <span className="text-amber-500">{siteConfig.nameSuffix}</span>
         </span>
         {!compact && (
           <span

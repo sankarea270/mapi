@@ -205,7 +205,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-xs text-slate-400 sm:flex-row sm:px-6">
           <p>
-            © {year} {siteConfig.name} {siteConfig.nameSuffix} · {t("footer.rights")}
+            © {year} {siteConfig.fullName} · {t("footer.rights")}
           </p>
           <div className="flex gap-6">
             <Link href="/legal/terminos" className="transition-colors hover:text-slate-300">

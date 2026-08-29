@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Mapi Travels — Travel agency in Peru",
+    "title": "GoToMapi — Travel agency in Peru",
     "description": "Tours and packages to Machu Picchu, Sacred Valley, Cusco, Amazon and more. Peruvian agency with 24/7 support in Spanish, English and Portuguese."
   },
   "brand": {
@@ -316,7 +316,7 @@
   },
   "whyTravel": {
     "badge": "Quality experience",
-    "title": "Why travel with Mapi Travels?",
+    "title": "Why travel with GoToMapi?",
     "subtitle": "Our track record and commitment make us the best choice to discover Peru.",
     "trust": {
       "title": "Trust in every journey",
@@ -337,8 +337,8 @@
   },
   "about": {
     "meta": {
-      "title": "About Us - Mapi Travels",
-      "description": "Learn about the history, mission and team of Mapi Travels. Authorized agency specialized in tours to Machu Picchu and all of Peru."
+      "title": "About Us - GoToMapi",
+      "description": "Learn about the history, mission and team of GoToMapi. Authorized agency specialized in tours to Machu Picchu and all of Peru."
     },
     "hero": {
       "title": "About Us",
@@ -420,7 +420,7 @@
       "email": {
         "label": "Email"
       },
-      "legalNote": "All information presented is truthful and backed by official documents. Mapi Travels operates under strict compliance with Peruvian tourism regulations."
+      "legalNote": "All information presented is truthful and backed by official documents. GoToMapi operates under strict compliance with Peruvian tourism regulations."
     }
   },
   "season": {

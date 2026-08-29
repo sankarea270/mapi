@@ -24,9 +24,9 @@ export const TERMS: LegalDocument = {
     "Última atualização: agosto de 2026"
   ),
   intro: t(
-    "Estos términos regulan el uso de mapitravels.pe y la contratación de los servicios de Mapi Travels.",
-    "These terms govern the use of mapitravels.pe and the booking of Mapi Travels services.",
-    "Estes termos regem o uso de mapitravels.pe e a contratação dos serviços da Mapi Travels."
+    "Estos términos regulan el uso de mapitravels.pe y la contratación de los servicios de GoToMapi.",
+    "These terms govern the use of mapitravels.pe and the booking of GoToMapi services.",
+    "Estes termos regem o uso de mapitravels.pe e a contratação dos serviços da GoToMapi."
   ),
   sections: [
     {
@@ -92,9 +92,9 @@ export const TERMS: LegalDocument = {
         "6. Propriedade Intelectual"
       ),
       body: t(
-        "El contenido de este sitio (textos, imágenes y diseño) es propiedad de Mapi Travels y no puede reproducirse sin autorización escrita.",
-        "The content of this site (texts, images and design) is the property of Mapi Travels and may not be reproduced without written permission.",
-        "O conteúdo deste site (textos, imagens e design) é propriedade da Mapi Travels e não pode ser reproduzido sem autorização por escrito."
+        "El contenido de este sitio (textos, imágenes y diseño) es propiedad de GoToMapi y no puede reproducirse sin autorización escrita.",
+        "The content of this site (texts, images and design) is the property of GoToMapi and may not be reproduced without written permission.",
+        "O conteúdo deste site (textos, imagens e design) é propriedade da GoToMapi e não pode ser reproduzido sem autorização por escrito."
       ),
     },
     {
@@ -121,9 +121,9 @@ export const PRIVACY: LegalDocument = {
     "Última atualização: agosto de 2026"
   ),
   intro: t(
-    "En Mapi Travels nos comprometemos a proteger tus datos personales. Esta política explica qué datos recopilamos y cómo los usamos.",
-    "At Mapi Travels we are committed to protecting your personal data. This policy explains what data we collect and how we use it.",
-    "Na Mapi Travels nos comprometemos a proteger seus dados pessoais. Esta política explica quais dados coletamos e como os usamos."
+    "En GoToMapi nos comprometemos a proteger tus datos personales. Esta política explica qué datos recopilamos y cómo los usamos.",
+    "At GoToMapi we are committed to protecting your personal data. This policy explains what data we collect and how we use it.",
+    "Na GoToMapi nos comprometemos a proteger seus dados pessoais. Esta política explica quais dados coletamos e como os usamos."
   ),
   sections: [
     {

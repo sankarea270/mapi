@@ -50,7 +50,7 @@ export function buildMetadata({
       title,
       description,
       url: pageUrl(path, locale),
-      siteName: "Mapi Travels",
+      siteName: "GoToMapi",
       locale: locale === "es" ? "es_PE" : locale === "en" ? "en_US" : "pt_BR",
       type: "website",
       images: [{ url: ogImage, width: 1200, height: 630, alt: title }],

@@ -57,7 +57,7 @@ export function AdminSidebar() {
             <Compass className="size-5" />
           </div>
           <div>
-            <p className="text-sm font-bold">Mapi Travels</p>
+            <p className="text-sm font-bold">GoToMapi</p>
             <p className="text-xs text-white/50">Admin Panel</p>
           </div>
           <button

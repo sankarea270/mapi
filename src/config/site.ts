@@ -1,6 +1,14 @@
 export const siteConfig = {
-  name: "Mapi",
-  nameSuffix: "Travels",
+  /*
+   * El logotipo escribe "GoToMapi" como una sola palabra, con "GoTo" en
+   * petróleo y "Mapi" en naranja. `name` y `nameSuffix` son esas dos mitades
+   * para poder colorearlas por separado en la cabecera; `fullName` es la
+   * cadena sin partir, para metadatos, JSON-LD y textos legales, donde meter
+   * un espacio daría "GoTo Mapi".
+   */
+  name: "GoTo",
+  nameSuffix: "Mapi",
+  fullName: "GoToMapi",
   taglineKey: "brand.tagline",
   phone: {
     display: "+51 984 123 456",

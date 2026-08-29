@@ -43,7 +43,7 @@ export default async function HomePage({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
-    name: `${siteConfig.name} ${siteConfig.nameSuffix}`,
+    name: siteConfig.fullName,
     description: t("subtitle"),
     url: buildMetadata({ locale, title: "", path: "/" }).alternates?.canonical,
     telephone: siteConfig.phone.display,

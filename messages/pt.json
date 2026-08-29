@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Mapi Travels — Agência de viagens no Peru",
+    "title": "GoToMapi — Agência de viagens no Peru",
     "description": "Tours e pacotes para Machu Picchu, Vale Sagrado, Cusco, Amazônia e mais. Agência peruana com atendimento 24/7 em espanhol, inglês e português."
   },
   "brand": {
@@ -316,7 +316,7 @@
   },
   "whyTravel": {
     "badge": "Experiência de qualidade",
-    "title": "Por que viajar com Mapi Travels?",
+    "title": "Por que viajar com GoToMapi?",
     "subtitle": "Nossa trajetória e compromisso nos tornam a melhor opção para descobrir o Peru.",
     "trust": {
       "title": "Confiança em cada viagem",
@@ -337,8 +337,8 @@
   },
   "about": {
     "meta": {
-      "title": "Sobre Nós - Mapi Travels",
-      "description": "Conheça a história, missão e equipe da Mapi Travels. Agência autorizada especializada em tours para Machu Picchu e todo o Peru."
+      "title": "Sobre Nós - GoToMapi",
+      "description": "Conheça a história, missão e equipe da GoToMapi. Agência autorizada especializada em tours para Machu Picchu e todo o Peru."
     },
     "hero": {
       "title": "Sobre Nós",
@@ -420,7 +420,7 @@
       "email": {
         "label": "E-mail"
       },
-      "legalNote": "Todas as informações apresentadas são verdadeiras e apoiadas por documentos oficiais. A Mapi Travels opera sob rigoroso cumprimento das regulamentações peruanas de turismo."
+      "legalNote": "Todas as informações apresentadas são verdadeiras e apoiadas por documentos oficiais. A GoToMapi opera sob rigoroso cumprimento das regulamentações peruanas de turismo."
     }
   },
   "season": {

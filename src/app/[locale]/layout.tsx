@@ -31,8 +31,8 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Mapi Travels",
-    template: "%s · Mapi Travels",
+    default: "GoToMapi",
+    template: "%s · GoToMapi",
   },
   description: "Tours y paquetes turísticos en Perú.",
   verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION

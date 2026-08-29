@@ -125,7 +125,7 @@ export default async function TourDetailPage({
       : undefined,
     provider: {
       "@type": "TravelAgency",
-      name: `${siteConfig.name} ${siteConfig.nameSuffix}`,
+      name: siteConfig.fullName,
       url: pageUrl("/", locale),
       telephone: siteConfig.phone.display,
     },
