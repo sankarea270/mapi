@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BASE_URL } from "@/lib/seo";
 
 export const dynamic = 'force-static'
 
@@ -11,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/studio", "/api/"],
       },
     ],
-    sitemap: `https://sankarea270.github.io/mapi/sitemap.xml`,
-    host: "https://sankarea270.github.io/mapi",
+    sitemap: `${BASE_URL}/sitemap.xml`,
+    host: BASE_URL,
   };
 }

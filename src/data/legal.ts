@@ -24,9 +24,9 @@ export const TERMS: LegalDocument = {
     "Última atualização: agosto de 2026"
   ),
   intro: t(
-    "Estos términos regulan el uso de mapitravels.pe y la contratación de los servicios de GoToMapi.",
-    "These terms govern the use of mapitravels.pe and the booking of GoToMapi services.",
-    "Estes termos regem o uso de mapitravels.pe e a contratação dos serviços da GoToMapi."
+    "Estos términos regulan el uso de gotomapi.pe y la contratación de los servicios de GoToMapi.",
+    "These terms govern the use of gotomapi.pe and the booking of GoToMapi services.",
+    "Estes termos regem o uso de gotomapi.pe e a contratação dos serviços da GoToMapi."
   ),
   sections: [
     {

@@ -36,6 +36,12 @@ jobs:
           touch out/.nojekyll
         env:
           NODE_ENV: production
+          # Dónde vive REALMENTE el sitio hoy. De aquí salen el canonical, los
+          # hreflang, el sitemap y robots.txt, así que si no coincide con el
+          # host, Google recibe URLs que no resuelven. El valor por defecto
+          # del código es el dominio de marca (gotomapi.pe): cuando el sitio
+          # se mueva allí, basta con borrar esta línea.
+          NEXT_PUBLIC_SITE_URL: https://sankarea270.github.io/mapi
       
       - name: Create root index.html redirect
         run: |

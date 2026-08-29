@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Clock, Mail, MessageCircle, Phone } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { siteConfig, whatsappLink } from "@/config/site";
+import { siteConfig, whatsappLink, siteEmail } from "@/config/site";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { buildMetadata } from "@/lib/seo";
 
@@ -56,8 +56,8 @@ export default async function ContactPage({
     {
       icon: Mail,
       label: "Email",
-      value: siteConfig.email,
-      href: `mailto:${siteConfig.email}`,
+      value: siteEmail,
+      href: `mailto:${siteEmail}`,
       external: false,
       accent: "text-amber-500",
       hover: "hover:bg-slate-50",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { siteConfig, whatsappLink } from "@/config/site";
+import { siteConfig, whatsappLink, socials } from "@/config/site";
 import { pickLocalized } from "@/lib/format";
 import { Price } from "@/components/ui/Price";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -226,7 +226,7 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
         <div className="mt-4 flex gap-2">
           {(Object.keys(socialIcons) as Array<keyof typeof socialIcons>).map((key) => {
             const Icon = socialIcons[key];
-            const social = siteConfig.socials[key];
+            const social = socials[key];
             return (
               <a
                 key={key}

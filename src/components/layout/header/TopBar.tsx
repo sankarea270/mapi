@@ -2,7 +2,7 @@
 
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { siteConfig, whatsappLink } from "@/config/site";
+import { siteConfig, whatsappLink, siteEmail } from "@/config/site";
 import { LanguageSelect } from "./LanguageSelect";
 import { CurrencySelect } from "./CurrencySelect";
 
@@ -34,11 +34,11 @@ export function TopBar() {
           </a>
           <span className="mx-1 hidden h-3.5 w-px bg-white/15 lg:block" />
           <a
-            href={`mailto:${siteConfig.email}`}
+            href={`mailto:${siteEmail}`}
             className="hidden items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium transition-colors hover:bg-white/10 hover:text-white sm:flex"
           >
             <Mail className="size-3.5 shrink-0" />
-            <span className="hidden xl:inline">{siteConfig.email}</span>
+            <span className="hidden xl:inline">{siteEmail}</span>
           </a>
         </div>
 

@@ -2,6 +2,7 @@
 
 import { Building2, FileText, Briefcase, Badge } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { mailAt } from "@/config/site";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const COMPANY_DATA = [
@@ -50,7 +51,7 @@ const ADDITIONAL_INFO = [
   },
   {
     key: "email",
-    value: "info@mapitravels.pe"
+    value: mailAt("info")
   }
 ];
 

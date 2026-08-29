@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
+import { BASE_URL } from "@/lib/seo";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { DESTINATIONS } from "@/data/destinations";
 import { PACKAGES } from "@/data/packages";
@@ -8,10 +9,25 @@ import { GUIDES } from "@/data/guides";
 
 export const dynamic = 'force-static'
 
-const BASE_URL = "https://sankarea270.github.io/mapi";
-
+/*
+ * La URL base viene de lib/seo, que es la única fuente: antes estaba
+ * cableada aquí y en robots.ts, y ninguna de las dos coincidía con la que
+ * usaban el canonical y las etiquetas Open Graph.
+ *
+ * El prefijo de idioma va siempre, también en español: con
+ * `localePrefix: "always"` la raíz sin idioma no existe.
+ */
 function localePrefix(locale: string): string {
-  return locale === routing.defaultLocale ? "" : `/${locale}`;
+  return `/${locale}`;
+}
+
+/*
+ * El proyecto compila con `trailingSlash: true`, así que la página real y su
+ * canonical llevan barra final. Sin normalizar aquí, el sitemap declararía
+ * /es y el canonical /es/: dos URLs distintas para la misma página.
+ */
+function url(path: string): string {
+  return `${BASE_URL}${path}/`.replace(/\/{2,}$/, "/");
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -39,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const [path, priority] of staticPaths) {
       entries.push({
-        url: `${BASE_URL}${p}${path}`,
+        url: url(`${p}${path}`),
         changeFrequency: "weekly",
         priority,
       });
@@ -47,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const slug of tourSlugs) {
       entries.push({
-        url: `${BASE_URL}${p}/tours/${slug}`,
+        url: url(`${p}/tours/${slug}`),
         changeFrequency: "weekly",
         priority: 0.8,
       });
@@ -55,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const destination of DESTINATIONS) {
       entries.push({
-        url: `${BASE_URL}${p}/destinos/${destination.slug}`,
+        url: url(`${p}/destinos/${destination.slug}`),
         changeFrequency: "weekly",
         priority: 0.7,
       });
@@ -63,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const pkg of PACKAGES) {
       entries.push({
-        url: `${BASE_URL}${p}/paquetes/${pkg.slug}`,
+        url: url(`${p}/paquetes/${pkg.slug}`),
         changeFrequency: "monthly",
         priority: 0.6,
       });
@@ -71,7 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const experience of EXPERIENCES) {
       entries.push({
-        url: `${BASE_URL}${p}/experiencias/${experience.slug}`,
+        url: url(`${p}/experiencias/${experience.slug}`),
         changeFrequency: "monthly",
         priority: 0.6,
       });
@@ -79,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const guide of GUIDES) {
       entries.push({
-        url: `${BASE_URL}${p}/guia/${guide.slug}`,
+        url: url(`${p}/guia/${guide.slug}`),
         changeFrequency: "monthly",
         priority: 0.5,
       });

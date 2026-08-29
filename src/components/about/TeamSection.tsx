@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Mail, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { mailAt } from "@/config/site";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const TEAM = [
@@ -11,7 +12,7 @@ const TEAM = [
     position: "Gerente General",
     department: "Administración",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    email: "carlos@mapitravels.pe",
+    email: mailAt("carlos"),
     phone: "+51 984 123 456"
   },
   {
@@ -19,7 +20,7 @@ const TEAM = [
     position: "Jefa de Operaciones",
     department: "Operaciones",
     image: "https://images.unsplash.com/photo-1494790108755-2616b612b999?w=400&h=400&fit=crop&crop=face",
-    email: "ana@mapitravels.pe",
+    email: mailAt("ana"),
     phone: "+51 984 123 457"
   },
   {
@@ -27,7 +28,7 @@ const TEAM = [
     position: "Guía Senior",
     department: "Guías",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    email: "miguel@mapitravels.pe",
+    email: mailAt("miguel"),
     phone: "+51 984 123 458"
   },
   {
@@ -35,7 +36,7 @@ const TEAM = [
     position: "Ejecutiva de Ventas",
     department: "Ventas",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-    email: "rosa@mapitravels.pe",
+    email: mailAt("rosa"),
     phone: "+51 984 123 459"
   },
   {
@@ -43,7 +44,7 @@ const TEAM = [
     position: "Guía Especializado",
     department: "Guías",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    email: "pedro@mapitravels.pe",
+    email: mailAt("pedro"),
     phone: "+51 984 123 460"
   },
   {
@@ -51,7 +52,7 @@ const TEAM = [
     position: "Coordinadora de Tours",
     department: "Operaciones",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
-    email: "lucia@mapitravels.pe",
+    email: mailAt("lucia"),
     phone: "+51 984 123 461"
   }
 ];

@@ -1,7 +1,7 @@
 import { Clock, Mail, MessageCircle, Phone, Shield, Banknote } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { NAV_ITEMS } from "@/config/navigation";
-import { siteConfig, whatsappLink } from "@/config/site";
+import { siteConfig, whatsappLink, siteEmail, socials } from "@/config/site";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/layout/header/Logo";
 import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
@@ -65,7 +65,7 @@ export default function Footer() {
             <div className="mt-6 flex gap-2">
               {(Object.keys(socialIcons) as Array<keyof typeof socialIcons>).map((key) => {
                 const Icon = socialIcons[key];
-                const social = siteConfig.socials[key];
+                const social = socials[key];
                 return (
                   <a
                     key={key}
@@ -170,11 +170,11 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href={`mailto:${siteConfig.email}`}
+                  href={`mailto:${siteEmail}`}
                   className="flex items-center gap-2.5 text-slate-400 transition-colors hover:text-amber-300"
                 >
                   <Mail className="size-4 shrink-0" />
-                  {siteConfig.email}
+                  {siteEmail}
                 </a>
               </li>
               <li className="flex items-center gap-2.5 text-slate-400">

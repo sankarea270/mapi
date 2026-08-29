@@ -4,13 +4,13 @@ import Image from "next/image";
 import { Heart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { SOCIAL_POSTS } from "@/data/socialFeed";
-import { siteConfig } from "@/config/site";
+import { siteConfig, socials } from "@/config/site";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export function SocialFeed() {
   const t = useTranslations("social");
-  const instagram = siteConfig.socials.instagram;
+  const instagram = socials.instagram;
   const reduced = useReducedMotion();
   const { ref: sectionRef, isVisible } = useScrollAnimation(0.1);
 

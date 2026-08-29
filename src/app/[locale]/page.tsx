@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { whatsappLink, siteConfig } from "@/config/site";
+import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
 import { buildMetadata } from "@/lib/seo";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
@@ -47,9 +47,9 @@ export default async function HomePage({
     description: t("subtitle"),
     url: buildMetadata({ locale, title: "", path: "/" }).alternates?.canonical,
     telephone: siteConfig.phone.display,
-    email: siteConfig.email,
+    email: siteEmail,
     address: { "@type": "PostalAddress", addressLocality: "Cusco", addressCountry: "PE" },
-    sameAs: Object.values(siteConfig.socials).map((s) => s.href),
+    sameAs: Object.values(socials).map((s) => s.href),
   };
 
   return (

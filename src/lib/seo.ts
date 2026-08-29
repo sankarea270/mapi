@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
+import { siteUrl } from "@/config/site";
 
-export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mapitravels.pe";
+export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? siteUrl;
 
 export const DEFAULT_OG_IMAGE = "https://picsum.photos/seed/mapi-og/1200/630";
 
+/*
+ * El prefijo de idioma va SIEMPRE, incluido el español. La versión anterior
+ * lo omitía para el idioma por defecto, que era correcto cuando el routing
+ * usaba `localePrefix: "as-needed"`; desde que pasó a "always" esas URLs no
+ * existen, así que el canonical, los hreflang y el sitemap del español
+ * apuntaban a páginas que devuelven 404.
+ */
 function localizedPath(path: string, locale: string): string {
   const clean = path.replace(/^\//, "").replace(/\/+$/, "");
-  if (locale === routing.defaultLocale) return `/${clean}`;
-  return `/${locale}/${clean}`;
+  return clean ? `/${locale}/${clean}` : `/${locale}`;
 }
 
 export function pageUrl(path: string, locale: string): string {

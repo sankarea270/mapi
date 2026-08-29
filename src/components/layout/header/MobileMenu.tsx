@@ -5,7 +5,7 @@ import { Mail, MessageCircle, Phone, Search, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { TourCategory } from "@/types/tour";
 import { NAV_ITEMS } from "@/config/navigation";
-import { siteConfig, whatsappLink } from "@/config/site";
+import { siteConfig, whatsappLink, siteEmail } from "@/config/site";
 import {
   Dialog,
   DialogClose,
@@ -225,7 +225,7 @@ export function MobileMenu({ open, onOpenChange, categories }: MobileMenuProps) 
               <span className="hidden sm:inline">{siteConfig.phone.display}</span>
             </a>
             <a
-              href={`mailto:${siteConfig.email}`}
+              href={`mailto:${siteEmail}`}
               className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
             >
               <Mail className="size-4" />

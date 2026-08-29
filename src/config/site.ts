@@ -9,6 +9,16 @@ export const siteConfig = {
   name: "GoTo",
   nameSuffix: "Mapi",
   fullName: "GoToMapi",
+
+  /*
+   * Dominio y usuario de redes: única fuente de verdad para todo lo que
+   * "apunta" a la marca. El correo, las URL sociales, la URL base del SEO y
+   * los textos legales se derivan de aquí, así que mover la marca a otro
+   * dominio es cambiar estas dos líneas y nada más.
+   */
+  domain: "gotomapi.pe",
+  handle: "gotomapi",
+
   taglineKey: "brand.tagline",
   phone: {
     display: "+51 984 123 456",
@@ -18,7 +28,7 @@ export const siteConfig = {
     number: "51984123456",
     defaultMessage: "Hola, quiero planificar un viaje a Perú",
   },
-  email: "reservas@mapitravels.pe",
+  emailUser: "reservas",
   hours: "Lun – Dom · 8:00 – 20:00",
   currencies: [
     { code: "USD", symbol: "$" },
@@ -26,11 +36,11 @@ export const siteConfig = {
     { code: "EUR", symbol: "€" },
   ],
   defaultCurrency: "USD",
-  socials: {
-    instagram: { label: "Instagram", href: "https://instagram.com/mapitravels" },
-    facebook: { label: "Facebook", href: "https://facebook.com/mapitravels" },
-    tiktok: { label: "TikTok", href: "https://tiktok.com/@mapitravels" },
-    youtube: { label: "YouTube", href: "https://youtube.com/@mapitravels" },
+  socialBases: {
+    instagram: { label: "Instagram", base: "https://instagram.com/" },
+    facebook: { label: "Facebook", base: "https://facebook.com/" },
+    tiktok: { label: "TikTok", base: "https://tiktok.com/@" },
+    youtube: { label: "YouTube", base: "https://youtube.com/@" },
   },
   locales: [
     { code: "es", label: "Español", flag: "🇪🇸" },
@@ -38,6 +48,28 @@ export const siteConfig = {
     { code: "pt", label: "Português", flag: "🇧🇷" },
   ],
 } as const;
+
+/** Dirección de correo de la agencia, derivada del dominio de marca. */
+export const siteEmail = `${siteConfig.emailUser}@${siteConfig.domain}`;
+
+/** URL pública del sitio. */
+export const siteUrl = `https://${siteConfig.domain}`;
+
+/** Construye un correo de la marca: mailAt("carlos") -> carlos@gotomapi.pe */
+export function mailAt(user: string): string {
+  return `${user}@${siteConfig.domain}`;
+}
+
+/** Perfiles sociales, ya resueltos con el usuario de la marca. */
+export const socials = Object.fromEntries(
+  Object.entries(siteConfig.socialBases).map(([key, s]) => [
+    key,
+    { label: s.label, href: `${s.base}${siteConfig.handle}` },
+  ])
+) as Record<
+  keyof typeof siteConfig.socialBases,
+  { label: string; href: string }
+>;
 
 export function whatsappLink(message?: string): string {
   const text = encodeURIComponent(message ?? siteConfig.whatsapp.defaultMessage);
