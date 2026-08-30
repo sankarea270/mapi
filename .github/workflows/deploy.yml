@@ -42,20 +42,24 @@ jobs:
           # del código es el dominio de marca (gotomapi.pe): cuando el sitio
           # se mueva allí, basta con borrar esta línea.
           NEXT_PUBLIC_SITE_URL: https://sankarea270.github.io/mapi
+          # GitHub Pages sirve desde /<repo>. Es la excepción: el resto de
+          # hostings (Appwrite, dominio propio) usan la raíz, que es el valor
+          # por defecto del código.
+          BASE_PATH: /mapi
       
       - name: Create root index.html redirect
         run: |
-          cat > out/index.html << 'EOF'
+          cat > out/index.html << EOF
           <!DOCTYPE html>
           <html lang="es">
           <head>
             <meta charset="utf-8">
-            <meta http-equiv="refresh" content="0;url=/mapi/es/">
-            <link rel="canonical" href="/mapi/es/">
-            <title>Mapi Travels - Redirecting</title>
+            <meta http-equiv="refresh" content="0;url=${BASE_PATH}/es/">
+            <link rel="canonical" href="${BASE_PATH}/es/">
+            <title>GoToMapi</title>
           </head>
           <body>
-            <p>Redirigiendo a <a href="/mapi/es/">Mapi Travels</a>...</p>
+            <p>Redirigiendo a <a href="${BASE_PATH}/es/">GoToMapi</a>...</p>
           </body>
           </html>
           EOF
