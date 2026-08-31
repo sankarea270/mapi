@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { whatsappLink } from "@/config/site";
 import { cn } from "@/lib/utils";
+import { SentPanel } from "@/components/ui/SentPanel";
+import { useWhatsappSend } from "@/hooks/useWhatsappSend";
 
 export function ContactForm() {
   const t = useTranslations("contact");
@@ -12,27 +13,42 @@ export function ContactForm() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const { url, send, reset, isSent } = useWhatsappSend();
+
+  const resumen = (): Array<[string, string]> =>
+    (
+      [
+        [t("name"), name],
+        [t("email"), email],
+        phone ? [t("whatsapp"), phone] : null,
+        message ? [t("message"), message] : null,
+      ] as Array<[string, string] | null>
+    ).filter((x): x is [string, string] => x !== null);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const text = [
-      `Hola, soy ${name}.`,
-      email && `Mi correo: ${email}`,
-      phone && `Mi WhatsApp: ${phone}`,
-      message && `Consulta: ${message}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-    window.open(whatsappLink(text), "_blank", "noopener,noreferrer");
+    send(
+      resumen()
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n")
+    );
   };
 
   const inputClass =
     "h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20";
 
+  if (isSent && url) {
+    return (
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <SentPanel url={url} summary={resumen()} onReset={reset} />
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-8"
+      className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8"
     >
       <h2 className="text-xl font-bold text-slate-900">{t("formTitle")}</h2>
 

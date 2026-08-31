@@ -10,11 +10,11 @@
     "deploy": "npm run build",
     "start": "next start",
     "lint": "eslint",
-    "seed:supabase": "tsx scripts/seed-supabase.ts"
+    "seed:supabase": "tsx scripts/seed-supabase.ts",
+    "verificar:busqueda": "tsx scripts/verificar-busqueda.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
-    "@tanstack/react-query": "^5.101.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.31.0",

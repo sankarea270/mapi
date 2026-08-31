@@ -2,15 +2,15 @@
 
 import { ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import type { TourCategory } from "@/types/tour";
 import { Link } from "@/i18n/navigation";
-import { pickLocalized, formatPrice } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
+import type { CategoryBrief } from "@/lib/catalog";
 import { FeaturedCard } from "./FeaturedCard";
 
-export function CategoryPanel({ category }: { category: TourCategory }) {
+export function CategoryPanel({ category }: { category: CategoryBrief }) {
   const locale = useLocale();
   const t = useTranslations("nav");
-  const categoryName = pickLocalized(category.name, locale);
+  const categoryName = category.name;
 
   return (
     <div className="mx-auto w-full max-w-5xl px-6 py-8">
@@ -31,10 +31,10 @@ export function CategoryPanel({ category }: { category: TourCategory }) {
                   className="group/tour block rounded-lg px-2 py-2 transition-colors hover:bg-slate-50"
                 >
                   <p className="truncate text-sm font-medium text-slate-700 transition-colors group-hover/tour:text-primary">
-                    {pickLocalized(tour.name, locale)}
+                    {tour.name}
                   </p>
                   <p className="mt-0.5 text-xs text-slate-400">
-                    {pickLocalized(tour.duration, locale)} · {t("from")}{" "}
+                    {tour.duration} · {t("from")}{" "}
                     <span className="font-semibold text-slate-600">
                       {formatPrice(tour.price, locale, "USD")}
                     </span>

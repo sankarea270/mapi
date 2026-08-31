@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { siteConfig, whatsappLink, socials } from "@/config/site";
+import { socials } from "@/config/site";
 import { pickLocalized } from "@/lib/format";
 import { Price } from "@/components/ui/Price";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { SentPanel } from "@/components/ui/SentPanel";
+import { useWhatsappSend } from "@/hooks/useWhatsappSend";
 import {
   FacebookIcon,
   InstagramIcon,
@@ -55,6 +57,7 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
     message: "",
   });
   const [touched, setTouched] = useState(false);
+  const { url, send, reset, isSent } = useWhatsappSend();
 
   const errors = {
     fullName: form.fullName.trim().length < 2 ? tr("errors.fullName") : "",
@@ -66,19 +69,27 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  const resumen = (): Array<[string, string]> =>
+    (
+      [
+        [tr("tour"), name],
+        [tr("date"), form.date],
+        [tr("travelers"), String(form.travelers)],
+        [tr("fullName"), form.fullName],
+        [tr("email"), form.email],
+        form.message ? [tr("message"), form.message] : null,
+      ] as Array<[string, string] | null>
+    ).filter((x): x is [string, string] => x !== null);
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
     if (!isValid) return;
-    const lines = [
-      `${tr("title")}: ${name}`,
-      `${tr("date")}: ${form.date}`,
-      `${tr("travelers")}: ${form.travelers}`,
-      `${tr("fullName")}: ${form.fullName}`,
-      `${tr("email")}: ${form.email}`,
-      form.message ? `${tr("message")}: ${form.message}` : "",
-    ].filter(Boolean);
-    window.open(whatsappLink(lines.join("\n")), "_blank", "noopener,noreferrer");
+    send(
+      resumen()
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n")
+    );
   };
 
   const field =
@@ -114,6 +125,9 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
 
         <div className="perforation" />
 
+        {isSent && url ? (
+          <SentPanel url={url} summary={resumen()} onReset={reset} />
+        ) : (
         <form onSubmit={submit} noValidate className="px-6 pb-6 pt-6">
           <h2 className="font-heading text-lg font-bold text-slate-900">
             {t("reserveSidebar")}
@@ -217,6 +231,7 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
             </p>
           </div>
         </form>
+        )}
       </div>
 
       <div className="rounded-lg border border-slate-200 px-6 py-5">

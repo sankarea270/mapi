@@ -1,23 +1,23 @@
 "use client";
 
 import type { NavItem } from "@/config/navigation";
-import type { TourCategory } from "@/types/tour";
 import { ToursPanel } from "./ToursPanel";
 import { CategoryPanel } from "./CategoryPanel";
 import { LinksPanel } from "./LinksPanel";
+import type { CategoryBrief } from "@/lib/catalog";
 
 export function NavPanel({
   item,
-  categories,
+  catalog,
 }: {
   item: NavItem;
-  categories: TourCategory[];
+  catalog: CategoryBrief[];
 }) {
   switch (item.kind) {
     case "tours":
-      return <ToursPanel categories={categories} />;
+      return <ToursPanel catalog={catalog} />;
     case "category": {
-      const category = categories.find((c) => c.slug === item.categorySlug);
+      const category = catalog.find((c) => c.slug === item.categorySlug);
       return category ? <CategoryPanel category={category} /> : null;
     }
     case "links":

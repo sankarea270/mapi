@@ -7,7 +7,6 @@ import { routing } from "@/i18n/routing";
 import Header from "@/components/layout/header/Header";
 import Footer from "@/components/layout/Footer";
 import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
-import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Analytics } from "@/components/providers/Analytics";
 import { BASE_URL } from "@/lib/seo";
 import "../globals.css";
@@ -65,13 +64,11 @@ export default async function LocaleLayout({
           Saltar al contenido
         </a>
         <NextIntlClientProvider>
-          <QueryProvider>
             <Header />
             <main id="contenido">{children}</main>
             <Footer />
             <WhatsAppFloat />
             <Analytics />
-          </QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

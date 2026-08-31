@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import type { TourCategory } from "@/types/tour";
 import { TopBar } from "./TopBar";
 import { NavBar } from "./NavBar";
 import { MobileMenu } from "./MobileMenu";
 import { SearchDialog } from "./SearchDialog";
+import type { CategoryBrief } from "@/lib/catalog";
 
 const SCROLL_THRESHOLD = 16;
 
-export function HeaderClient({ categories }: { categories: TourCategory[] }) {
+export function HeaderClient({ catalog }: { catalog: CategoryBrief[] }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [overHero, setOverHero] = useState(false);
@@ -43,13 +43,13 @@ export function HeaderClient({ categories }: { categories: TourCategory[] }) {
     <header className="sticky top-0 z-50">
       <TopBar />
       <NavBar
-        categories={categories}
+        catalog={catalog}
         transparent={transparent}
         onOpenSearch={() => setSearchOpen(true)}
         onOpenMobile={() => setMobileOpen(true)}
       />
-      <MobileMenu open={mobileOpen} onOpenChange={setMobileOpen} categories={categories} />
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} categories={categories} />
+      <MobileMenu open={mobileOpen} onOpenChange={setMobileOpen} catalog={catalog} />
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} catalog={catalog} />
     </header>
   );
 }

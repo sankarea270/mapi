@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { whatsappLink } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { SentPanel } from "@/components/ui/SentPanel";
+import { useWhatsappSend } from "@/hooks/useWhatsappSend";
 
 const TRAVELERS = [1, 2, 3, 4, 5, 6] as const;
 
@@ -38,7 +39,7 @@ export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) 
     message: "",
   });
   const [touched, setTouched] = useState(false);
-  const [sent, setSent] = useState(false);
+  const { url, send, reset, isSent } = useWhatsappSend();
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -61,21 +62,31 @@ export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) 
   ).length;
   const progress = (done / 4) * 100;
 
+  /* Los pares etiqueta/valor sirven para dos cosas: componer el mensaje de
+     WhatsApp y mostrar el resumen de la confirmación. Se construyen una sola
+     vez para que no puedan desincronizarse. */
+  const resumen = (): Array<[string, string]> =>
+    (
+      [
+        form.tourName ? [t("tour"), form.tourName] : null,
+        [t("date"), form.date],
+        [t("travelers"), String(form.travelers)],
+        [t("fullName"), form.fullName],
+        [t("email"), form.email],
+        [t("whatsapp"), form.whatsapp],
+        form.message ? [t("message"), form.message] : null,
+      ] as Array<[string, string] | null>
+    ).filter((x): x is [string, string] => x !== null);
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
     if (!isValid) return;
-    const lines = [
-      form.tourName ? `${t("tour")}: ${form.tourName}` : "",
-      `${t("date")}: ${form.date}`,
-      `${t("travelers")}: ${form.travelers}`,
-      `${t("fullName")}: ${form.fullName}`,
-      `${t("email")}: ${form.email}`,
-      `${t("whatsapp")}: ${form.whatsapp}`,
-      form.message ? `${t("message")}: ${form.message}` : "",
-    ].filter(Boolean);
-    setSent(true);
-    window.open(whatsappLink(lines.join("\n")), "_blank", "noopener,noreferrer");
+    send(
+      resumen()
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n")
+    );
   };
 
   const field =
@@ -113,6 +124,9 @@ export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) 
         </div>
       </div>
 
+      {isSent && url ? (
+        <SentPanel url={url} summary={resumen()} onReset={reset} />
+      ) : (
       <form onSubmit={submit} noValidate className="px-6 pb-8 pt-8 sm:px-9">
         <Legend n={1}>{t("sectionTrip")}</Legend>
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
@@ -260,10 +274,11 @@ export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) 
             type="submit"
             className="shrink-0 rounded-md bg-amber-500 px-9 py-3.5 text-sm font-bold tracking-wide text-slate-900 transition-colors hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
           >
-            {sent ? t("whatsappConfirm") : t("submit")}
+            {t("submit")}
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }

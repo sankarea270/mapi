@@ -34,13 +34,13 @@
     "search": "Buscar",
     "searchPlaceholder": "Busque um tour, destino ou experiência…",
     "searchEmpty": "Sem resultados para «{query}»",
-    "searchLoading": "Buscando…",
     "searchHint": "Digite para buscar entre {count} tours",
     "close": "Fechar",
     "menu": "Menu",
     "plan": "Planeje",
     "contact": "Contato",
-    "seeAll": "Ver tudo"
+    "seeAll": "Ver tudo",
+    "searchCount": "{count, plural, =0 {Sem resultados} one {1 tour encontrado} other {# tours encontrados}}"
   },
   "destinos": {
     "andesCusco": "Andes e Cusco",
@@ -502,5 +502,13 @@
     "badge": "Respaldo oficial",
     "title": "Autorizados e registrados",
     "lead": "Operamos com as licenças do setor de turismo exigidas pelo Estado peruano."
+  },
+  "sent": {
+    "title": "Quase pronto",
+    "body": "Preparamos sua mensagem e abrimos o WhatsApp. Basta enviá-la de lá para que chegue até nós.",
+    "blocked": "Se o WhatsApp não abriu, seu navegador pode ter bloqueado a janela.",
+    "open": "Abrir WhatsApp",
+    "again": "Enviar outra consulta",
+    "summary": "Isto é o que você vai enviar"
   }
 }

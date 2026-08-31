@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Mail, MessageCircle, Phone, Search, X } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import type { TourCategory } from "@/types/tour";
+import { useTranslations } from "next-intl";
 import { NAV_ITEMS } from "@/config/navigation";
 import { siteConfig, whatsappLink, siteEmail } from "@/config/site";
 import {
@@ -19,40 +18,35 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Link } from "@/i18n/navigation";
-import { pickLocalized } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { TourResultRow } from "./TourResultRow";
 import { LanguageSelect } from "./LanguageSelect";
 import { CurrencySelect } from "./CurrencySelect";
+import { searchTours, type CategoryBrief } from "@/lib/catalog";
 
 interface MobileMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  categories: TourCategory[];
+  catalog: CategoryBrief[];
 }
 
-export function MobileMenu({ open, onOpenChange, categories }: MobileMenuProps) {
+export function MobileMenu({ open, onOpenChange, catalog }: MobileMenuProps) {
   const t = useTranslations();
-  const locale = useLocale();
   const [query, setQuery] = useState("");
 
-  const allTours = useMemo(() => categories.flatMap((c) => c.tours), [categories]);
+  const totalTours = useMemo(
+    () => catalog.reduce((n, c) => n + c.tours.length, 0),
+    [catalog]
+  );
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return allTours
-      .filter((tour) => {
-        const name = pickLocalized(tour.name, locale).toLowerCase();
-        const category = categories.find((c) => c.slug === tour.categorySlug);
-        const categoryName = category
-          ? pickLocalized(category.name, locale).toLowerCase()
-          : "";
-        return name.includes(q) || categoryName.includes(q);
-      })
-      .slice(0, 6);
-  }, [query, allTours, categories, locale]);
+  /* Misma función que el buscador de escritorio: antes cada uno tenía su
+     propio filtro, con resultados distintos para la misma búsqueda. */
+  const results = useMemo(
+    () => searchTours(catalog, query.trim(), 6),
+    [catalog, query]
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -99,12 +93,12 @@ export function MobileMenu({ open, onOpenChange, categories }: MobileMenuProps) 
                 <TourResultRow
                   key={tour.slug}
                   slug={tour.slug}
-                  name={pickLocalized(tour.name, locale)}
-                  duration={pickLocalized(tour.duration, locale)}
+                  name={tour.name}
+                  duration={tour.duration}
                   price={tour.price}
                   rating={tour.rating}
                   image={tour.image}
-                  categoryName={""}
+                  categoryName={tour.categoryName}
                   onSelect={() => onOpenChange(false)}
                 />
               ))
@@ -125,14 +119,14 @@ export function MobileMenu({ open, onOpenChange, categories }: MobileMenuProps) 
                 <AccordionContent className="pb-1 [&_a]:no-underline">
                   {item.kind === "tours" && (
                     <ul className="space-y-0.5">
-                      {categories.map((category) => (
+                      {catalog.map((category) => (
                         <li key={category.slug}>
                           <Link
                             href={`/tours?categoria=${category.slug}`}
                             onClick={() => onOpenChange(false)}
                             className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-primary"
                           >
-                            {pickLocalized(category.name, locale)}
+                            {category.name}
                           </Link>
                         </li>
                       ))}
@@ -142,7 +136,7 @@ export function MobileMenu({ open, onOpenChange, categories }: MobileMenuProps) 
                           onClick={() => onOpenChange(false)}
                           className="block rounded-lg px-3 py-2.5 text-sm font-bold text-primary"
                         >
-                          {t("nav.allTours", { count: allTours.length })}
+                          {t("nav.allTours", { count: totalTours })}
                         </Link>
                       </li>
                     </ul>
@@ -150,7 +144,7 @@ export function MobileMenu({ open, onOpenChange, categories }: MobileMenuProps) 
 
                   {item.kind === "category" && (
                     <ul className="space-y-0.5">
-                      {categories
+                      {catalog
                         .find((c) => c.slug === item.categorySlug)
                         ?.tours.map((tour) => (
                           <li key={tour.slug}>
@@ -159,7 +153,7 @@ export function MobileMenu({ open, onOpenChange, categories }: MobileMenuProps) 
                               onClick={() => onOpenChange(false)}
                               className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-primary"
                             >
-                              {pickLocalized(tour.name, locale)}
+                              {tour.name}
                             </Link>
                           </li>
                         ))}

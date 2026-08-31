@@ -3,24 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Menu, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { TourCategory } from "@/types/tour";
 import { NAV_ITEMS } from "@/config/navigation";
 import { Link, usePathname } from "@/i18n/navigation";
 import { whatsappLink } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { NavPanel } from "./NavPanel";
+import type { CategoryBrief } from "@/lib/catalog";
 
 const CLOSE_DELAY_MS = 160;
 
 interface NavBarProps {
-  categories: TourCategory[];
+  catalog: CategoryBrief[];
   transparent: boolean;
   onOpenSearch: () => void;
   onOpenMobile: () => void;
 }
 
-export function NavBar({ categories, transparent, onOpenSearch, onOpenMobile }: NavBarProps) {
+export function NavBar({ catalog, transparent, onOpenSearch, onOpenMobile }: NavBarProps) {
   const t = useTranslations();
   const pathname = usePathname();
 
@@ -179,7 +179,7 @@ export function NavBar({ categories, transparent, onOpenSearch, onOpenMobile }: 
           onMouseLeave={scheduleClose}
           className="absolute inset-x-0 top-full hidden border-t border-slate-100 bg-white shadow-2xl shadow-slate-900/10 animate-in fade-in-0 slide-in-from-top-2 duration-200 xl:block"
         >
-          <NavPanel item={NAV_ITEMS[open]} categories={categories} />
+          <NavPanel item={NAV_ITEMS[open]} catalog={catalog} />
         </div>
       )}
     </div>
