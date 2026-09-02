@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   author TEXT NOT NULL,
   country TEXT,
-  rating INT NOT NULL DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
+  -- Decimal, no entero: hay reseñas de 4.5 y con INT se rechazaban.
+  rating DECIMAL(2,1) NOT NULL DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
   text_es TEXT NOT NULL,
   text_en TEXT,
   text_pt TEXT,
@@ -51,6 +52,10 @@ CREATE TABLE IF NOT EXISTS reviews (
   sort_order INT DEFAULT 10,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Para bases donde `reviews` ya se creó con rating INT: sin esto, sembrar
+-- falla con "invalid input syntax for type integer: 4.5".
+ALTER TABLE reviews ALTER COLUMN rating TYPE DECIMAL(2,1);
 
 -- Columnas que 001 no contemplaba y el panel necesita para ordenar y ocultar.
 ALTER TABLE destinations ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 10;

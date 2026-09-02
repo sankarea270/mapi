@@ -89,7 +89,8 @@ export interface FilaResena {
   id: string;
   author: string;
   country: string | null;
-  rating: number;
+  /* DECIMAL: Postgres lo serializa como cadena para no perder precisión. */
+  rating: number | string;
   text_es: string;
   text_en: string | null;
   text_pt: string | null;
