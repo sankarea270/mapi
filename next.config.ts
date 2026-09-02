@@ -26,6 +26,11 @@ const basePath = rawBasePath
 
 const nextConfig: NextConfig = {
   output: 'export',
+  /*
+   * Hay un package-lock.json suelto en la carpeta del usuario que hacia que
+   * Next tomase esa carpeta como raiz del proyecto. Solo silencia ese aviso.
+   */
+  outputFileTracingRoot: import.meta.dirname,
   ...(basePath ? { basePath, assetPrefix: `${basePath}/` } : {}),
   trailingSlash: true,
   env: {

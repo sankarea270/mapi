@@ -141,3 +141,25 @@ listado de tours, que todavía recibe el catálogo completo por su cuenta.
 | Formulario completo | Avance 4/4, URL de WhatsApp correcta, formulario sustituido por la confirmación con el resumen completo |
 | Foco | La confirmación recibe el foco al aparecer |
 | Peso | Medido sobre el HTML generado, antes y después |
+
+---
+
+## Nota para desarrollar en Windows con Git Bash
+
+Para compilar la variante de GitHub Pages hay que desactivar la conversión de
+rutas de MSYS:
+
+```bash
+MSYS_NO_PATHCONV=1 BASE_PATH=/mapi npm run build
+```
+
+Sin esa variable, Git Bash traduce `/mapi` a `C:/Program Files/Git/mapi` antes
+de que Node lo lea, y el build falla con un error que no dice nada:
+`TypeError: Missing parameter name at 2` (los dos puntos de `C:`).
+
+No afecta al despliegue: GitHub Actions compila en Linux, donde no existe esa
+conversión. En PowerShell tampoco ocurre:
+
+```powershell
+$env:BASE_PATH="/mapi"; npm run build
+```

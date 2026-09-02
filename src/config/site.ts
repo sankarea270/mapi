@@ -16,7 +16,7 @@ export const siteConfig = {
    * los textos legales se derivan de aquí, así que mover la marca a otro
    * dominio es cambiar estas dos líneas y nada más.
    */
-  domain: "gotomapi.pe",
+  domain: "gotomachupicchuperu.com",
   handle: "gotomapi",
 
   taglineKey: "brand.tagline",

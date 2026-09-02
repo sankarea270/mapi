@@ -47,23 +47,6 @@ jobs:
           # por defecto del código.
           BASE_PATH: /mapi
       
-      - name: Create root index.html redirect
-        run: |
-          cat > out/index.html << EOF
-          <!DOCTYPE html>
-          <html lang="es">
-          <head>
-            <meta charset="utf-8">
-            <meta http-equiv="refresh" content="0;url=${BASE_PATH}/es/">
-            <link rel="canonical" href="${BASE_PATH}/es/">
-            <title>GoToMapi</title>
-          </head>
-          <body>
-            <p>Redirigiendo a <a href="${BASE_PATH}/es/">GoToMapi</a>...</p>
-          </body>
-          </html>
-          EOF
-      
       - name: Setup Pages
         uses: actions/configure-pages@v5
         
