@@ -60,6 +60,14 @@ El segundo es el que enciende las políticas de seguridad. Sin él las tablas
 quedan abiertas a cualquiera que tenga la clave anónima, que va dentro del
 JavaScript público de la web. **No te lo saltes.**
 
+### 2b. Crear el almacén de imágenes
+
+Mismo sitio, otra consulta: pega y ejecuta el contenido de
+`supabase/migrations/003_almacenamiento.sql`.
+
+Sin esto el panel deja pegar direcciones de fotos, pero no subirlas: al
+intentarlo dirá *"No existe el almacén de imágenes"*.
+
 ### 3. Copiar las claves
 
 En Supabase → **Project Settings** → **API**. Necesitas dos valores:
@@ -177,6 +185,25 @@ traducir.
 Si dejas una traducción vacía, la web usa el español en su lugar en vez de
 mostrar un hueco.
 
+### Las fotos
+
+En tours, paquetes y destinos puedes **arrastrar una imagen** al recuadro, o
+pulsar *Elegir archivo*. En la galería de un tour se pueden soltar varias de
+golpe.
+
+Antes de subirla, el panel la reduce a 1600px de ancho y la convierte a
+WebP. Verás cuánto se ahorró: *"Optimizada: 4.2 MB → 280 KB"*.
+
+Eso no es cosmética. La web publica las imágenes **sin optimizar** —el sitio
+estático no lleva servidor que las procese al vuelo—, así que lo que subes es
+exactamente lo que descarga cada visitante. Una foto de móvil sin reducir
+haría que la ficha tardara varios segundos en cargar con datos móviles, que
+es justo como te va a mirar la mayoría de la gente.
+
+Debajo sigue habiendo un campo de texto para **pegar una dirección**. Sirve
+para las fotos que ya están en el sitio (`/fotos/...`) o alojadas en otro
+lado.
+
 ### La dirección en la web
 
 El campo *Dirección en la web* es lo que sale en la URL:
@@ -197,6 +224,12 @@ lleva tiempo publicado, mejor no tocarla.
 
 **"Correo o contraseña incorrectos"** — el mensaje es ambiguo a propósito, no
 distingue si el correo existe. Comprueba que marcaste *Auto Confirm User*.
+
+**"No existe el almacén de imágenes"** — falta ejecutar
+`003_almacenamiento.sql` (paso 2b).
+
+**"Tu cuenta no tiene permiso para subir imágenes"** — el 003 se ejecutó a
+medias: se creó el depósito pero no las políticas. Vuelve a lanzarlo entero.
 
 **El botón de publicar da error** — la función `publicar` no está desplegada
 (paso 7), o el token de GitHub caducó. Mientras tanto puedes desplegar a
