@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { normalize } from "@/lib/catalog";
 import { Area, Boton, Campo, Etiqueta, SelectorIdioma, type Idioma } from "./campos";
+import { CampoImagen } from "./CampoImagen";
 
 /*
  * Paquetes, destinos y reseñas comparten formulario.
@@ -15,7 +16,7 @@ import { Area, Boton, Campo, Etiqueta, SelectorIdioma, type Idioma } from "./cam
  * incluidos, galería y categoría.
  */
 
-type TipoCampo = "texto" | "area" | "numero" | "lista";
+type TipoCampo = "texto" | "area" | "numero" | "lista" | "imagen";
 
 interface CampoDef {
   /** Columna en Postgres. Si `ml`, el sufijo _es/_en/_pt se añade solo. */
@@ -31,6 +32,8 @@ interface Esquema {
   tabla: string;
   singular: string;
   plural: string;
+  /** Subcarpeta del almacén donde van las fotos de este tipo. */
+  carpeta: string;
   /** Columna que se enseña en el listado y da nombre a la fila. */
   titulo: string;
   /** `false` en reseñas: no son una página, no necesitan dirección propia. */
@@ -43,6 +46,7 @@ const ESQUEMAS: Record<string, Esquema> = {
     tabla: "packages",
     singular: "paquete",
     plural: "paquetes",
+    carpeta: "paquetes",
     titulo: "name_es",
     conSlug: true,
     campos: [
@@ -56,12 +60,7 @@ const ESQUEMAS: Record<string, Esquema> = {
         placeholder: "5 días / 4 noches",
       },
       { col: "price", etiqueta: "Precio (US$)", tipo: "numero" },
-      {
-        col: "image_url",
-        etiqueta: "Imagen",
-        tipo: "texto",
-        placeholder: "/fotos/cusco-express.webp",
-      },
+      { col: "image_url", etiqueta: "Imagen", tipo: "imagen" },
       {
         col: "tour_slugs",
         etiqueta: "Tours que incluye",
@@ -74,12 +73,13 @@ const ESQUEMAS: Record<string, Esquema> = {
     tabla: "destinations",
     singular: "destino",
     plural: "destinos",
+    carpeta: "destinos",
     titulo: "name_es",
     conSlug: true,
     campos: [
       { col: "name", etiqueta: "Nombre", tipo: "texto", ml: true },
       { col: "description", etiqueta: "Descripción", tipo: "area", ml: true },
-      { col: "image_url", etiqueta: "Imagen", tipo: "texto", placeholder: "/fotos/cusco.webp" },
+      { col: "image_url", etiqueta: "Imagen", tipo: "imagen" },
       {
         col: "category_slugs",
         etiqueta: "Categorías asociadas",
@@ -93,6 +93,7 @@ const ESQUEMAS: Record<string, Esquema> = {
     tabla: "reviews",
     singular: "reseña",
     plural: "reseñas",
+    carpeta: "resenas",
     titulo: "author",
     conSlug: false,
     campos: [
@@ -366,6 +367,18 @@ function Editor({
           const valor = texto(fila[col]);
           const cambiar = (v: string) => set(col, v);
 
+          if (c.tipo === "imagen") {
+            return (
+              <CampoImagen
+                key={col}
+                etiqueta={c.etiqueta}
+                valor={valor}
+                onChange={cambiar}
+                carpeta={esquema.carpeta}
+                ayuda={c.ayuda}
+              />
+            );
+          }
           if (c.tipo === "area") {
             return (
               <Area

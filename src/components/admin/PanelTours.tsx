@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { normalize } from "@/lib/catalog";
 import type { FilaCategoria, FilaTour } from "@/types/db";
 import { Area, Boton, Campo, Etiqueta, SelectorIdioma, type Idioma } from "./campos";
+import { CampoImagen } from "./CampoImagen";
+import { subirImagen } from "@/lib/admin/subir";
 import { cn } from "@/lib/utils";
 
 type TextoML = { es: string; en: string; pt: string };
@@ -378,14 +380,15 @@ function EditorTour({
             onChange={(v) => set("rating", v)}
             ayuda="De 0 a 5."
           />
-          <Campo
-            etiqueta="Imagen principal"
-            valor={b.image_url}
-            onChange={(v) => set("image_url", v)}
-            placeholder="/fotos/machu-picchu.webp"
-            ayuda="Ruta dentro de public/ o dirección completa."
-            className="sm:col-span-2"
-          />
+          <div className="sm:col-span-2">
+            <CampoImagen
+              etiqueta="Imagen principal"
+              valor={b.image_url}
+              onChange={(v) => set("image_url", v)}
+              carpeta="tours"
+              ayuda="Es la foto de la tarjeta del listado y de la cabecera de la ficha."
+            />
+          </div>
         </div>
 
         <div className="mt-7 flex flex-wrap gap-6 border-t border-slate-200 pt-6">
@@ -567,44 +570,126 @@ function ListaGaleria({
   valores: string[];
   onChange: (v: string[]) => void;
 }) {
+  const [subiendo, setSubiendo] = useState(false);
+  const [error, setError] = useState("");
+
+  /* Varias a la vez: quien documenta un tour tiene las diez fotos juntas en
+     una carpeta, y subirlas de una en una sería absurdo. Se procesan en
+     serie —no en paralelo— para no saturar la conexión ni la memoria del
+     móvil con diez lienzos a la vez. */
+  async function subirVarias(archivos: FileList | null) {
+    if (!archivos?.length) return;
+    setError("");
+    setSubiendo(true);
+    const nuevas: string[] = [];
+    for (const archivo of Array.from(archivos)) {
+      if (!archivo.type.startsWith("image/")) continue;
+      try {
+        const r = await subirImagen(archivo, "tours/galeria");
+        nuevas.push(r.url);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo subir una imagen.");
+        break;
+      }
+    }
+    if (nuevas.length) onChange([...valores, ...nuevas]);
+    setSubiendo(false);
+  }
+
   return (
     <div className="rounded-lg bg-white p-6 ring-1 ring-slate-200">
       <h3 className="eyebrow text-slate-900">Galería</h3>
       <p className="mt-2 text-xs text-slate-400">
-        Una dirección por línea. No se traduce: las fotos son las mismas en los tres idiomas.
+        No se traduce: las fotos son las mismas en los tres idiomas.
       </p>
-      <ul className="mt-5 space-y-3">
-        {valores.map((v, i) => (
-          <li key={i} className="flex items-center gap-3">
-            <input
-              value={v}
-              onChange={(e) => {
-                const copia = [...valores];
-                copia[i] = e.target.value;
-                onChange(copia);
-              }}
-              placeholder="/fotos/valle-sagrado-2.webp"
-              className={cn(
-                "w-full border-0 border-b border-slate-200 bg-transparent px-0 py-2 text-sm text-slate-900 placeholder:text-slate-300 outline-none focus:border-teal-500"
-              )}
-            />
-            <button
-              type="button"
-              onClick={() => onChange(valores.filter((_, j) => j !== i))}
-              className="shrink-0 text-xs font-semibold text-slate-400 transition-colors hover:text-red-600"
-            >
-              Quitar
-            </button>
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        onClick={() => onChange([...valores, ""])}
-        className="mt-5 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-600"
-      >
-        Añadir foto
-      </button>
+
+      {valores.length > 0 && (
+        <ul className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-5">
+          {valores.map((v, i) => (
+            <li key={`${v}-${i}`} className="group relative">
+              <div className="aspect-4/3 overflow-hidden rounded-md bg-slate-100 ring-1 ring-slate-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={v} alt="" className="size-full object-cover" />
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange(valores.filter((_, j) => j !== i))}
+                aria-label="Quitar esta foto"
+                className="absolute -right-1.5 -top-1.5 grid size-6 place-items-center rounded-full bg-slate-900 text-xs font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-5 flex flex-wrap items-center gap-4">
+        <label
+          className={cn(
+            "cursor-pointer rounded-md px-4 py-2.5 text-sm font-bold ring-1 transition-colors",
+            subiendo
+              ? "cursor-wait bg-slate-100 text-slate-400 ring-slate-200"
+              : "bg-white text-slate-700 ring-slate-200 hover:bg-slate-50"
+          )}
+        >
+          {subiendo ? "Subiendo…" : "Añadir fotos"}
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            disabled={subiendo}
+            className="sr-only"
+            onChange={(e) => {
+              subirVarias(e.target.files);
+              e.target.value = "";
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          onClick={() => onChange([...valores, ""])}
+          className="text-sm font-semibold text-teal-700 transition-colors hover:text-teal-600"
+        >
+          Pegar una dirección
+        </button>
+      </div>
+
+      {error && (
+        <p role="alert" className="mt-3 text-xs text-red-600">
+          {error}
+        </p>
+      )}
+
+      {/* Las direcciones pegadas a mano se editan como texto: sin esto, una
+          entrada vacía recién añadida no habría forma de rellenarla. */}
+      {valores.some((v) => !v.startsWith("http")) && (
+        <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4">
+          {valores.map((v, i) =>
+            v.startsWith("http") ? null : (
+              <li key={`txt-${i}`} className="flex items-center gap-3">
+                <input
+                  value={v}
+                  onChange={(e) => {
+                    const copia = [...valores];
+                    copia[i] = e.target.value;
+                    onChange(copia);
+                  }}
+                  placeholder="/fotos/valle-sagrado-2.webp"
+                  className="w-full border-0 border-b border-slate-200 bg-transparent px-0 py-1.5 text-xs text-slate-600 placeholder:text-slate-300 outline-none focus:border-teal-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => onChange(valores.filter((_, j) => j !== i))}
+                  className="shrink-0 text-xs font-semibold text-slate-400 transition-colors hover:text-red-600"
+                >
+                  Quitar
+                </button>
+              </li>
+            )
+          )}
+        </ul>
+      )}
     </div>
   );
 }
