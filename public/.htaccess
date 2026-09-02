@@ -9,6 +9,16 @@ ErrorDocument 404 /404.html
 # 2. Todo por HTTPS. El certificado lo emite AutoSSL de cPanel.
 <IfModule mod_rewrite.c>
   RewriteEngine On
+
+  # Excepcion: /.well-known/ se sirve por HTTP sin redirigir.
+  #
+  # Es la carpeta que usan las autoridades de certificacion para comprobar
+  # que el dominio es tuyo. Piden el archivo por HTTP, y si se les redirige a
+  # HTTPS antes de que exista el certificado, la validacion falla: no pueden
+  # completar el TLS. Sin esta excepcion, emitir o renovar el certificado se
+  # vuelve imposible.
+  RewriteRule ^\.well-known/ - [L]
+
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
