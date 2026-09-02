@@ -1,0 +1,68 @@
+name: Desplegar en cPanel (Namecheap)
+
+# Cada push a main reconstruye el sitio y sincroniza public_html por FTPS.
+#
+# Se puede lanzar a mano desde la pestaña Actions, con la casilla `simulacion`
+# marcada, para ver qué archivos SE SUBIRÍAN sin tocar el servidor. Conviene
+# usarlo la primera vez.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      simulacion:
+        description: "Simular: listar cambios sin subir nada"
+        type: boolean
+        default: false
+
+# Un despliegue a la vez. Sin esto, dos push seguidos podrían escribir en
+# public_html al mismo tiempo y dejar el sitio a medias.
+concurrency:
+  group: cpanel
+  cancel-in-progress: false
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Compilar
+        run: npm run build
+        # Sin BASE_PATH: en cPanel el sitio vive en la raíz del dominio.
+        # NEXT_PUBLIC_SITE_URL alimenta canonical, hreflang, sitemap y robots.
+        env:
+          NEXT_PUBLIC_SITE_URL: https://gotomachupicchuperu.com
+
+      - name: Comprobar el build antes de subir
+        run: |
+          test -f out/index.html   || { echo "Falta out/index.html"; exit 1; }
+          test -f out/.htaccess    || { echo "Falta out/.htaccess";  exit 1; }
+          test -d out/es           || { echo "Falta out/es";         exit 1; }
+          echo "Archivos a publicar: $(find out -type f | wc -l)"
+
+      - name: Sincronizar por FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./out/
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          dry-run: ${{ inputs.simulacion == true }}
+          # La acción guarda un manifiesto en el servidor y solo transfiere lo
+          # que cambió. El primer despliegue sube los 758 archivos; los
+          # siguientes, unos pocos.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**

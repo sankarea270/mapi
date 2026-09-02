@@ -1,0 +1,43 @@
+# Configuración para alojamiento Apache (cPanel de Namecheap).
+#
+# El sitio es un export estático de Next.js: HTML ya generado, sin servidor.
+# Apache solo tiene que servir archivos, pero necesita tres ajustes.
+
+# 1. Página de error propia en vez de la de Apache.
+ErrorDocument 404 /404.html
+
+# 2. Todo por HTTPS. El certificado lo emite AutoSSL de cPanel.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
+
+# 3. Caché.
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Los archivos de /_next/static/ llevan un hash en el nombre: si cambia el
+  # contenido, cambia el nombre. Se pueden cachear para siempre sin riesgo.
+  <FilesMatch "\.(js|css|woff2)$">
+    ExpiresDefault "access plus 1 year"
+    Header set Cache-Control "public, immutable"
+  </FilesMatch>
+
+  # El HTML NO se cachea de forma agresiva: si no, al publicar una versión
+  # nueva el visitante seguiría viendo la vieja durante días.
+  <FilesMatch "\.html$">
+    ExpiresDefault "access plus 0 seconds"
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+
+  <FilesMatch "\.(webp|png|jpg|jpeg|svg|ico)$">
+    ExpiresDefault "access plus 6 months"
+  </FilesMatch>
+</IfModule>
+
+# 4. Compresión, si el servidor la tiene disponible.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
+</IfModule>
