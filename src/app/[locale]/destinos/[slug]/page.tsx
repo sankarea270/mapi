@@ -7,14 +7,17 @@ import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { getDestinationTours } from "@/lib/destinations";
-import { DESTINATIONS } from "@/data/destinations";
+import { getDestinations } from "@/lib/content";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
 
-export function generateStaticParams() {
+/* Asíncrona: la lista de destinos sale de Supabase al compilar, así que
+   hay que esperarla antes de saber qué páginas generar. */
+export async function generateStaticParams() {
+  const destinos = await getDestinations();
   return routing.locales.flatMap((locale) =>
-    DESTINATIONS.map((destination) => ({ locale, slug: destination.slug }))
+    destinos.map((destination) => ({ locale, slug: destination.slug }))
   );
 }
 
@@ -24,7 +27,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const destination = DESTINATIONS.find((d) => d.slug === slug);
+  const destination = (await getDestinations()).find((d) => d.slug === slug);
   if (!destination) return {};
   return buildMetadata({
     locale,
@@ -43,7 +46,7 @@ export default async function DestinationPage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const destination = DESTINATIONS.find((d) => d.slug === slug);
+  const destination = (await getDestinations()).find((d) => d.slug === slug);
   if (!destination) notFound();
 
   const categories = await getCategoriesWithTours();

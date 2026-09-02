@@ -9,7 +9,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/studio", "/api/"],
+        /* /admin es el panel: no tiene nada que indexar y no queremos que
+           aparezca en resultados de búsqueda. La página además va marcada
+           con noindex, porque robots.txt es una petición, no una barrera. */
+        disallow: ["/studio", "/api/", "/admin"],
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,

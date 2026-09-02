@@ -4,7 +4,7 @@ import { ArrowRight, CalendarRange } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { PACKAGES } from "@/data/packages";
+import { getPackages } from "@/lib/content";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 
@@ -35,13 +35,14 @@ export default async function PackagesPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("paquetes");
+  const paquetes = await getPackages();
 
   return (
     <div className="min-h-dvh bg-slate-50">
       <div className="border-b border-slate-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
-            {t("count", { count: PACKAGES.length })}
+            {t("count", { count: paquetes.length })}
           </p>
           <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             {t("title")}
@@ -52,7 +53,7 @@ export default async function PackagesPage({
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid gap-6 md:grid-cols-2">
-          {PACKAGES.map((pkg) => (
+          {paquetes.map((pkg) => (
             <Link
               key={pkg.slug}
               href={`/paquetes/${pkg.slug}`}

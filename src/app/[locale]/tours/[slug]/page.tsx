@@ -22,10 +22,10 @@ import { getCategoriesWithTours } from "@/lib/tours";
 import { whatsappLink, siteConfig } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
-import { DESTINATIONS } from "@/data/destinations";
+import { getDestinations } from "@/lib/content";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
 import { TourFaq } from "@/components/tours/TourFaq";
-import { REVIEWS } from "@/data/reviews";
+import { getReviews } from "@/lib/content";
 import { TourCard } from "@/components/tours/TourCard";
 import { TourTabs } from "@/components/tours/TourTabs";
 import { TourSidebar } from "@/components/tours/TourSidebar";
@@ -77,7 +77,8 @@ export default async function TourDetailPage({
   if (!tour) notFound();
 
   const category = categories.find((c) => c.slug === tour.categorySlug);
-  const destination = DESTINATIONS.find((d) =>
+  const [destinos, resenas] = await Promise.all([getDestinations(), getReviews()]);
+  const destination = destinos.find((d) =>
     d.categorySlugs?.includes(tour.categorySlug)
   );
   const related = tour.categorySlug
@@ -87,8 +88,8 @@ export default async function TourDetailPage({
         .slice(0, 3) ?? []
     : [];
 
-  const tourReviews = REVIEWS.filter((r) => r.tourSlug === tour.slug);
-  const allReviews = tourReviews.length > 0 ? tourReviews : REVIEWS;
+  const tourReviews = resenas.filter((r) => r.tourSlug === tour.slug);
+  const allReviews = tourReviews.length > 0 ? tourReviews : resenas;
 
   const t = await getTranslations("tourDetail");
   const tReserva = await getTranslations("reserva");

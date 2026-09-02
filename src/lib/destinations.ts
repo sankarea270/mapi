@@ -1,5 +1,6 @@
 import type { Tour, TourCategory } from "@/types/tour";
-import { DESTINATIONS, type Destination } from "@/data/destinations";
+import type { Destination } from "@/data/destinations";
+import { getDestinations } from "@/lib/content";
 
 export function getDestinationTours(
   destination: Destination,
@@ -32,8 +33,11 @@ export function getDestinationTours(
   return tours;
 }
 
-export function getDestinationsWithTours(categories: TourCategory[]) {
-  return DESTINATIONS.map((destination) => ({
+/* Asíncrona porque los destinos ya no son una constante del código: salen
+   de Supabase en tiempo de compilación, con `src/data` como respaldo. */
+export async function getDestinationsWithTours(categories: TourCategory[]) {
+  const destinos = await getDestinations();
+  return destinos.map((destination) => ({
     destination,
     tours: getDestinationTours(destination, categories),
   }));

@@ -5,16 +5,18 @@ import { ArrowLeft, CalendarRange } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { PACKAGES } from "@/data/packages";
+import { getPackages } from "@/lib/content";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { whatsappLink } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
 
-export function generateStaticParams() {
+/* Asíncrona: los paquetes salen de Supabase al compilar. */
+export async function generateStaticParams() {
+  const paquetes = await getPackages();
   return routing.locales.flatMap((locale) =>
-    PACKAGES.map((pkg) => ({ locale, slug: pkg.slug }))
+    paquetes.map((pkg) => ({ locale, slug: pkg.slug }))
   );
 }
 
@@ -24,7 +26,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const pkg = PACKAGES.find((p) => p.slug === slug);
+  const pkg = (await getPackages()).find((p) => p.slug === slug);
   if (!pkg) return {};
   return buildMetadata({
     locale,
@@ -43,7 +45,7 @@ export default async function PackagePage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const pkg = PACKAGES.find((p) => p.slug === slug);
+  const pkg = (await getPackages()).find((p) => p.slug === slug);
   if (!pkg) notFound();
 
   const categories = await getCategoriesWithTours();

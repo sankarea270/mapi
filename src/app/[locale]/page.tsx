@@ -4,6 +4,7 @@ import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
 import { buildMetadata } from "@/lib/seo";
+import { getReviews } from "@/lib/content";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
@@ -39,6 +40,7 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("hero");
+  const resenas = await getReviews();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -123,7 +125,7 @@ export default async function HomePage({
     <Credentials variant="strip" locale={locale} />
     <WhyTravelWith />
     <SocialFeed />
-    <ReviewsSection />
+    <ReviewsSection reviews={resenas} />
     <JourneyBand />
     </>
   );

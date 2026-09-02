@@ -2,11 +2,18 @@
 
 import { Star } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { REVIEWS } from "@/data/reviews";
+import type { Review } from "@/data/reviews";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
-export function ReviewsSection() {
+/*
+ * Las reseñas llegan como propiedad, no importadas.
+ *
+ * Este componente es de cliente —anima al entrar en pantalla—, así que no
+ * puede consultar Supabase por sí mismo. Quien lo usa es un componente de
+ * servidor: allí se leen los datos al compilar y se pasan ya resueltos.
+ */
+export function ReviewsSection({ reviews }: { reviews: Review[] }) {
   const t = useTranslations("reviews");
   const reduced = useReducedMotion();
   const { ref: sectionRef, isVisible } = useScrollAnimation(0.1);
@@ -25,7 +32,7 @@ export function ReviewsSection() {
         </div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {REVIEWS.map((review, i) => (
+          {reviews.map((review, i) => (
             <figure
               key={review.id}
               className={`flex flex-col rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-100 transition-all hover:shadow-lg hover:ring-amber-100 scroll-animate ${

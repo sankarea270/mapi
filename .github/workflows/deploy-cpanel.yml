@@ -5,10 +5,16 @@ name: Desplegar en cPanel (Namecheap)
 # Se puede lanzar a mano desde la pestaña Actions, con la casilla `simulacion`
 # marcada, para ver qué archivos SE SUBIRÍAN sin tocar el servidor. Conviene
 # usarlo la primera vez.
+#
+# `repository_dispatch` es el que usa el botón "Publicar cambios" del panel:
+# el contenido vive en Supabase, pero la web son páginas ya generadas, así
+# que editar un tour no se ve hasta que este workflow vuelve a compilarla.
 
 on:
   push:
     branches: [main]
+  repository_dispatch:
+    types: [publicar-contenido]
   workflow_dispatch:
     inputs:
       simulacion:
@@ -39,8 +45,16 @@ jobs:
         run: npm run build
         # Sin BASE_PATH: en cPanel el sitio vive en la raíz del dominio.
         # NEXT_PUBLIC_SITE_URL alimenta canonical, hreflang, sitemap y robots.
+        #
+        # Las claves de Supabase son las que hacen que el contenido del panel
+        # llegue a la web: sin ellas la compilación cae al respaldo de
+        # `src/data/` y los cambios no aparecerían nunca. La anónima puede ir
+        # aquí porque acaba dentro del JavaScript público de todos modos; lo
+        # que la protege son las políticas RLS, no el secreto.
         env:
           NEXT_PUBLIC_SITE_URL: https://gotomachupicchuperu.com
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Comprobar el build antes de subir
         run: |

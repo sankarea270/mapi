@@ -2,8 +2,7 @@ import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/seo";
 import { getCategoriesWithTours } from "@/lib/tours";
-import { DESTINATIONS } from "@/data/destinations";
-import { PACKAGES } from "@/data/packages";
+import { getDestinations, getPackages } from "@/lib/content";
 import { EXPERIENCES } from "@/data/experiences";
 import { GUIDES } from "@/data/guides";
 
@@ -31,7 +30,11 @@ function url(path: string): string {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const categories = await getCategoriesWithTours();
+  const [categories, destinations, packages] = await Promise.all([
+    getCategoriesWithTours(),
+    getDestinations(),
+    getPackages(),
+  ]);
   const tourSlugs = categories.flatMap((c) => c.tours.map((t) => t.slug));
 
   const entries: MetadataRoute.Sitemap = [];
@@ -69,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    for (const destination of DESTINATIONS) {
+    for (const destination of destinations) {
       entries.push({
         url: url(`${p}/destinos/${destination.slug}`),
         changeFrequency: "weekly",
@@ -77,7 +80,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    for (const pkg of PACKAGES) {
+    for (const pkg of packages) {
       entries.push({
         url: url(`${p}/paquetes/${pkg.slug}`),
         changeFrequency: "monthly",

@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { SentPanel } from "@/components/ui/SentPanel";
 import { useWhatsappSend } from "@/hooks/useWhatsappSend";
+import { guardarReserva } from "@/lib/reservas";
 
 const TRAVELERS = [1, 2, 3, 4, 5, 6] as const;
 
@@ -28,6 +29,7 @@ interface BookingFormProps {
  */
 export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) {
   const t = useTranslations("reserva");
+  const locale = useLocale();
 
   const [form, setForm] = useState({
     tourName,
@@ -87,6 +89,19 @@ export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) 
         .map(([k, v]) => `${k}: ${v}`)
         .join("\n")
     );
+    /* Después de abrir WhatsApp, nunca antes: esperar aquí sacaría al
+       `window.open` del gesto del usuario y el navegador lo bloquearía. */
+    void guardarReserva({
+      tourSlug,
+      tourName: form.tourName,
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.whatsapp,
+      date: form.date,
+      travelers: form.travelers,
+      message: form.message,
+      locale,
+    });
   };
 
   const field =

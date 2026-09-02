@@ -37,7 +37,7 @@ export default async function DestinationsPage({
   setRequestLocale(locale);
 
   const categories = await getCategoriesWithTours();
-  const destinations = getDestinationsWithTours(categories);
+  const destinations = await getDestinationsWithTours(categories);
   const t = await getTranslations("destinos");
 
   return (

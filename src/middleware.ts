@@ -1,39 +1,25 @@
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-const handleI18nRouting = createMiddleware(routing);
-
-function isAdminRoute(pathname: string) {
-  return pathname === "/admin" || pathname.startsWith("/admin/");
-}
-
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Admin routes: auth check, no i18n
-  if (isAdminRoute(pathname)) {
-    const session = request.cookies.get("mapi-admin-session");
-
-    if (pathname === "/admin/login") {
-      if (session) {
-        return NextResponse.redirect(new URL("/admin", request.url));
-      }
-      return NextResponse.next();
-    }
-
-    if (!session) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-
-    return NextResponse.next();
-  }
-
-  // All other routes: next-intl locale detection
-  return handleI18nRouting(request);
-}
+/*
+ * Middleware de idioma, solo para `npm run dev`.
+ *
+ * El sitio se publica con `output: 'export'` sobre Apache: no hay proceso de
+ * Node delante, así que esto NUNCA se ejecuta en producción. Por eso
+ * `localePrefix` es "always" —cada ruta lleva su idioma escrito— y por eso
+ * `scripts/generar-raiz.mjs` fabrica un `index.html` que redirige desde la
+ * raíz. Aquí solo sirve para que en local la raíz se comporte igual.
+ *
+ * Antes había además un bloque que comprobaba una cookie para proteger
+ * /admin. Se ha quitado porque no protegía nada: en producción este archivo
+ * no llega ni a cargarse, así que la ruta quedaba abierta y el código daba
+ * una falsa sensación de seguridad. El panel se defiende donde sí se
+ * ejecuta siempre —en la base de datos—, con las políticas RLS de
+ * `supabase/migrations/002_panel.sql`.
+ */
+export default createMiddleware(routing);
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
+  // El panel queda fuera: no se traduce y no debe recibir prefijo de idioma.
+  matcher: ["/((?!admin|api|_next|_vercel|.*\\..*).*)"],
 };

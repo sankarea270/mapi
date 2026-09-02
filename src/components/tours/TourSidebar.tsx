@@ -8,6 +8,7 @@ import { Price } from "@/components/ui/Price";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { SentPanel } from "@/components/ui/SentPanel";
 import { useWhatsappSend } from "@/hooks/useWhatsappSend";
+import { guardarReserva } from "@/lib/reservas";
 import {
   FacebookIcon,
   InstagramIcon,
@@ -90,6 +91,19 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
         .map(([k, v]) => `${k}: ${v}`)
         .join("\n")
     );
+    /* Después de abrir WhatsApp, nunca antes: esperar aquí sacaría al
+       `window.open` del gesto del usuario y el navegador lo bloquearía.
+       Aquí no se pide teléfono, por eso `phone` es opcional en la tabla. */
+    void guardarReserva({
+      tourSlug: tour.slug,
+      tourName: name,
+      fullName: form.fullName,
+      email: form.email,
+      date: form.date,
+      travelers: form.travelers,
+      message: form.message,
+      locale,
+    });
   };
 
   const field =
