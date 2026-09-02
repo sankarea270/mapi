@@ -59,7 +59,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ## GitHub Pages
 
 Es la excepción: sirve desde `/<repo>`, así que su workflow exporta
-`BASE_PATH=/mapi`. Está en `.github/workflows/deploy.yml` y no hay que tocar
+`BASE_PATH=/mapi`. Ese workflow se retiró al pasar a cPanel; el soporte
+sigue en `next.config.ts` por si vuelve a hacer falta, y no hay que tocar
 nada.
 
 Cuando el sitio viva en su dominio y Pages deje de usarse, se puede borrar
