@@ -208,7 +208,13 @@
     "highlightExperiencia": "Experiência única",
     "highlightGrupo": "Grupos pequenos",
     "highlightGuia": "Guia local especializado",
-    "smallGroups": "Máx. 12 pessoas"
+    "smallGroups": "Máx. 12 pessoas",
+    "seeAllPhotos": "Ver as {count} fotos",
+    "tourType": "Tipo",
+    "tourTypeDaily": "Saída diária",
+    "languages": "Idiomas",
+    "languagesValue": "Espanhol · Inglês · Português",
+    "groupSize": "Grupo"
   },
   "reserva": {
     "title": "Reserve sua viagem",
@@ -474,7 +480,12 @@
       "Movimentado",
       "Alta temporada"
     ],
-    "note": "Aproximado"
+    "note": "Aproximado",
+    "chartMax": "máxima",
+    "chartMin": "mínima",
+    "chartRain": "chuva",
+    "chartBest": "melhor época",
+    "chartAria": "Temperatura e chuva mês a mês. Mês selecionado: {month}."
   },
   "faq": {
     "badge": "Antes de reservar",

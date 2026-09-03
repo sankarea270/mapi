@@ -104,6 +104,221 @@ function Level({ value, tone }: { value: number; tone: "rain" | "crowd" }) {
   );
 }
 
+/*
+ * Curva del año.
+ *
+ * Antes había doce botones y había que ir pulsándolos uno a uno para
+ * hacerse una idea de la pauta: eso obliga a recordar lo que decía el mes
+ * anterior. Aquí el año se ve entero de una vez —cuándo aprieta el calor,
+ * cuándo llueve, cuándo coincide todo el mundo— y el mes elegido queda
+ * marcado dentro de ese contexto.
+ *
+ * Son dos gráficos apilados que comparten el eje de meses, no uno con dos
+ * escalas: grados y lluvia no se miden en lo mismo y superponerlos daría
+ * cruces que no significan nada.
+ *
+ * El ámbar de la banda de temperatura se queda en 2,88:1 de contraste sobre
+ * blanco, por debajo del 3:1 exigible. Por eso los grados van SIEMPRE
+ * escritos —en el eje y en la ficha del mes—: la forma orienta, pero el dato
+ * no depende de distinguir el color.
+ */
+const TEMP = "#d88527";
+const LLUVIA = "#07908c";
+
+function CurvaAnual({
+  meses,
+  etiquetas,
+  seleccionado,
+  onSeleccionar,
+  recomendados,
+  rotulos,
+}: {
+  meses: Array<{ tMax: number; tMin: number; rain: number; crowd: number }>;
+  etiquetas: string[];
+  seleccionado: number;
+  onSeleccionar: (m: number) => void;
+  recomendados: number[];
+  rotulos: { max: string; min: string; rain: string; best: string; aria: string };
+}) {
+  /* El lienzo se dimensiona cerca del tamaño real al que se dibuja (unos
+     800px en la columna de contenido). Con un viewBox más pequeño, el SVG se
+     amplía para llenar el ancho y arrastra consigo grosores y radios: un
+     trazo de 2 se ve de 3,4 y las barras de lluvia salen como ladrillos. */
+  const A = 800;
+  const ALTO_T = 158;
+  const ALTO_LL = 42;
+  const HUECO = 10;
+  const PASO = A / 12;
+
+  const maximos = meses.map((m) => m.tMax);
+  const minimos = meses.map((m) => m.tMin);
+  const techo = Math.ceil(Math.max(...maximos) / 5) * 5;
+  const suelo = Math.floor(Math.min(...minimos) / 5) * 5;
+  const rango = Math.max(techo - suelo, 1);
+
+  const x = (i: number) => PASO * i + PASO / 2;
+  const y = (t: number) => ALTO_T - ((t - suelo) / rango) * (ALTO_T - 24) - 12;
+
+  const linea = (vals: number[]) =>
+    vals.map((v, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+
+  /* La banda se cierra recorriendo las máximas de ida y las mínimas de
+     vuelta: el hueco entre ambas es la oscilación de cada mes.
+     El camino de vuelta tiene que recorrer los DOCE meses. Saltarse alguno
+     no deja un hueco pequeño: dibuja una diagonal recta entre dos puntos
+     lejanos y la banda deja de representar los datos. */
+  const banda =
+    linea(maximos) +
+    " " +
+    minimos
+      .map((_, i) => {
+        const j = 11 - i;
+        return `L ${x(j).toFixed(1)} ${y(minimos[j]).toFixed(1)}`;
+      })
+      .join(" ") +
+    " Z";
+
+  return (
+    <figure className="mt-7">
+      <svg
+        viewBox={`0 0 ${A} ${ALTO_T + ALTO_LL + HUECO}`}
+        className="w-full"
+        role="img"
+        aria-label={rotulos.aria}
+      >
+        {/* Rejilla: solo dos trazos, para situar sin competir. */}
+        {[0.25, 0.75].map((f) => (
+          <line
+            key={f}
+            x1="0"
+            x2={A}
+            y1={ALTO_T * f}
+            y2={ALTO_T * f}
+            stroke="#e1e0d9"
+            strokeWidth="1"
+          />
+        ))}
+
+        <path d={banda} fill={TEMP} opacity="0.16" />
+        <path d={linea(maximos)} fill="none" stroke={TEMP} strokeWidth="2" strokeLinejoin="round" />
+        <path
+          d={linea(minimos)}
+          fill="none"
+          stroke={TEMP}
+          strokeWidth="1.5"
+          strokeDasharray="3 3"
+          opacity="0.75"
+          strokeLinejoin="round"
+        />
+
+        {/* Lluvia: franja propia bajo la curva, mismo eje de meses.
+            La línea de base es lo que distingue "aquí no llueve" de "aquí
+            falta el dato": sin ella, los meses secos son un hueco. */}
+        <line
+          x1="0"
+          x2={A}
+          y1={ALTO_T + HUECO + ALTO_LL}
+          y2={ALTO_T + HUECO + ALTO_LL}
+          stroke="#c3c2b7"
+          strokeWidth="1"
+        />
+        {meses.map((m, i) => {
+          const h = (m.rain / 3) * ALTO_LL;
+          return (
+            <rect
+              key={`ll-${i}`}
+              x={x(i) - PASO * 0.18}
+              y={ALTO_T + HUECO + (ALTO_LL - h)}
+              width={PASO * 0.36}
+              height={h}
+              rx="2"
+              fill={LLUVIA}
+              opacity={i === seleccionado ? 1 : 0.4}
+            />
+          );
+        })}
+
+        {/* Marca del mes elegido: una plomada de lado a lado que ata la
+            temperatura con la lluvia de ese mes. */}
+        <line
+          x1={x(seleccionado)}
+          x2={x(seleccionado)}
+          y1="0"
+          y2={ALTO_T + HUECO + ALTO_LL}
+          stroke="#0f3736"
+          strokeWidth="1.5"
+        />
+        <circle cx={x(seleccionado)} cy={y(maximos[seleccionado])} r="4" fill="#0f3736" />
+        <circle cx={x(seleccionado)} cy={y(minimos[seleccionado])} r="3" fill="#0f3736" />
+
+        {/* Zonas de pulsación: ocupan todo el alto, mucho mayores que la
+            marca, para que se pueda acertar con el dedo. */}
+        {meses.map((_, i) => (
+          <rect
+            key={`z-${i}`}
+            x={PASO * i}
+            y="0"
+            width={PASO}
+            height={ALTO_T + ALTO_LL + HUECO}
+            fill="transparent"
+            className="cursor-pointer"
+            onClick={() => onSeleccionar(i)}
+          >
+            <title>{`${etiquetas[i]}: ${meses[i].tMax}° / ${meses[i].tMin}°`}</title>
+          </rect>
+        ))}
+      </svg>
+
+      {/* Eje de meses. Los recomendados llevan filete ámbar debajo. */}
+      <div className="mt-1.5 grid grid-cols-12">
+        {etiquetas.map((m, i) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => onSeleccionar(i)}
+            aria-pressed={i === seleccionado}
+            className={cn(
+              "border-b-2 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors",
+              i === seleccionado
+                ? "border-slate-900 text-slate-900"
+                : recomendados.includes(i)
+                  ? "border-amber-500 text-slate-500 hover:text-slate-900"
+                  : "border-transparent text-slate-400 hover:text-slate-700"
+            )}
+          >
+            {m}
+          </button>
+        ))}
+      </div>
+
+      <figcaption className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-slate-400">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-0.5 w-4 rounded-full" style={{ background: TEMP }} />
+          {rotulos.max}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span
+            className="h-0.5 w-4 rounded-full opacity-70"
+            style={{ backgroundImage: `repeating-linear-gradient(90deg, ${TEMP} 0 3px, transparent 3px 6px)` }}
+          />
+          {rotulos.min}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2.5 w-2 rounded-sm" style={{ background: LLUVIA }} />
+          {rotulos.rain}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-0.5 w-4 rounded-full bg-amber-500" />
+          {rotulos.best}
+        </span>
+        <span className="ml-auto tabular-nums">
+          {suelo}° — {techo}°
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
 interface SeasonPanelProps {
   categorySlug: string;
   locale: string;
@@ -143,35 +358,22 @@ export function SeasonPanel({ categorySlug, locale }: SeasonPanelProps) {
         {t("lead")}
       </p>
 
-      {/* Cinta de meses: los recomendados llevan una marca ámbar. */}
-      <div className="mt-7 flex overflow-x-auto rounded-md ring-1 ring-slate-200">
-        {months.map((label, i) => {
-          const on = i === month;
-          const rec = region.best.includes(i);
-          return (
-            <button
-              key={label}
-              type="button"
-              onClick={() => setMonth(i)}
-              aria-pressed={on}
-              aria-label={monthsLong[i]}
-              className={cn(
-                "relative flex-1 border-r border-slate-200 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors last:border-r-0",
-                on
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-              )}
-            >
-              {label}
-              {rec && !on && (
-                <span className="absolute inset-x-3 bottom-1 h-0.5 rounded-full bg-amber-500" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <CurvaAnual
+        meses={region.months}
+        etiquetas={months}
+        seleccionado={month}
+        onSeleccionar={setMonth}
+        recomendados={region.best}
+        rotulos={{
+          max: t("chartMax"),
+          min: t("chartMin"),
+          rain: t("chartRain"),
+          best: t("chartBest"),
+          aria: t("chartAria", { month: monthsLong[month] }),
+        }}
+      />
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-[auto_1fr]">
+      <div className="mt-8 grid gap-6 sm:grid-cols-[auto_1fr]">
         {/* Dibujo del mes. `key` fuerza el remontaje para reanimar al cambiar. */}
         <div
           key={month}

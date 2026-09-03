@@ -14,6 +14,7 @@ import {
   Camera,
   Map,
   MessageSquare,
+  Languages,
 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -24,6 +25,8 @@ import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
 import { getDestinations } from "@/lib/content";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
+import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
+import { FranjaDatos } from "@/components/tours/FranjaDatos";
 import { TourFaq } from "@/components/tours/TourFaq";
 import { getReviews } from "@/lib/content";
 import { TourCard } from "@/components/tours/TourCard";
@@ -149,103 +152,78 @@ export default async function TourDetailPage({
 
   return (
     <div className="min-h-dvh bg-slate-50">
-      <section className="relative h-[70vh] min-h-[500px] overflow-hidden">
-        <Image
-          src={tour.image}
-          alt={name}
-          fill
-          sizes="100vw"
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/50 to-transparent" />
-
-        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10">
-          <div className="mx-auto max-w-7xl">
-            <nav
-              aria-label="Breadcrumb"
-              className="mb-6 flex items-center gap-2 text-sm text-white/70"
+      {/* Cabecera sobre fondo claro, con las fotos a plena luz.
+          Antes esto era una portada a sangre de 70vh con el título encima.
+          Ese patrón obliga a oscurecer la foto para que el texto se lea
+          —o sea, a enseñar apagada la mejor imagen del tour— y empuja el
+          precio y la reserva fuera de la primera pantalla. */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-2 text-sm text-slate-400"
+          >
+            <Link
+              href="/tours"
+              className="inline-flex items-center gap-1.5 font-semibold text-slate-500 transition-colors hover:text-slate-900"
             >
-              <Link
-                href="/tours"
-                className="inline-flex items-center gap-1.5 font-semibold text-white/80 transition-colors hover:text-white"
-              >
-                <ArrowLeft className="size-4" />
-                {t("breadcrumb")}
-              </Link>
-              <span>/</span>
-              {categoryName && (
-                <>
-                  <Link
-                    href={`/tours?categoria=${tour.categorySlug}`}
-                    className="font-medium text-white/80 transition-colors hover:text-white"
-                  >
-                    {categoryName}
-                  </Link>
-                  <span>/</span>
-                </>
-              )}
-              <span className="font-semibold text-white" aria-current="page">
-                {name}
-              </span>
-            </nav>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {category && (
-                <span className="rounded-full bg-amber-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-900 shadow-lg shadow-amber-400/30">
+              <ArrowLeft className="size-4" />
+              {t("breadcrumb")}
+            </Link>
+            <span aria-hidden>/</span>
+            {categoryName && (
+              <>
+                <Link
+                  href={`/tours?categoria=${tour.categorySlug}`}
+                  className="font-medium text-slate-500 transition-colors hover:text-slate-900"
+                >
                   {categoryName}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-                <Star className="size-3.5 fill-current text-amber-400" />
-                {tour.rating.toFixed(1)}
-              </span>
-            </div>
-
-            <h1 className="mt-4 max-w-4xl font-heading text-5xl font-medium tracking-tight text-white sm:text-6xl lg:text-7xl">
+                </Link>
+                <span aria-hidden>/</span>
+              </>
+            )}
+            <span className="font-semibold text-slate-700" aria-current="page">
               {name}
-            </h1>
+            </span>
+          </nav>
 
-            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-white/80">
-              <span className="inline-flex items-center gap-2">
-                <Clock className="size-4 text-amber-400" />
-                {duration}
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <MapPin className="size-4 text-amber-400" />
-                {destination
-                  ? pickLocalized(destination.name, l)
-                  : categoryName}
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <Users className="size-4 text-amber-400" />
-                {t("highlightGrupo")}
-              </span>
-              <span className="font-heading text-2xl font-bold text-amber-300 sm:text-3xl">
-                {formatPrice(tour.price, l, "USD")}
-              </span>
+          {/* Título y datos de identidad. El precio no está aquí: vive en el
+              billete de reserva, que es donde se actúa sobre él. Repetirlo
+              en dos sitios obliga a mantenerlos sincronizados a mano. */}
+          <div className="mt-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <div className="min-w-0">
+              <h1 className="max-w-3xl font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                {name}
+              </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <Star className="size-4 fill-current text-amber-500" />
+                  <span className="font-bold text-slate-900">{tour.rating.toFixed(1)}</span>
+                  <span className="text-slate-400">/ 5</span>
+                </span>
+                <span className="h-3 w-px bg-slate-200" aria-hidden />
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="size-4 text-slate-400" />
+                  {destination ? pickLocalized(destination.name, l) : categoryName}
+                </span>
+              </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href={whatsappLink(
-                  `Hola, me interesa el tour "${name}" (${formatPrice(tour.price, l, "USD")}). ¿Me pueden dar más información?`
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-[#25D366] px-7 text-sm font-bold text-white shadow-lg shadow-[#25D366]/30 transition-all hover:scale-105 hover:shadow-xl"
-              >
-                <MessageCircle className="size-4" />
-                {t("book")}
-              </a>
-              <Link
-                href="#reservar"
-                className="inline-flex h-12 items-center justify-center rounded-full border-2 border-white/30 bg-white/10 px-7 text-sm font-bold text-white backdrop-blur-sm transition-all hover:border-white/50 hover:bg-white/20"
-              >
-                {t("reserveSidebar")}
-              </Link>
-            </div>
+            <a
+              href={whatsappLink(
+                `Hola, me interesa el tour "${name}" (${formatPrice(tour.price, l, "USD")}). ¿Me pueden dar más información?`
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-[#25D366] px-6 text-sm font-bold text-white transition-colors hover:bg-[#20bd5a]"
+            >
+              <MessageCircle className="size-4" />
+              {t("book")}
+            </a>
+          </div>
+
+          <div className="mt-7">
+            <MosaicoFotos fotos={gallery} nombre={name} />
           </div>
         </div>
       </section>
@@ -253,6 +231,19 @@ export default async function TourDetailPage({
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="min-w-0">
+            {/* Ficha técnica, justo bajo las fotos: lo primero que se
+                pregunta quien mira un tour —cuánto dura, con quién voy, en
+                qué idioma— sin tener que entrar en ninguna pestaña. */}
+            <FranjaDatos
+              className="mb-10"
+              datos={[
+                { icono: <Clock />, rotulo: t("duration"), valor: duration },
+                { icono: <Compass />, rotulo: t("tourType"), valor: t("tourTypeDaily") },
+                { icono: <Users />, rotulo: t("groupSize"), valor: t("smallGroups") },
+                { icono: <Languages />, rotulo: t("languages"), valor: t("languagesValue") },
+              ]}
+            />
+
             {/* Entradilla: texto grande con filete turquesa, como el sumario
                 de un reportaje. La píldora con degradado que había antes
                 encajonaba el texto y competía con la ficha de datos. */}
@@ -294,37 +285,11 @@ export default async function TourDetailPage({
                   icon: <Compass className="size-4" />,
                   content: (
                     <div>
-                      {/* Ficha de datos: rotulo en versalita sobre el dato,
-                          separados por filete. Sustituye a las cuatro cajas
-                          con icono en cuadrado, que no aportaban informacion
-                          que el propio rotulo no diera ya. */}
-                      <dl className="grid grid-cols-2 gap-x-10 border-y border-slate-200 sm:grid-cols-4">
-                        {[
-                          { k: t("duration"), v: duration },
-                          { k: t("highlightGrupo"), v: t("smallGroups") },
-                          {
-                            k: t("tabLocation"),
-                            v: destination
-                              ? pickLocalized(destination.name, l)
-                              : categoryName,
-                          },
-                          { k: t("rating"), v: `${tour.rating.toFixed(1)} / 5` },
-                        ].map((item, index) => (
-                          <div
-                            key={item.k}
-                            style={{ ["--i" as string]: index }}
-                            className="rise-in py-5"
-                          >
-                            <dt className="eyebrow text-slate-400">{item.k}</dt>
-                            <dd className="mt-1.5 font-heading text-lg font-bold text-slate-900">
-                              {item.v}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
-
+                      {/* La ficha de datos que había aquí se subió bajo las
+                          fotos: repetirla dentro de la pestaña era enseñar
+                          dos veces lo mismo en la misma pantalla. */}
                       {tour.included && tour.included.length > 0 && (
-                        <div className="mt-10">
+                        <div>
                           <h2 className="font-heading text-2xl font-bold text-slate-900">
                             {t("included")}
                           </h2>

@@ -208,7 +208,13 @@
     "highlightGuia": "Guía experto local",
     "highlightExperiencia": "Experiencia única",
     "highlightConfirmacion": "Confirmación inmediata",
-    "highlightGrupo": "Pequeños grupos"
+    "highlightGrupo": "Pequeños grupos",
+    "seeAllPhotos": "Ver las {count} fotos",
+    "tourType": "Tipo",
+    "tourTypeDaily": "Salida diaria",
+    "languages": "Idiomas",
+    "languagesValue": "Español · Inglés · Portugués",
+    "groupSize": "Grupo"
   },
   "reserva": {
     "title": "Reserva tu viaje",
@@ -474,7 +480,12 @@
       "Concurrido",
       "Temporada alta"
     ],
-    "note": "Aproximado"
+    "note": "Aproximado",
+    "chartMax": "máxima",
+    "chartMin": "mínima",
+    "chartRain": "lluvia",
+    "chartBest": "mejor época",
+    "chartAria": "Temperatura y lluvia mes a mes. Mes seleccionado: {month}."
   },
   "faq": {
     "badge": "Antes de reservar",

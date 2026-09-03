@@ -208,7 +208,13 @@
     "highlightConfirmacion": "Instant confirmation",
     "highlightGuia": "Expert local guide",
     "smallGroups": "Max. 12 people",
-    "highlightExperiencia": "Unique experience"
+    "highlightExperiencia": "Unique experience",
+    "seeAllPhotos": "See all {count} photos",
+    "tourType": "Type",
+    "tourTypeDaily": "Daily departure",
+    "languages": "Languages",
+    "languagesValue": "Spanish · English · Portuguese",
+    "groupSize": "Group"
   },
   "reserva": {
     "title": "Book your trip",
@@ -474,7 +480,12 @@
       "Busy",
       "Peak season"
     ],
-    "note": "Approximate"
+    "note": "Approximate",
+    "chartMax": "high",
+    "chartMin": "low",
+    "chartRain": "rain",
+    "chartBest": "best time",
+    "chartAria": "Temperature and rainfall month by month. Selected month: {month}."
   },
   "faq": {
     "badge": "Before you book",

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarRange } from "lucide-react";
+/* `Map` se importa con alias: el nombre ya lo ocupa el Map de JavaScript,
+   que se usa unas líneas más abajo para indexar los tours por slug. */
+import { ArrowLeft, CalendarRange, Languages, Map as MapaIcono, Users } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
@@ -11,6 +13,8 @@ import { whatsappLink } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
+import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
+import { FranjaDatos } from "@/components/tours/FranjaDatos";
 
 /* Asíncrona: los paquetes salen de Supabase al compilar. */
 export async function generateStaticParams() {
@@ -56,58 +60,93 @@ export default async function PackagePage({
 
   const t = await getTranslations("paquetes");
   const tn = await getTranslations("nav");
+  const tt = await getTranslations("tourDetail");
   const name = pickLocalized(pkg.name, locale);
+
+  /* El mosaico se arma con la foto del paquete y las de sus tours: enseña de
+     verdad lo que incluye el viaje, y evita que un paquete quede reducido a
+     una sola imagen repetida. Se quitan duplicados por si la del paquete
+     coincide con la de alguno de sus tours. */
+  const fotos = [...new Set([pkg.image, ...tours.map((x) => x!.image)])].filter(Boolean);
 
   return (
     <div className="min-h-dvh bg-slate-50">
-      <div className="relative bg-slate-950">
-        <div className="absolute inset-0">
-          <Image
-            src={pkg.image}
-            alt={name}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover opacity-50"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 to-slate-950" />
-        </div>
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
-          <Link
-            href="/paquetes"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 transition-colors hover:text-white"
+      {/* Misma cabecera que la ficha de tour: fondo claro y fotos a plena
+          luz. El mosaico se compone con la imagen del paquete y las de los
+          tours que lo forman —que es literalmente lo que se compra— en vez
+          de repetir una sola foto oscurecida a pantalla completa. */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-2 text-sm text-slate-400"
           >
-            <ArrowLeft className="size-4" />
-            {t("back")}
-          </Link>
-          <p className="mt-6 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-amber-300">
-            <CalendarRange className="size-3.5" />
-            {pickLocalized(pkg.duration, locale)}
-          </p>
-          <h1 className="mt-2 max-w-2xl font-heading text-3xl font-bold tracking-tight text-white sm:text-5xl">
-            {name}
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200">
-            {pickLocalized(pkg.description, locale)}
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <p className="text-3xl font-extrabold text-white">
-              {formatPrice(pkg.price, locale, "USD")}
-              <span className="text-base font-semibold text-slate-300"> · {tn("from")}</span>
-            </p>
-            <a
-              href={whatsappLink(
-                `Hola, me interesa el paquete "${name}" (${formatPrice(pkg.price, locale, "USD")}). ¿Me pueden dar más información?`
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-amber-400 px-7 py-3 text-sm font-bold text-slate-900 shadow-md shadow-amber-400/20 transition-colors hover:bg-amber-300"
+            <Link
+              href="/paquetes"
+              className="inline-flex items-center gap-1.5 font-semibold text-slate-500 transition-colors hover:text-slate-900"
             >
-              {t("book")}
-            </a>
+              <ArrowLeft className="size-4" />
+              {t("back")}
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="font-semibold text-slate-700" aria-current="page">
+              {name}
+            </span>
+          </nav>
+
+          <div className="mt-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <div className="min-w-0">
+              <h1 className="max-w-3xl font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                {name}
+              </h1>
+              <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-slate-600">
+                {pickLocalized(pkg.description, locale)}
+              </p>
+            </div>
+
+            <div className="flex shrink-0 items-end gap-5">
+              <div>
+                <p className="eyebrow text-slate-400">{tn("from")}</p>
+                <p className="mt-1 font-heading text-3xl font-bold text-slate-900">
+                  {formatPrice(pkg.price, locale, "USD")}
+                </p>
+              </div>
+              <a
+                href={whatsappLink(
+                  `Hola, me interesa el paquete "${name}" (${formatPrice(pkg.price, locale, "USD")}). ¿Me pueden dar más información?`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-11 items-center rounded-md bg-amber-500 px-6 text-sm font-bold text-slate-900 transition-colors hover:bg-amber-400"
+              >
+                {t("book")}
+              </a>
+            </div>
           </div>
+
+          <div className="mt-7">
+            <MosaicoFotos fotos={fotos} nombre={name} />
+          </div>
+
+          <FranjaDatos
+            className="mt-8"
+            datos={[
+              {
+                icono: <CalendarRange />,
+                rotulo: tt("duration"),
+                valor: pickLocalized(pkg.duration, locale),
+              },
+              {
+                icono: <MapaIcono />,
+                rotulo: t("includedTours"),
+                valor: String(tours.length),
+              },
+              { icono: <Users />, rotulo: tt("groupSize"), valor: tt("smallGroups") },
+              { icono: <Languages />, rotulo: tt("languages"), valor: tt("languagesValue") },
+            ]}
+          />
         </div>
-      </div>
+      </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <h2 className="font-heading text-2xl font-bold text-slate-900">{t("includedTours")}</h2>
