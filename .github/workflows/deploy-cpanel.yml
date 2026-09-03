@@ -55,6 +55,11 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://gotomachupicchuperu.com
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # Verificación de Google Search Console por etiqueta HTML. Es la vía
+          # alternativa: si la propiedad se verifica por DNS —que es lo
+          # recomendable, porque cubre www, http y subdominios de una vez—
+          # este secreto puede quedarse vacío y no pasa nada.
+          NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${{ secrets.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }}
 
       - name: Comprobar el build antes de subir
         run: |
