@@ -27,40 +27,70 @@ En GitHub: **Settings → Secrets and variables → Actions → New repository s
 
 | Secreto | Qué es | Dónde encontrarlo |
 |---|---|---|
-| `FTP_SERVER` | Servidor FTP | cPanel → Cuentas FTP → *Configurar el cliente FTP* |
-| `FTP_USERNAME` | Usuario FTP completo | Incluye el dominio: `usuario@gotomachupicchuperu.com` |
-| `FTP_PASSWORD` | Contraseña | La que definas al crear la cuenta FTP |
-| `FTP_SERVER_DIR` | Carpeta de destino | `/public_html/` para la cuenta principal |
+| `SSH_KEY` | Clave privada, **sin contraseña** | Ver más abajo |
+| `SSH_HOST` | IP del servidor | cPanel → portada → *Dirección IP compartida* |
+| `SSH_USER` | Usuario de cPanel | cPanel → portada → *Usuario actual* |
 
-`FTP_SERVER_DIR` depende de cómo crees la cuenta FTP: si la creas con el
-directorio raíz en `public_html`, la ruta que ve esa cuenta ya es `/` y el
-valor sería `/`. Compruébalo con la simulación antes del primer despliegue
-real.
+`SSH_PORT` y `SSH_TARGET_DIR` son opcionales: valen `21098` y `public_html`
+por defecto, que es lo que usa Namecheap.
+
+### La clave
+
+El generador de claves de cPanel **obliga a poner contraseña**, y eso no
+sirve: GitHub no puede teclearla al conectarse. Hay que generarla fuera e
+importar solo la pública.
+
+```bash
+ssh-keygen -t ed25519 -f despliegue -N "" -C "despliegue-github-actions"
+```
+
+1. **cPanel → Acceso SSH → Administrar claves SSH → Importar clave.** Pega el
+   contenido de `despliegue.pub` en *Clave pública*. Deja vacíos el campo de
+   contraseña y el de clave privada.
+2. En **Claves públicas**, junto a la recién importada: **Administrar →
+   Autorizar**. Sin esto el servidor no la acepta.
+3. El contenido de `despliegue` (la privada, 7 líneas) va al secreto
+   `SSH_KEY`. Luego borra el fichero de tu equipo.
 
 ## Primer despliegue: simular antes
 
 **Actions → Desplegar en cPanel → Run workflow →** marca **Simular**.
 
-Lista los archivos que subiría sin tocar el servidor. Sirve para confirmar que
-`FTP_SERVER_DIR` apunta donde toca: si la ruta está mal, se ve en el registro
-en vez de descubrirlo con el sitio ya roto.
+Lista lo que subiría y lo que borraría, sin tocar el servidor.
+
+Importa especialmente por el `--delete`: si alguna vez hay en `public_html`
+algo que no venga del build, la simulación lo enseña antes de que desaparezca.
 
 ## Cómo transfiere
 
-La acción deja un manifiesto (`.ftp-deploy-sync-state.json`) en el servidor y
-solo sube lo que cambió. El primer despliegue mueve los ~758 archivos; los
-siguientes, unos pocos segundos.
+`rsync` sobre SSH. Compara contenido, no fechas, así que los despliegues
+posteriores al primero mandan solo lo que cambió y tardan segundos.
 
-Si ese manifiesto se borra o se corrompe, el siguiente despliegue vuelve a
-subirlo todo. Es lento, pero no rompe nada.
+`--delete` retira del servidor lo que ya no existe en el sitio, para que no
+queden páginas viejas accesibles ni indexables. Dos exclusiones son críticas:
 
-## FTPS, no FTP
+- **`.well-known/`** — guarda la validación del certificado SSL. Borrarla
+  rompería el HTTPS en la siguiente renovación.
+- **`cgi-bin/`** — carpeta propia de cPanel.
 
-El workflow usa `protocol: ftps`. Con FTP a secas, la contraseña viaja sin
-cifrar en cada despliegue.
+## Por qué SSH y no FTP
 
-Si el servidor lo rechaza, la alternativa es `ftps-legacy` (FTPS implícito).
-Cambiar a `ftp` es el último recurso: funciona, pero expone las credenciales.
+Se intentó FTPS primero, con dos herramientas, y las dos murieron a mitad:
+
+| Herramienta | Resultado |
+|---|---|
+| `SamKirkland/FTP-Deploy-Action` | `Server sent FIN packet unexpectedly` a los 2 min |
+| `lftp` con 10 reintentos | `max-retries exceeded` tras 18 min |
+
+La causa es el hosting compartido: subir 766 ficheros pequeños seguidos
+dispara su protección anti-abuso, que corta la conexión una y otra vez. No
+son las credenciales —conectaba y subía cientos de ficheros antes de caer.
+
+Lo peligroso era el resultado: `public_html` a medias, con media web nueva y
+media vieja, sin aviso.
+
+SSH lo resuelve de raíz porque abre **una sola conexión** para todo. No hay
+nada que disparar.
 
 ## Comprobación antes de subir
 
