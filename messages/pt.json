@@ -62,7 +62,8 @@
     "count": "{count} destinos para explorar",
     "toursCount": "{count} tours",
     "back": "Voltar para destinos",
-    "empty": "Em breve teremos tours disponíveis neste destino."
+    "empty": "Em breve teremos tours disponíveis neste destino.",
+    "seoTitle": "Tours em {name}: o que ver, preços e melhor época"
   },
   "aventura": {
     "trekking": "Trekking e montanha",
@@ -214,7 +215,8 @@
     "tourTypeDaily": "Saída diária",
     "languages": "Idiomas",
     "languagesValue": "Espanhol · Inglês · Português",
-    "groupSize": "Grupo"
+    "groupSize": "Grupo",
+    "seoTitle": "{name} · Tour de {duration}"
   },
   "reserva": {
     "title": "Reserve sua viagem",

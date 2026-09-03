@@ -62,7 +62,8 @@
     "back": "Volver a destinos",
     "empty": "Pronto tendremos tours disponibles en este destino.",
     "lima": "Lima",
-    "manu": "Reserva de Manu"
+    "manu": "Reserva de Manu",
+    "seoTitle": "Tours en {name}: qué ver, precios y mejor época"
   },
   "aventura": {
     "trekking": "Trekking y montaña",
@@ -214,7 +215,8 @@
     "tourTypeDaily": "Salida diaria",
     "languages": "Idiomas",
     "languagesValue": "Español · Inglés · Portugués",
-    "groupSize": "Grupo"
+    "groupSize": "Grupo",
+    "seoTitle": "{name} · Tour de {duration}"
   },
   "reserva": {
     "title": "Reserva tu viaje",

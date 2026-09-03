@@ -55,9 +55,22 @@ export async function generateMetadata({
   const description = tour.excerpt
     ? pickLocalized(tour.excerpt, locale)
     : undefined;
+  /* La duración va en el título porque es el primer filtro mental de quien
+     compara tours ("de 1 día", "4 días"), y porque estira títulos de 20
+     caracteres hasta acercarse a los 60 que Google muestra. El precio NO:
+     quedaría congelado en el título en cuanto se actualice la tarifa. */
+  const t = await getTranslations({ locale, namespace: "tourDetail" });
+  /* La duración solo se añade si el resultado sigue cabiendo. Google recorta
+     el título alrededor de los 60 caracteres —y a la plantilla hay que
+     descontarle el " · GoToMapi" que añade el layout—, así que en los tours
+     de nombre largo la coletilla no aportaría nada: se cortaría antes de
+     leerse y además dejaría el nombre a medias. */
+  const conDuracion = t("seoTitle", { name, duration: pickLocalized(tour.duration, locale) });
+  const CABE = 60 - " · GoToMapi".length;
+
   return buildMetadata({
     locale,
-    title: name,
+    title: conDuracion.length <= CABE ? conDuracion : name,
     description,
     path: `/tours/${tour.slug}`,
     image: tour.image,
@@ -106,6 +119,54 @@ export default async function TourDetailPage({
 
   const url = pageUrl(`/tours/${tour.slug}`, locale);
 
+  /*
+   * Valoración para Google (las estrellas del resultado de búsqueda).
+   *
+   * Solo se declara si el tour tiene reseñas PROPIAS, y con la media de
+   * esas reseñas, no con el campo `rating` de la ficha.
+   *
+   * La tentación es usar `tour.rating` en los 70 tours y llenar Google de
+   * estrellas. Sería inventarse datos: las directrices de Google exigen que
+   * la valoración proceda de reseñas reales y visibles en esa misma página.
+   * Declararlas sin tenerlas es motivo de acción manual —desaparecen los
+   * resultados enriquecidos de TODO el sitio, no solo de esa página—, y
+   * además engaña a quien busca.
+   *
+   * Hoy salen 6 de 70. La forma de que salgan más es recoger reseñas y
+   * cargarlas desde el panel, no bajar el listón aquí.
+   */
+  const valoracion =
+    tourReviews.length > 0
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: (
+            tourReviews.reduce((a, r) => a + r.rating, 0) / tourReviews.length
+          ).toFixed(1),
+          reviewCount: tourReviews.length,
+          bestRating: 5,
+          worstRating: 1,
+        }
+      : undefined;
+
+  /* Migas de pan: hacen que Google enseñe "Tours › Machu Picchu › …" bajo
+     el título en vez de la URL cruda. */
+  const migas = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { name: t("breadcrumb"), url: pageUrl("/tours", locale) },
+      ...(categoryName
+        ? [{ name: categoryName, url: pageUrl(`/tours?categoria=${tour.categorySlug}`, locale) }]
+        : []),
+      { name, url },
+    ].map((x, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: x.name,
+      item: x.url,
+    })),
+  };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TouristTrip",
@@ -113,6 +174,7 @@ export default async function TourDetailPage({
     description: tour.excerpt ? pickLocalized(tour.excerpt, l) : undefined,
     image: gallery.map((img) => img.replace("/600/600", "/1200/630")),
     url,
+    ...(valoracion ? { aggregateRating: valoracion } : {}),
     touristType: ["Turismo cultural", "Aventura", "Naturaleza"],
     itinerary: tour.itinerary
       ? {
@@ -558,6 +620,10 @@ export default async function TourDetailPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(migas) }}
       />
     </div>
   );

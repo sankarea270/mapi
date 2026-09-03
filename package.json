@@ -11,6 +11,7 @@
     "lint": "eslint",
     "seed:supabase": "tsx --env-file-if-exists=.env.local scripts/seed-supabase.ts",
     "verificar:supabase": "tsx --env-file-if-exists=.env.local scripts/verificar-supabase.ts",
+    "auditar:seo": "node scripts/auditar-seo.mjs",
     "verificar:busqueda": "tsx scripts/verificar-busqueda.ts",
     "postbuild": "node scripts/generar-raiz.mjs"
   },

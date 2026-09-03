@@ -13,6 +13,8 @@ const TRAVELERS = [1, 2, 3, 4, 5, 6] as const;
 interface BookingFormProps {
   tourSlug?: string;
   tourName?: string;
+  /** Nivel del encabezado. "h1" cuando el formulario es toda la página. */
+  encabezado?: "h1" | "h2";
 }
 
 /**
@@ -27,7 +29,11 @@ interface BookingFormProps {
  * dentro de cada uno: ese patrón, repetido campo a campo, es justo lo que
  * hace que un formulario parezca sacado de una plantilla.
  */
-export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) {
+export function BookingForm({
+  tourSlug = "",
+  tourName = "",
+  encabezado: Titulo = "h2",
+}: BookingFormProps) {
   const t = useTranslations("reserva");
   const locale = useLocale();
 
@@ -120,9 +126,13 @@ export function BookingForm({ tourSlug = "", tourName = "" }: BookingFormProps) 
     <div className="border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-6 pb-6 pt-7 sm:px-9">
         <p className="eyebrow text-teal-700">{t("step")}</p>
-        <h2 className="mt-2 font-heading text-2xl font-bold tracking-tight text-slate-900">
+        {/* h1 cuando el formulario ES la página (/reservar), h2 cuando va
+            dentro de otra que ya tiene su encabezado. La página de reservas
+            se quedaba sin h1 porque aquí siempre había un h2: para Google,
+            una página sin h1 no declara de qué trata. */}
+        <Titulo className="mt-2 font-heading text-2xl font-bold tracking-tight text-slate-900">
           {t("title")}
-        </h2>
+        </Titulo>
         <p className="mt-2 max-w-lg text-[15px] leading-relaxed text-slate-500">
           {t("subtitle")}
         </p>

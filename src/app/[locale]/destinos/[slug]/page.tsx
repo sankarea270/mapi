@@ -29,9 +29,13 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const destination = (await getDestinations()).find((d) => d.slug === slug);
   if (!destination) return {};
+  /* "Cusco" son 16 caracteres de los ~60 que Google enseña, y nadie busca
+     "Cusco" para reservar: busca "tours en Cusco", "qué ver en Cusco",
+     "Cusco precios". El título los recoge sin dejar de ser cierto. */
+  const t = await getTranslations({ locale, namespace: "destinos" });
   return buildMetadata({
     locale,
-    title: pickLocalized(destination.name, locale),
+    title: t("seoTitle", { name: pickLocalized(destination.name, locale) }),
     description: pickLocalized(destination.description, locale),
     path: `/destinos/${destination.slug}`,
     image: destination.image,

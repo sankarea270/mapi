@@ -49,6 +49,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ["/paquetes", 0.8],
       ["/experiencias", 0.7],
       ["/guia", 0.6],
+      /* /nosotros faltaba: existe, es indexable y cuenta quién está detrás
+         de la agencia, que es justo lo que Google valora para un negocio
+         que vende viajes. La auditoría lo detectó comparando el sitemap
+         con las páginas realmente generadas. */
+      ["/nosotros", 0.6],
       ["/contacto", 0.5],
       ["/reservar", 0.5],
       ["/reservas", 0.3],

@@ -37,7 +37,7 @@ export default async function ReservarPage({
       {/* El formulario ya trae su propia caja, cabecera y nota de "sin pagos
           en línea": envolverlo en otra tarjeta duplicaba ambos textos. */}
       <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <BookingForm />
+        <BookingForm encabezado="h1" />
       </section>
     </div>
   );
