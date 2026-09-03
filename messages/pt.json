@@ -138,7 +138,6 @@
     }
   },
   "hero": {
-    "badge": "Peru · Agência de viagens",
     "title": "Descubra o Peru que você sempre sonhou",
     "subtitle": "Tours privados e em grupo para Machu Picchu, Vale Sagrado, Amazônia e muito mais. Atendimento 24/7 em espanhol, inglês e português.",
     "ctaTours": "Explorar tours",
@@ -341,7 +340,8 @@
     "impact": {
       "title": "Impacto responsável e comunidade",
       "desc": "Nossos tours integram práticas sustentáveis que protegem o patrimônio cultural e natural do Peru. Ao trabalhar com fornecedores locais e comunidades, geramos experiências autênticas que agregam valor ao destino e ao viajante."
-    }
+    },
+    "photoAlt": "Viajante contemplando a paisagem andina em um de nossos tours"
   },
   "about": {
     "meta": {

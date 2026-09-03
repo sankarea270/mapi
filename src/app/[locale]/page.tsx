@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -42,6 +44,15 @@ export default async function HomePage({
   const t = await getTranslations("hero");
   const resenas = await getReviews();
 
+  /* Foto del bloque "por qué viajar con nosotros". Se busca en public/ y, si
+     no está, el bloque se dibuja sin ella. Así se puede subir la foto por
+     FTP o incluirla en el repositorio sin tocar código, y mientras tanto no
+     queda un hueco roto ni una imagen de banco. */
+  const fotoViajero =
+    ["viajero.webp", "viajero.jpg", "fotos/viajero.webp"].find((n) =>
+      existsSync(join(process.cwd(), "public", n))
+    ) ?? null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
@@ -72,11 +83,6 @@ export default async function HomePage({
           <CloudLayer />
 
           <div className="relative z-20 mx-auto flex max-w-3xl flex-col items-center px-4 py-28 text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-amber-300 backdrop-blur"
-              style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
-            >
-              {t("badge")}
-            </span>
             <h1
               className="mt-6 font-heading text-5xl font-medium leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl"
               style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
@@ -122,10 +128,16 @@ export default async function HomePage({
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
 
-    <Credentials variant="strip" locale={locale} />
-    <WhyTravelWith />
+    {/* Los avales van al final, después de las reseñas. Nada más entrar,
+        "Respaldo oficial · Autorizados y registrados" interrumpía con
+        burocracia justo donde la portada tiene que enganchar. Al final, en
+        cambio, cierran: quien ha llegado hasta ahí ya está valorando
+        reservar, y es entonces cuando importa saber que la agencia está
+        registrada. */}
+    <WhyTravelWith foto={fotoViajero ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${fotoViajero}` : null} />
     <SocialFeed />
     <ReviewsSection reviews={resenas} />
+    <Credentials variant="strip" locale={locale} />
     <JourneyBand />
     </>
   );

@@ -138,7 +138,6 @@
     }
   },
   "hero": {
-    "badge": "Peru · Travel agency",
     "title": "Discover the Peru you always dreamed of",
     "subtitle": "Private and group tours to Machu Picchu, Sacred Valley, Amazon and beyond. 24/7 support in Spanish, English and Portuguese.",
     "ctaTours": "Explore tours",
@@ -341,7 +340,8 @@
     "impact": {
       "title": "Responsible impact and community",
       "desc": "Our tours integrate sustainable practices that protect Peru's cultural and natural heritage. By working with local suppliers and communities, we generate authentic experiences that add value to the destination and the traveler."
-    }
+    },
+    "photoAlt": "A traveller taking in the Andean landscape on one of our tours"
   },
   "about": {
     "meta": {

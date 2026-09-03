@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { cn } from "@/lib/utils";
@@ -20,10 +21,43 @@ const FEATURES = [
  * el que hace que una web se reconozca al instante como plantilla, y además
  * los iconos no aportaban significado: eran Star, Crown, Sparkles y Leaf
  * para conceptos que ya explica el titular de cada columna.
+ *
+ * La foto de un viajero acompaña el bloque cuando existe. Es opcional a
+ * propósito: `foto` llega en null si el archivo no está, y entonces las
+ * razones ocupan el ancho completo como antes. Poner una imagen de relleno
+ * habría sido peor que no poner ninguna —una foto genérica de banco es
+ * justo lo que delata una plantilla— y un hueco roto, peor todavía.
  */
-export function WhyTravelWith() {
+export function WhyTravelWith({ foto }: { foto?: string | null }) {
   const t = useTranslations("whyTravel");
   const { ref: sectionRef, isVisible } = useScrollAnimation(0.1);
+
+  const razones = (
+    <div
+      className={cn(
+        "grid gap-x-10 gap-y-11",
+        foto ? "sm:grid-cols-2" : "mt-14 sm:grid-cols-2 lg:grid-cols-4"
+      )}
+    >
+      {FEATURES.map((feature, index) => (
+        <div
+          key={feature.titleKey}
+          style={{ ["--i" as string]: index }}
+          className={cn("border-t-2 border-slate-900 pt-5", isVisible && "rise-in")}
+        >
+          <span className="font-heading text-sm font-bold tabular-nums text-amber-600">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <h3 className="mt-3 font-heading text-xl font-bold leading-snug text-slate-900">
+            {t(feature.titleKey)}
+          </h3>
+          <p className="mt-2.5 text-[15px] leading-relaxed text-slate-600">
+            {t(feature.descKey)}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <section
@@ -43,28 +77,32 @@ export function WhyTravelWith() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((feature, index) => (
-            <div
-              key={feature.titleKey}
-              style={{ ["--i" as string]: index }}
-              className={cn(
-                "border-t-2 border-slate-900 pt-5",
-                isVisible && "rise-in"
-              )}
-            >
-              <span className="font-heading text-sm font-bold tabular-nums text-amber-600">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h3 className="mt-3 font-heading text-xl font-bold leading-snug text-slate-900">
-                {t(feature.titleKey)}
-              </h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-slate-600">
-                {t(feature.descKey)}
-              </p>
-            </div>
-          ))}
-        </div>
+        {foto ? (
+          <div className="mt-14 grid items-start gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]">
+            {/* La foto va en vertical y algo más alta que ancha: es un
+                retrato de viaje, no un banner. El recuadro ámbar desplazado
+                le da profundidad sin recurrir a sombras difusas. */}
+            <figure className="journey-plate relative">
+              <span
+                aria-hidden
+                className="absolute -bottom-3 -left-3 h-full w-full rounded-lg border-2 border-amber-500/70"
+              />
+              <div className="relative aspect-4/5 overflow-hidden rounded-lg bg-slate-100">
+                <Image
+                  src={foto}
+                  alt={t("photoAlt")}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-cover"
+                />
+              </div>
+            </figure>
+
+            <div className="lg:pt-2">{razones}</div>
+          </div>
+        ) : (
+          razones
+        )}
       </div>
     </section>
   );
