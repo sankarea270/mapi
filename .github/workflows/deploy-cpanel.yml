@@ -1,6 +1,6 @@
 name: Desplegar en cPanel (Namecheap)
 
-# Cada push a main reconstruye el sitio y sincroniza public_html por FTPS.
+# Cada push a main reconstruye el sitio y sincroniza public_html por SSH.
 #
 # Se puede lanzar a mano desde la pestaña Actions, con la casilla `simulacion`
 # marcada, para ver qué archivos SE SUBIRÍAN sin tocar el servidor. Conviene
@@ -63,34 +63,50 @@ jobs:
           test -d out/es           || { echo "Falta out/es";         exit 1; }
           echo "Archivos a publicar: $(find out -type f | wc -l)"
 
-      - name: Instalar lftp
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-
-      # Antes se usaba SamKirkland/FTP-Deploy-Action. Funcionaba, pero se caía
-      # a los dos minutos con "Server sent FIN packet unexpectedly": el
-      # cortafuegos anti-abuso del hosting compartido corta la conexión cuando
-      # recibe cientos de ficheros pequeños seguidos, y esa acción no sabe
-      # reconectar —se rinde y deja el sitio a medio subir, que es el peor
-      # resultado posible.
+      # Por qué rsync sobre SSH y no FTP.
       #
-      # lftp sí reintenta y continúa donde iba.
+      # Se intentó FTPS dos veces, con dos herramientas distintas, y las dos
+      # murieron a mitad de subida:
       #
-      # Se sube el sitio entero cada vez, unos 4 minutos. Podría parecer que
-      # `--only-newer` lo evitaría, pero sería mentira: cada compilación
-      # regenera los ficheros con fecha nueva, así que TODOS parecerían más
-      # recientes igualmente. Y saltárselos por tamaño (`--ignore-time`)
-      # rompería el caso que más importa: cambiar un precio de 590 a 690 deja
-      # el fichero del mismo tamaño, y esa página nunca se actualizaría.
-      # Cuatro minutos son un precio razonable por no publicar datos viejos.
-      - name: Sincronizar por FTPS
+      #   SamKirkland/FTP-Deploy-Action  →  "Server sent FIN packet
+      #     unexpectedly" a los 2 minutos. No sabe reconectar: se rinde y deja
+      #     public_html a medias, con media web nueva y media vieja.
+      #   lftp con reintentos            →  aguantó 18 minutos y acabó en
+      #     "max-retries exceeded".
+      #
+      # La causa es el hosting: subir 764 ficheros pequeños seguidos dispara
+      # la protección anti-abuso del servidor compartido, que corta la
+      # conexión una y otra vez. No es un problema de credenciales ni de
+      # configuración; es que FTP no encaja con este reparto.
+      #
+      # SSH resuelve el problema de raíz: una sola conexión para todo, así que
+      # no hay nada que disparar. Y rsync compara contenido de verdad, no
+      # fechas, de modo que los despliegues siguientes mandan solo lo que
+      # cambió y tardan segundos en vez de minutos.
+      - name: Preparar la clave SSH
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          # lftp lee la contraseña de esta variable con --env-password, así no
-          # aparece nunca en la línea de órdenes (que sí queda en los logs del
-          # proceso) ni se rompe si lleva comas o comillas.
-          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '21098' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_despliegue
+          chmod 600 ~/.ssh/id_despliegue
+          # Se apunta la huella del servidor al empezar. No es una
+          # comprobación fuerte —se confía en quien responda la primera vez—,
+          # pero evita tener que desactivar la verificación por completo, que
+          # es lo que se suele hacer y deja la conexión abierta a suplantación
+          # durante toda la ejecución.
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          test -s ~/.ssh/known_hosts || { echo "El servidor no respondió al ssh-keyscan"; exit 1; }
+
+      - name: Sincronizar por rsync
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '21098' }}
+          DESTINO: ${{ secrets.SSH_TARGET_DIR || 'public_html' }}
           SIMULACION: ${{ inputs.simulacion }}
         run: |
           set -euo pipefail
@@ -100,21 +116,19 @@ jobs:
             echo "MODO SIMULACIÓN: no se escribe nada en el servidor."
           fi
 
-          lftp -u "$FTP_USERNAME" --env-password "ftps://$FTP_SERVER" <<LFTP
-            set ftp:ssl-force true
-            set ftp:ssl-protect-data true
-            # El certificado del FTP lo emite el hosting para el nombre de su
-            # servidor (premium127...), no para el dominio por el que
-            # entramos, así que la verificación fallaría siempre. El tráfico
-            # sigue cifrado; lo que se desactiva es comprobar a quién
-            # pertenece el certificado.
-            set ssl:verify-certificate no
-            # Reintentos: es justo lo que faltaba antes.
-            set net:max-retries 10
-            set net:reconnect-interval-base 5
-            set net:timeout 20
-            set ftp:use-mdtm off
-            set xfer:clobber on
-            mirror --reverse --continue --parallel=3 --verbose=1 --exclude-glob .git* $SECO ./out/ "$FTP_SERVER_DIR"
-            bye
-          LFTP
+          # --delete quita del servidor lo que ya no existe en el sitio, para
+          # que no queden páginas viejas accesibles. Las exclusiones son
+          # críticas: .well-known guarda la validación del certificado SSL, y
+          # borrarla rompería el HTTPS en la siguiente renovación.
+          rsync -rlvz --human-readable --partial $SECO \
+            --delete \
+            --exclude '.well-known/' \
+            --exclude 'cgi-bin/' \
+            --exclude '.ftp-deploy-sync-state.json' \
+            --exclude '.git*' \
+            -e "ssh -i $HOME/.ssh/id_despliegue -p $SSH_PORT" \
+            ./out/ "$SSH_USER@$SSH_HOST:$DESTINO/" | tail -40
+
+      - name: Borrar la clave
+        if: always()
+        run: rm -f ~/.ssh/id_despliegue
