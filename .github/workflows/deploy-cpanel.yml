@@ -63,20 +63,58 @@ jobs:
           test -d out/es           || { echo "Falta out/es";         exit 1; }
           echo "Archivos a publicar: $(find out -type f | wc -l)"
 
+      - name: Instalar lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      # Antes se usaba SamKirkland/FTP-Deploy-Action. Funcionaba, pero se caía
+      # a los dos minutos con "Server sent FIN packet unexpectedly": el
+      # cortafuegos anti-abuso del hosting compartido corta la conexión cuando
+      # recibe cientos de ficheros pequeños seguidos, y esa acción no sabe
+      # reconectar —se rinde y deja el sitio a medio subir, que es el peor
+      # resultado posible.
+      #
+      # lftp sí reintenta y continúa donde iba.
+      #
+      # Se sube el sitio entero cada vez, unos 4 minutos. Podría parecer que
+      # `--only-newer` lo evitaría, pero sería mentira: cada compilación
+      # regenera los ficheros con fecha nueva, así que TODOS parecerían más
+      # recientes igualmente. Y saltárselos por tamaño (`--ignore-time`)
+      # rompería el caso que más importa: cambiar un precio de 590 a 690 deja
+      # el fichero del mismo tamaño, y esa página nunca se actualizaría.
+      # Cuatro minutos son un precio razonable por no publicar datos viejos.
       - name: Sincronizar por FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: ./out/
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          dry-run: ${{ inputs.simulacion == true }}
-          # La acción guarda un manifiesto en el servidor y solo transfiere lo
-          # que cambió. El primer despliegue sube los 758 archivos; los
-          # siguientes, unos pocos.
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          # lftp lee la contraseña de esta variable con --env-password, así no
+          # aparece nunca en la línea de órdenes (que sí queda en los logs del
+          # proceso) ni se rompe si lleva comas o comillas.
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+          SIMULACION: ${{ inputs.simulacion }}
+        run: |
+          set -euo pipefail
+          SECO=""
+          if [ "${SIMULACION:-false}" = "true" ]; then
+            SECO="--dry-run"
+            echo "MODO SIMULACIÓN: no se escribe nada en el servidor."
+          fi
+
+          lftp -u "$FTP_USERNAME" --env-password "ftps://$FTP_SERVER" <<LFTP
+            set ftp:ssl-force true
+            set ftp:ssl-protect-data true
+            # El certificado del FTP lo emite el hosting para el nombre de su
+            # servidor (premium127...), no para el dominio por el que
+            # entramos, así que la verificación fallaría siempre. El tráfico
+            # sigue cifrado; lo que se desactiva es comprobar a quién
+            # pertenece el certificado.
+            set ssl:verify-certificate no
+            # Reintentos: es justo lo que faltaba antes.
+            set net:max-retries 10
+            set net:reconnect-interval-base 5
+            set net:timeout 20
+            set ftp:use-mdtm off
+            set xfer:clobber on
+            mirror --reverse --continue --parallel=3 --verbose=1 --exclude-glob .git* $SECO ./out/ "$FTP_SERVER_DIR"
+            bye
+          LFTP
