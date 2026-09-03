@@ -158,7 +158,9 @@ export default async function TourDetailPage({
           —o sea, a enseñar apagada la mejor imagen del tour— y empuja el
           precio y la reserva fuera de la primera pantalla. */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+        {/* Más ancha que el resto de la página (7xl): el mosaico gana aire
+            sin llegar a pegarse a los bordes de la ventana. */}
+        <div className="mx-auto max-w-[88rem] px-4 py-8 sm:px-6 sm:py-10">
           <nav
             aria-label="Breadcrumb"
             className="flex flex-wrap items-center gap-2 text-sm text-slate-400"
@@ -215,7 +217,11 @@ export default async function TourDetailPage({
               )}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-[#25D366] px-6 text-sm font-bold text-white transition-colors hover:bg-[#20bd5a]"
+              /* Teal del logotipo (#036564 = teal-600) en vez del verde
+                 corporativo de WhatsApp: el botón es de la agencia, no de
+                 la app, y el verde ajeno chirriaba junto a la marca. El
+                 icono ya dice por dónde se contacta. */
+              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-teal-600 px-6 text-sm font-bold text-white transition-colors hover:bg-teal-700"
             >
               <MessageCircle className="size-4" />
               {t("book")}

@@ -36,17 +36,23 @@ export function MosaicoFotos({ fotos, nombre }: { fotos: string[]; nombre: strin
       <div
         className={cn(
           "grid gap-1.5 overflow-hidden rounded-lg",
-          /* Con una sola foto no hay mosaico que valga: ocupa todo el ancho
-             en formato apaisado, sin recortarla a un cuadrado raro. */
+          /* Alto medido en pantalla, no en proporción fija: llena casi toda
+             la ventana sin llegar a taparla, así que se ve que hay contenido
+             debajo y no hay que adivinarlo. Los topes evitan los dos
+             extremos: una tira aplastada en portátiles bajos y una foto
+             desmesurada en monitores muy altos. */
+          "h-[54vh] min-h-[17rem] sm:h-[56vh] lg:h-[64vh] lg:min-h-[28rem] lg:max-h-[42rem]",
+          /* Con una sola foto no hay mosaico que valga: ocupa todo el ancho,
+             sin recortarla a un cuadrado raro. */
           secundarias.length === 0
             ? "grid-cols-1"
-            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr]"
+            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr]"
         )}
       >
         <button
           type="button"
           onClick={() => setAbierta(0)}
-          className="group relative aspect-4/3 overflow-hidden bg-slate-100 sm:aspect-16/10 lg:aspect-auto lg:min-h-[26rem]"
+          className="group relative overflow-hidden bg-slate-100"
         >
           <Image
             src={principal}
@@ -78,7 +84,7 @@ export function MosaicoFotos({ fotos, nombre }: { fotos: string[]; nombre: strin
                   key={`${foto}-${i}`}
                   type="button"
                   onClick={() => setAbierta(i + 1)}
-                  className="group relative aspect-4/3 overflow-hidden bg-slate-100 lg:aspect-auto"
+                  className="group relative overflow-hidden bg-slate-100"
                 >
                   <Image
                     src={foto}

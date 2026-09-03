@@ -76,7 +76,7 @@ export default async function PackagePage({
           tours que lo forman —que es literalmente lo que se compra— en vez
           de repetir una sola foto oscurecida a pantalla completa. */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+        <div className="mx-auto max-w-[88rem] px-4 py-8 sm:px-6 sm:py-10">
           <nav
             aria-label="Breadcrumb"
             className="flex flex-wrap items-center gap-2 text-sm text-slate-400"
@@ -117,7 +117,9 @@ export default async function PackagePage({
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-11 items-center rounded-md bg-amber-500 px-6 text-sm font-bold text-slate-900 transition-colors hover:bg-amber-400"
+                /* Mismo teal que en la ficha de tour: es la misma acción, y
+                   el ámbar aquí la hacía parecer otra distinta. */
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-teal-600 px-6 text-sm font-bold text-white transition-colors hover:bg-teal-700"
               >
                 {t("book")}
               </a>
