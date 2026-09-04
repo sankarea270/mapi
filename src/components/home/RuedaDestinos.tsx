@@ -16,13 +16,10 @@ export interface DestinoRueda {
 }
 
 const INTERVALO = 5200;
-/* Posición focal: 0° = las doce en punto.
-   Se probó a las nueve —más cerca del texto y más parecido al referente—,
-   pero ahí la foto activa queda en el borde izquierdo del aro y, en
-   pantallas estrechas, el aro es más ancho que la ventana: la foto grande
-   se salía fuera. Arriba queda centrada horizontalmente sea cual sea el
-   ancho, así que no puede desbordar. */
-const FOCO = 0;
+/* Posición focal: 90° = las tres en punto, el punto más a la derecha del
+   aro. Es donde el eje —que queda fuera del encuadre, a la izquierda— sitúa
+   la foto en el centro vertical del marco. */
+const FOCO = 90;
 
 /**
  * Rueda de destinos.
@@ -97,7 +94,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
       onFocusCapture={() => setDetenido(true)}
       onBlurCapture={() => setDetenido(false)}
     >
-      <div className="mx-auto grid max-w-7xl items-center gap-y-12 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,32rem)] lg:gap-x-8">
+      <div className="mx-auto grid max-w-7xl items-center gap-y-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,30rem)] lg:gap-x-4">
         <div className="min-w-0 lg:pr-6">
           <p className="eyebrow text-amber-600">{t("badge")}</p>
 
@@ -159,29 +156,37 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
           </p>
         </div>
 
-        {/* Estructura del aro, y por qué es así.
-            Un primer intento encadenaba rotaciones y traslaciones en un
-            mismo `transform`. No funcionó: `transform-origin` está por
-            defecto en el centro de CADA elemento, así que las rotaciones no
-            giraban sobre el eje del aro y las fotos aparecían desplazadas
-            —medidas: 88px por encima de donde tocaba, y descentradas.
+        {/* Geometría del aro, y por qué así.
+            El eje queda FUERA del encuadre, a la izquierda, y el aro es más
+            del doble de ancho que su marco: por eso solo se ve un arco, no
+            la circunferencia entera. La foto activa se apoya en el punto más
+            a la derecha de esa curva, y las vecinas asoman por el borde
+            superior e inferior —entrando y saliendo— que es lo que deja ver
+            que la rueda gira y no que la imagen cambia en su sitio.
 
-            Aquí cada destino tiene un envoltorio que ocupa el aro entero
-            (`inset-0`). Al rotarlo, gira sobre el centro del aro por
-            construcción, sin depender de ningún origen. La foto se coloca en
-            el borde superior de ese envoltorio, así que el radio es siempre
-            la mitad del aro y no hay dos medidas que mantener de acuerdo. */}
-        <div className="relative mx-auto h-[24rem] w-full max-w-[26rem] sm:h-[32rem] lg:h-[36rem] lg:max-w-none">
+            `--r` es el radio y `--px` la distancia del borde izquierdo del
+            marco a la foto activa. El aro se coloca a partir de ahí: su
+            borde izquierdo cae en `--px - 2r`, así que su centro queda en
+            `--px - r` y el punto de las tres, justo en `--px`.
+
+            Cada destino va en un envoltorio que ocupa el aro entero. Al
+            rotarlo gira sobre el centro por construcción, sin depender de
+            `transform-origin`: encadenar rotaciones y traslaciones en un
+            mismo `transform` colocaba las fotos 88px fuera de sitio. */}
+        <div className="relative h-[26rem] w-full overflow-hidden [--px:12rem] [--r:17rem] sm:h-[32rem] sm:[--px:15rem] sm:[--r:21rem] lg:h-[36rem] lg:[--px:17rem] lg:[--r:24rem]">
           <div
-            className="absolute left-1/2 top-1/2 size-[14rem] sm:size-[19rem] lg:size-[24rem]"
+            className="absolute top-1/2"
             style={{
-              transform: `translate(-50%,-50%) rotate(${giro.current}deg)`,
+              width: "calc(2 * var(--r))",
+              height: "calc(2 * var(--r))",
+              left: "calc(var(--px) - 2 * var(--r))",
+              transform: `translateY(-50%) rotate(${giro.current}deg)`,
               transition: transicion,
             }}
           >
             <span
               aria-hidden
-              className="absolute inset-0 rounded-full border border-dashed border-slate-200"
+              className="absolute inset-0 rounded-full border border-dashed border-slate-300"
             />
 
             {destinos.map((x, i) => {
@@ -199,8 +204,8 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                     aria-current={esActivo ? "true" : undefined}
                     className="absolute left-1/2 top-0 focus-visible:outline-none"
                     /* Contragiro exacto: deshace el del aro y el propio, para
-                       que la foto no salga cabeza abajo al pasar por la mitad
-                       inferior del recorrido. */
+                       que la foto no salga cabeza abajo al recorrer la mitad
+                       inferior de la curva. */
                     style={{
                       transform: `translate(-50%,-50%) rotate(${-giro.current - i * paso}deg)`,
                       transition: transicion,
@@ -210,8 +215,8 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                       className={cn(
                         "block overflow-hidden rounded-full bg-slate-100 ring-1 transition-all duration-700",
                         esActivo
-                          ? "size-28 opacity-100 ring-4 ring-amber-500 sm:size-40 lg:size-44"
-                          : "size-12 opacity-45 ring-slate-200 hover:opacity-80 sm:size-16 lg:size-20"
+                          ? "size-44 opacity-100 ring-4 ring-amber-500 sm:size-56 lg:size-64"
+                          : "size-14 opacity-50 ring-slate-200 hover:opacity-90 sm:size-16"
                       )}
                     >
                       <span className="relative block size-full">
@@ -219,7 +224,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                           src={x.imagen}
                           alt=""
                           fill
-                          sizes={esActivo ? "11rem" : "5rem"}
+                          sizes={esActivo ? "16rem" : "4rem"}
                           className="object-cover"
                         />
                       </span>
@@ -230,7 +235,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
             })}
           </div>
 
-          <span className="pointer-events-none absolute bottom-2 left-2 rounded-full bg-slate-900 px-3 py-1.5 font-heading text-xs font-bold tabular-nums text-white">
+          <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-slate-900 px-3 py-1.5 font-heading text-xs font-bold tabular-nums text-white">
             {activo + 1} / {n}
           </span>
         </div>
