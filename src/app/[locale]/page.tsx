@@ -6,7 +6,9 @@ import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
 import { buildMetadata } from "@/lib/seo";
-import { getReviews } from "@/lib/content";
+import { pickLocalized } from "@/lib/format";
+import { getDestinations, getReviews } from "@/lib/content";
+import { getCategoriesWithTours } from "@/lib/tours";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
@@ -14,6 +16,7 @@ import { CloudLayer } from "@/components/home/CloudLayer";
 import { JourneyBand } from "@/components/home/JourneyBand";
 import { Credentials } from "@/components/about/Credentials";
 import { WhyTravelWith } from "@/components/home/WhyTravelWith";
+import { RuedaDestinos } from "@/components/home/RuedaDestinos";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -43,6 +46,27 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations("hero");
   const resenas = await getReviews();
+  const [categorias, destinos] = await Promise.all([
+    getCategoriesWithTours(),
+    getDestinations(),
+  ]);
+
+  /* Solo los destinos que ya tienen tours: una rueda que gira hasta un
+     destino sin nada que reservar frustra en vez de invitar. */
+  const paraRueda = destinos
+    .map((x) => {
+      const tours = categorias
+        .filter((c) => x.categorySlugs?.includes(c.slug))
+        .reduce((n, c) => n + c.tours.length, 0);
+      return {
+        slug: x.slug,
+        nombre: pickLocalized(x.name, locale),
+        descripcion: pickLocalized(x.description, locale),
+        imagen: x.image,
+        tours,
+      };
+    })
+    .filter((x) => x.tours > 0 && x.imagen);
 
   /* Foto del bloque "por qué viajar con nosotros". Se busca en public/ y, si
      no está, el bloque se dibuja sin ella. Así se puede subir la foto por
@@ -134,6 +158,7 @@ export default async function HomePage({
         cambio, cierran: quien ha llegado hasta ahí ya está valorando
         reservar, y es entonces cuando importa saber que la agencia está
         registrada. */}
+    <RuedaDestinos destinos={paraRueda} />
     <WhyTravelWith foto={fotoViajero ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${fotoViajero}` : null} />
     <SocialFeed />
     <ReviewsSection reviews={resenas} />

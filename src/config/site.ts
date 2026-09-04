@@ -21,11 +21,11 @@ export const siteConfig = {
 
   taglineKey: "brand.tagline",
   phone: {
-    display: "+51 984 123 456",
-    tel: "+51984123456",
+    display: "+51 986 377 524",
+    tel: "+51986377524",
   },
   whatsapp: {
-    number: "51984123456",
+    number: "51986377524",
     defaultMessage: "Hola, quiero planificar un viaje a Perú",
   },
   emailUser: "reservas",

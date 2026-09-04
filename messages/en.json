@@ -233,7 +233,7 @@
     "email": "Email address",
     "emailPlaceholder": "you@example.com",
     "whatsapp": "Your WhatsApp",
-    "whatsappPlaceholder": "+51 984 123 456",
+    "whatsappPlaceholder": "+51 9XX XXX XXX",
     "message": "Optional message",
     "messagePlaceholder": "Any special details? (allergies, altitude, celebrations...)",
     "submit": "Send booking request",
@@ -523,5 +523,11 @@
     "open": "Open WhatsApp",
     "again": "Send another enquiry",
     "summary": "This is what you will send"
+  },
+  "rueda": {
+    "badge": "Where we take you",
+    "prev": "Previous destination",
+    "next": "Next destination",
+    "ver": "See all {count} tours"
   }
 }

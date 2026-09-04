@@ -890,3 +890,30 @@ html {
   }
 }
 
+
+/* ── Rueda de destinos ────────────────────────────────────────
+   Entradas cortas y con desplazamiento pequeño: lo que se quiere es que el
+   ojo note el relevo, no que el texto viaje por la pantalla. Todo queda
+   anulado bajo `prefers-reduced-motion`. */
+@keyframes rueda-entra {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.rueda-entra {
+  animation: rueda-entra 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes rueda-foto {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.rueda-foto {
+  animation: rueda-foto 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rueda-entra,
+  .rueda-foto {
+    animation: none;
+  }
+}

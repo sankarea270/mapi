@@ -233,7 +233,7 @@
     "email": "E-mail",
     "emailPlaceholder": "voce@exemplo.com",
     "whatsapp": "Seu WhatsApp",
-    "whatsappPlaceholder": "+51 984 123 456",
+    "whatsappPlaceholder": "+51 9XX XXX XXX",
     "message": "Mensagem opcional",
     "messagePlaceholder": "Algum detalhe especial? (alergias, altitude, comemorações...)",
     "submit": "Enviar solicitação de reserva",
@@ -523,5 +523,11 @@
     "open": "Abrir WhatsApp",
     "again": "Enviar outra consulta",
     "summary": "Isto é o que você vai enviar"
+  },
+  "rueda": {
+    "badge": "Para onde te levamos",
+    "prev": "Destino anterior",
+    "next": "Próximo destino",
+    "ver": "Ver os {count} tours"
   }
 }

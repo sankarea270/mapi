@@ -2,7 +2,7 @@
 
 import { Building2, FileText, Briefcase, Badge } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { mailAt } from "@/config/site";
+import { mailAt, siteConfig } from "@/config/site";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const COMPANY_DATA = [
@@ -47,7 +47,9 @@ const ADDITIONAL_INFO = [
   },
   {
     key: "phone",
-    value: "+51 984 123 456"
+    /* De la configuración, no escrito aquí: tenerlo en tres sitios
+       garantizaba que un cambio de número dejara alguno desfasado. */
+    value: siteConfig.phone.display
   },
   {
     key: "email",

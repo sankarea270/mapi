@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Mail, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { mailAt } from "@/config/site";
+import { mailAt, siteConfig } from "@/config/site";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const TEAM = [
@@ -13,7 +13,7 @@ const TEAM = [
     department: "Administración",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
     email: mailAt("carlos"),
-    phone: "+51 984 123 456"
+    phone: siteConfig.phone.display
   },
   {
     name: "Ana Quispe",
