@@ -17,6 +17,7 @@ import { JourneyBand } from "@/components/home/JourneyBand";
 import { Credentials } from "@/components/about/Credentials";
 import { WhyTravelWith } from "@/components/home/WhyTravelWith";
 import { RuedaDestinos } from "@/components/home/RuedaDestinos";
+import { RevelaScroll } from "@/components/home/RevelaScroll";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -67,6 +68,8 @@ export default async function HomePage({
       };
     })
     .filter((x) => x.tours > 0 && x.imagen);
+
+  const fotoRevela = paraRueda[0]?.imagen ?? null;
 
   /* Foto del bloque "por qué viajar con nosotros". Se busca en public/ y, si
      no está, el bloque se dibuja sin ella. Así se puede subir la foto por
@@ -160,6 +163,7 @@ export default async function HomePage({
         registrada. */}
     <WhyTravelWith foto={fotoViajero ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${fotoViajero}` : null} />
     <RuedaDestinos destinos={paraRueda} />
+    {fotoRevela && <RevelaScroll foto={fotoRevela} />}
     <SocialFeed />
     <ReviewsSection reviews={resenas} />
     <Credentials variant="strip" locale={locale} />

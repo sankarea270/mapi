@@ -529,5 +529,12 @@
     "prev": "Previous destination",
     "next": "Next destination",
     "ver": "See all {count} tours"
+  },
+  "revela": {
+    "badge": "Designed in Cusco",
+    "title": "Every trip is built by hand, not pulled from a catalogue",
+    "lead": "We are from here. We know the timings that never make it online, the guide who can actually explain, and the viewpoint the buses do not reach. That is not improvised from an office ten thousand kilometres away.",
+    "cta": "See all tours",
+    "photoAlt": "Andean landscape at dawn on one of our journeys"
   }
 }

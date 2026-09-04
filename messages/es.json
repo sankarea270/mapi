@@ -529,5 +529,12 @@
     "prev": "Destino anterior",
     "next": "Destino siguiente",
     "ver": "Ver los {count} tours"
+  },
+  "revela": {
+    "badge": "Diseñado en Cusco",
+    "title": "Cada viaje se arma a mano, no se saca de un catálogo",
+    "lead": "Somos de aquí. Conocemos los horarios que no salen en internet, el guía que sabe explicar y el mirador al que no llega el autobús. Eso no se improvisa desde una oficina a diez mil kilómetros.",
+    "cta": "Ver todos los tours",
+    "photoAlt": "Paisaje andino al amanecer durante uno de nuestros recorridos"
   }
 }

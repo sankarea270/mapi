@@ -917,3 +917,56 @@ html {
     animation: none;
   }
 }
+
+/* ── Revelado por scroll ──────────────────────────────────────
+   La foto crece de media altura a completa y el texto entra escalonado,
+   ambos gobernados por lo que ha avanzado la sección clavada.
+
+   `animation-timeline: scroll()` ata el avance de la animación al scroll del
+   contenedor en vez de al reloj: no hay JavaScript midiendo posiciones en
+   cada fotograma, lo lleva el compositor del navegador.
+
+   Fuera del @supports —Firefox hoy— no se declara nada, así que la sección
+   se ve entera y quieta. El efecto es adorno; el contenido no depende de él. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .revela {
+      view-timeline-name: --revela;
+      view-timeline-axis: block;
+    }
+
+    .revela-foto {
+      animation: revela-crece linear both;
+      animation-timeline: --revela;
+      animation-range: entry 100% exit 0%;
+    }
+
+    .revela-texto > * {
+      animation: revela-entra linear both;
+      animation-timeline: --revela;
+      animation-range: entry 100% cover 38%;
+    }
+    /* Escalonado: cada elemento arranca un poco después que el anterior,
+       de modo que el bloque se compone en cascada en vez de aparecer de
+       golpe como una sola pieza. */
+    .revela-texto > *:nth-child(2) { animation-range: entry 100% cover 44%; }
+    .revela-texto > *:nth-child(3) { animation-range: entry 100% cover 50%; }
+    .revela-texto > *:nth-child(4) { animation-range: entry 100% cover 56%; }
+  }
+}
+
+@keyframes revela-crece {
+  from {
+    clip-path: inset(25% 0 25% 0 round 0.5rem);
+    transform: scale(1.12);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 0.5rem);
+    transform: scale(1);
+  }
+}
+
+@keyframes revela-entra {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
