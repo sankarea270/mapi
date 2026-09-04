@@ -970,3 +970,45 @@ html {
   from { opacity: 0; transform: translateY(26px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ── Aparición atada al scroll ────────────────────────────────
+   La misma idea que la sección de revelado, pero reutilizable en cualquier
+   bloque del inicio.
+
+   Se diferencia de `.rise-in` en algo importante: aquella es una animación
+   de tiempo con retardo, así que arranca al cargar la página y las secciones
+   de más abajo terminan de animarse antes de que nadie las vea. Esta va
+   ligada a la posición de la sección en la ventana, de modo que ocurre
+   cuando de verdad aparece.
+
+   `.aparece-hijos` escalona a los descendientes directos desplazando el
+   tramo de scroll de cada uno: el bloque se compone en cascada en vez de
+   entrar de una pieza.
+
+   Fuera del @supports —Firefox hoy— no se declara nada y el contenido se ve
+   completo y quieto. La animación es adorno; la información no depende de
+   ella. */
+@keyframes aparece {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .aparece {
+      animation: aparece linear both;
+      animation-timeline: view();
+      animation-range: entry 6% entry 62%;
+    }
+
+    .aparece-hijos > * {
+      animation: aparece linear both;
+      animation-timeline: view();
+      animation-range: entry 6% entry 58%;
+    }
+    .aparece-hijos > *:nth-child(2) { animation-range: entry 10% entry 64%; }
+    .aparece-hijos > *:nth-child(3) { animation-range: entry 14% entry 70%; }
+    .aparece-hijos > *:nth-child(4) { animation-range: entry 18% entry 76%; }
+    .aparece-hijos > *:nth-child(5) { animation-range: entry 22% entry 82%; }
+  }
+}

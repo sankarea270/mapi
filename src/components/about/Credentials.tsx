@@ -30,30 +30,45 @@ export async function Credentials({
 
   if (variant === "strip") {
     return (
+      /* Cierra la portada, así que se le da aire de sección y no de tira
+         apretada: es la última impresión antes del pie, y quien llega aquí
+         ya está decidiendo si confía. Antes eran 10 de padding y los sellos
+         a 44px, lo que la dejaba como un pie de página adelantado. */
       <section className="border-y border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
-          <p className="eyebrow text-center text-teal-700">{t("badge")}</p>
-          <h2 className="mt-2 text-center font-heading text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-            {t("title")}
-          </h2>
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+          <div className="aparece-hijos mx-auto max-w-2xl text-center">
+            <p className="eyebrow text-teal-700">{t("badge")}</p>
+            <h2 className="mt-3 font-heading text-2xl font-bold tracking-tight text-slate-900 sm:text-[2.1rem] sm:leading-tight">
+              {t("title")}
+            </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-slate-600 sm:text-base">
+              {t("lead")}
+            </p>
+          </div>
 
-          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-8 sm:gap-x-16">
-            {CREDENTIALS.map((c, i) => (
+          {/* Los sellos van sobre blanco y separados por filete: destacan
+              del fondo gris de la sección y se leen como una fila de
+              credenciales, no como logos sueltos flotando. */}
+          {/* Cuatro columnas porque son cuatro sellos: con cinco quedaba una
+              celda vacía al final. Los filetes se hacen con `gap-px` sobre
+              fondo gris y no con `border-r`, que dejaba el borde descolgado
+              en el último elemento de cada fila al cambiar de columnas. */}
+          <ul className="aparece mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-200 sm:mt-14 sm:grid-cols-4">
+            {CREDENTIALS.map((c) => (
               <li
                 key={c.file}
-                style={{ ["--i" as string]: i }}
-                className="rise-in"
+                className="flex items-center justify-center bg-white px-6 py-8 sm:px-8 sm:py-10"
               >
                 <Image
                   src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${c.file}`}
                   alt={`${c.name} — ${pickLocalized(c.label, l)}`}
                   width={c.width}
                   height={c.height}
-                  sizes="180px"
+                  sizes="240px"
                   /* Alto fijo y ancho automático: los cinco sellos tienen
                      proporciones muy distintas y así quedan ópticamente
                      igualados en la fila. */
-                  className="h-11 w-auto object-contain sm:h-14"
+                  className="h-14 w-auto object-contain sm:h-16 lg:h-20"
                 />
               </li>
             ))}

@@ -67,7 +67,10 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Encabezado alineado a la izquierda: el centrado de todo es otra
             señal de plantilla, y aquí compite con las cuatro columnas. */}
-        <div className="max-w-2xl">
+        {/* `aparece-hijos` en vez de `rise-in`: aquella es una animación de
+            tiempo que arranca al cargar la página, así que en una sección
+            tan abajo terminaba antes de que nadie la viera. */}
+        <div className="aparece-hijos max-w-2xl">
           <p className="eyebrow text-amber-600">{t("badge")}</p>
           <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.6rem] sm:leading-[1.1]">
             {t("title")}

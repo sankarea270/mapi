@@ -95,7 +95,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
       onBlurCapture={() => setDetenido(false)}
     >
       <div className="mx-auto grid max-w-7xl items-center gap-y-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,30rem)] lg:gap-x-4">
-        <div className="min-w-0 lg:pr-6">
+        <div className="aparece-hijos min-w-0 lg:pr-6">
           <p className="eyebrow text-amber-600">{t("badge")}</p>
 
           <div className="mt-6 flex items-start gap-6 sm:gap-9">
