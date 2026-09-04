@@ -158,8 +158,8 @@ export default async function HomePage({
         cambio, cierran: quien ha llegado hasta ahí ya está valorando
         reservar, y es entonces cuando importa saber que la agencia está
         registrada. */}
-    <RuedaDestinos destinos={paraRueda} />
     <WhyTravelWith foto={fotoViajero ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${fotoViajero}` : null} />
+    <RuedaDestinos destinos={paraRueda} />
     <SocialFeed />
     <ReviewsSection reviews={resenas} />
     <Credentials variant="strip" locale={locale} />
