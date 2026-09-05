@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { TopBar } from "./TopBar";
 import { NavBar } from "./NavBar";
-import { MobileMenu } from "./MobileMenu";
+import { MenuCompleto } from "./MenuCompleto";
 import { SearchDialog } from "./SearchDialog";
 import type { CategoryBrief } from "@/lib/catalog";
 
@@ -43,12 +43,14 @@ export function HeaderClient({ catalog }: { catalog: CategoryBrief[] }) {
     <header className="sticky top-0 z-50">
       <TopBar />
       <NavBar
-        catalog={catalog}
         transparent={transparent}
         onOpenSearch={() => setSearchOpen(true)}
         onOpenMobile={() => setMobileOpen(true)}
       />
-      <MobileMenu open={mobileOpen} onOpenChange={setMobileOpen} catalog={catalog} />
+      {/* Un solo menú para todos los tamaños: el de tres columnas se
+          reduce a una en móvil, así que mantener dos implementaciones
+          distintas solo garantizaba que se separaran con el tiempo. */}
+      <MenuCompleto open={mobileOpen} onOpenChange={setMobileOpen} catalog={catalog} />
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} catalog={catalog} />
     </header>
   );

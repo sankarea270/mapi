@@ -18,7 +18,7 @@ export function TopBar() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t("whatsapp")}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-semibold text-emerald-400 transition-colors hover:bg-white/10 hover:text-emerald-300"
+            className="flex items-center gap-1.5 px-2 py-1 text-[13px] font-semibold text-emerald-400 transition-colors hover:bg-white/10 hover:text-emerald-300"
           >
             <MessageCircle className="size-3.5 shrink-0" />
             <span className="hidden md:inline">{t("whatsapp")}</span>
@@ -27,7 +27,7 @@ export function TopBar() {
           <a
             href={`tel:${siteConfig.phone.tel}`}
             aria-label={siteConfig.phone.display}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium transition-colors hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-1.5 px-2 py-1 text-[13px] font-medium transition-colors hover:bg-white/10 hover:text-white"
           >
             <Phone className="size-3.5 shrink-0" />
             <span className="hidden lg:inline">{siteConfig.phone.display}</span>
@@ -35,7 +35,7 @@ export function TopBar() {
           <span className="mx-1 hidden h-3.5 w-px bg-white/15 lg:block" />
           <a
             href={`mailto:${siteEmail}`}
-            className="hidden items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium transition-colors hover:bg-white/10 hover:text-white sm:flex"
+            className="hidden items-center gap-1.5 px-2 py-1 text-[13px] font-medium transition-colors hover:bg-white/10 hover:text-white sm:flex"
           >
             <Mail className="size-3.5 shrink-0" />
             <span className="hidden xl:inline">{siteEmail}</span>

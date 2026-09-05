@@ -98,7 +98,7 @@ export default async function HomePage({
       <div className="relative">
         <section
           data-hero-sentinel
-          className="relative flex min-h-[92dvh] items-center justify-center overflow-hidden bg-slate-950"
+          className="relative flex min-h-[92dvh] items-center overflow-hidden bg-slate-950"
         >
           <HeroCarousel />
 
@@ -110,42 +110,56 @@ export default async function HomePage({
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/30 to-slate-950/70" />
           <CloudLayer />
 
-          <div className="relative z-20 mx-auto flex max-w-3xl flex-col items-center px-4 py-28 text-center">
-            <h1
-              className="mt-6 font-heading text-5xl font-medium leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl"
-              style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
-            >
-              <span className="bg-gradient-to-r from-slate-100 via-amber-100 to-slate-100 bg-clip-text text-transparent">
+          {/* Composición de la referencia: rótulo pequeño, titular enorme en
+              caja alta, entradilla estrecha y dos llamadas —una maciza y otra
+              subrayada—. Todo alineado a la izquierda y no centrado: el
+              centrado obliga a que cada línea empiece en un sitio distinto y
+              es lo que hace que una portada parezca una plantilla. */}
+          <div className="relative z-20 mx-auto w-full max-w-7xl px-4 py-28 sm:px-6">
+            <div className="max-w-2xl">
+              <p
+                className="eyebrow text-amber-300"
+                style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
+              >
+                {t("eyebrow")}
+              </p>
+
+              <h1
+                className="mt-5 font-heading text-[2.75rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[5.2rem]"
+                style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
+              >
                 {t("title")}
-              </span>
-            </h1>
-            <p
-              className="mt-5 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg"
-              style={{ animation: "text-reveal 0.8s ease-out both 0.6s" }}
-            >
-              {t("subtitle")}
-            </p>
-            <div
-              className="mt-9 flex flex-col gap-3 sm:flex-row"
-              style={{ animation: "text-reveal 0.8s ease-out both 0.8s" }}
-            >
-              <Link
-                href="/tours"
-                className="rounded-full bg-amber-400 px-8 py-3.5 text-sm font-bold text-slate-900 shadow-lg shadow-amber-400/25 transition hover:bg-amber-300 hover:scale-105"
+              </h1>
+
+              <p
+                className="mt-7 max-w-lg text-base leading-relaxed text-slate-200 sm:text-lg"
+                style={{ animation: "text-reveal 0.8s ease-out both 0.6s" }}
               >
-                {t("ctaTours")}
-              </Link>
-              <a
-                href={whatsappLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                // Fondo oscuro y no translúcido-claro: con texto blanco sobre
-                // bg-white/10 el botón dependía de tener algo oscuro detrás y
-                // desaparecía sobre la neblina (y sobre las fotos claras).
-                className="rounded-full border border-white/40 bg-slate-950/45 px-8 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-slate-950/65 hover:scale-105"
+                {t("subtitle")}
+              </p>
+
+              <div
+                className="mt-10 flex flex-wrap items-center gap-x-9 gap-y-4"
+                style={{ animation: "text-reveal 0.8s ease-out both 0.8s" }}
               >
-                {t("ctaContact")}
-              </a>
+                <Link
+                  href="/tours"
+                  className="bg-amber-500 px-9 py-4 text-xs font-bold uppercase tracking-widest text-slate-900 transition-colors hover:bg-amber-400"
+                >
+                  {t("ctaTours")}
+                </Link>
+                {/* Enlace subrayado y no segundo botón: dos botones macizos
+                    compiten y ninguno manda. El subrayado dice "esto también
+                    se puede pulsar" sin robarle peso al principal. */}
+                <a
+                  href={whatsappLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border-b-2 border-white/60 pb-1 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:border-amber-400 hover:text-amber-300"
+                >
+                  {t("ctaContact")}
+                </a>
+              </div>
             </div>
           </div>
         </section>

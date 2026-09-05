@@ -1,141 +1,80 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { NAV_ITEMS } from "@/config/navigation";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { whatsappLink } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
-import { NavPanel } from "./NavPanel";
-import type { CategoryBrief } from "@/lib/catalog";
-
-const CLOSE_DELAY_MS = 160;
 
 interface NavBarProps {
-  catalog: CategoryBrief[];
   transparent: boolean;
   onOpenSearch: () => void;
   onOpenMobile: () => void;
 }
 
-export function NavBar({ catalog, transparent, onOpenSearch, onOpenMobile }: NavBarProps) {
+/**
+ * Cabecera: menú a la izquierda, logotipo en el centro, acciones a la
+ * derecha. Todo con esquinas rectas.
+ *
+ * Ya no hay navegación en línea con desplegables. Se quitó por una razón
+ * medible, no de gusto: con las siete secciones desplegadas, esa navegación
+ * ocupaba 905px de los 1280 de la ventana, así que la columna izquierda
+ * empujaba al logotipo y este acababa a 102px de ancho, descentrado. Con
+ * `1fr auto 1fr` no basta —`1fr` cede ante el contenido— y forzar el ancho
+ * habría dejado los siete enlaces apretados o cortados.
+ *
+ * La referencia resuelve lo mismo del mismo modo: una sola entrada "MENÚ"
+ * que abre el panel a pantalla completa, donde las secciones caben con
+ * holgura y encima acompañadas de su foto.
+ */
+export function NavBar({ transparent, onOpenSearch, onOpenMobile }: NavBarProps) {
   const t = useTranslations();
-  const pathname = usePathname();
-
-  const [open, setOpen] = useState<number | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const cancelClose = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-  };
-
-  const scheduleClose = () => {
-    cancelClose();
-    closeTimer.current = setTimeout(() => setOpen(null), CLOSE_DELAY_MS);
-  };
-
   const light = transparent;
-
-  useEffect(() => {
-    setOpen(null);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (open === null) return;
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setOpen(null);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(null);
-    };
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
-  useEffect(() => () => cancelClose(), []);
-
-  const isActive = (i: number) => open === i;
 
   return (
     <div
-      ref={wrapperRef}
       className={cn(
         "relative w-full transition-colors duration-300",
-        transparent
+        light
           ? "bg-gradient-to-b from-slate-950/60 via-slate-950/25 to-transparent"
           : "bg-white/95 shadow-sm shadow-slate-900/5 backdrop-blur"
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:h-20">
-        <Logo light={light} compact={false} />
+      {/* Tres zonas de igual peso: con `minmax(0,1fr)` las laterales no
+          pueden crecer más allá de su parte, así que el logotipo queda
+          centrado respecto a la página pase lo que pase con el contenido. */}
+      <div className="mx-auto grid h-20 max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 px-4 sm:px-6 lg:h-24">
+        <div className="justify-self-start">
+          <button
+            type="button"
+            onClick={onOpenMobile}
+            className={cn(
+              "flex items-center gap-2.5 text-xs font-bold uppercase tracking-widest transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70",
+              light
+                ? "text-white [text-shadow:0_1px_3px_rgba(2,6,23,0.6)] hover:text-amber-300"
+                : "text-slate-700 hover:text-teal-700"
+            )}
+          >
+            <Menu className="size-5" />
+            {t("nav.menu")}
+          </button>
+        </div>
 
-        <nav aria-label={t("nav.navLabel")} className="hidden xl:block">
-          <ul className="flex items-center gap-0.5">
-            {NAV_ITEMS.map((item, i) => (
-              <li key={item.labelKey} className="relative">
-                <button
-                  type="button"
-                  aria-expanded={isActive(i)}
-                  aria-haspopup="menu"
-                  onMouseEnter={() => {
-                    cancelClose();
-                    setOpen(i);
-                  }}
-                  onMouseLeave={scheduleClose}
-                  onFocus={() => {
-                    cancelClose();
-                    setOpen(i);
-                  }}
-                  onClick={() => setOpen(isActive(i) ? null : i)}
-                  className={cn(
-                    "group relative flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70",
-                    light
-                      ? "text-white [text-shadow:0_1px_3px_rgba(2,6,23,0.6)] hover:bg-white/15"
-                      : "text-slate-700 hover:bg-slate-100 hover:text-primary",
-                    isActive(i) && (light ? "bg-white/15 text-amber-300" : "bg-slate-100 text-primary")
-                  )}
-                >
-                  {t(item.labelKey)}
-                  <ChevronDown
-                    className={cn(
-                      "size-3.5 transition-transform duration-200",
-                      light && "text-amber-300",
-                      isActive(i) && "rotate-180"
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-amber-400 transition-all duration-200",
-                      isActive(i) ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-                    )}
-                  />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="justify-self-center">
+          <Logo light={light} centrado />
+        </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center justify-self-end gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onOpenSearch}
             aria-label={t("nav.search")}
             className={cn(
-              "grid size-10 place-items-center rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70",
+              "grid size-10 place-items-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70",
               light
-                ? "text-white [text-shadow:0_1px_3px_rgba(2,6,23,0.6)] hover:bg-white/15"
-                : "text-slate-700 hover:bg-slate-100 hover:text-primary"
+                ? "text-white [text-shadow:0_1px_3px_rgba(2,6,23,0.6)] hover:text-amber-300"
+                : "text-slate-700 hover:text-teal-700"
             )}
           >
             <Search className="size-5" />
@@ -143,7 +82,12 @@ export function NavBar({ catalog, transparent, onOpenSearch, onOpenMobile }: Nav
 
           <Link
             href="/reservar"
-            className="hidden items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition-colors hover:border-amber-500 hover:text-amber-700 md:inline-flex"
+            className={cn(
+              "hidden border px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors lg:inline-flex",
+              light
+                ? "border-white/50 text-white hover:border-amber-300 hover:text-amber-300"
+                : "border-slate-300 text-slate-700 hover:border-teal-600 hover:text-teal-700"
+            )}
           >
             {t("nav.reserve")}
           </Link>
@@ -152,36 +96,12 @@ export function NavBar({ catalog, transparent, onOpenSearch, onOpenMobile }: Nav
             href={whatsappLink()}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden items-center gap-1.5 rounded-full bg-amber-400 px-5 py-2.5 text-sm font-bold text-slate-900 shadow-md shadow-amber-400/20 transition-colors hover:bg-amber-300 md:inline-flex"
+            className="hidden bg-teal-600 px-6 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-teal-700 sm:inline-flex"
           >
             {t("nav.plan")}
           </Link>
-
-          <button
-            type="button"
-            onClick={onOpenMobile}
-            aria-label={t("nav.menu")}
-            className={cn(
-              "grid size-10 place-items-center rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 xl:hidden",
-              light
-                ? "text-white [text-shadow:0_1px_3px_rgba(2,6,23,0.6)] hover:bg-white/15"
-                : "text-slate-700 hover:bg-slate-100"
-            )}
-          >
-            <Menu className="size-6" />
-          </button>
         </div>
       </div>
-
-      {open !== null && (
-        <div
-          onMouseEnter={cancelClose}
-          onMouseLeave={scheduleClose}
-          className="absolute inset-x-0 top-full hidden border-t border-slate-100 bg-white shadow-2xl shadow-slate-900/10 animate-in fade-in-0 slide-in-from-top-2 duration-200 xl:block"
-        >
-          <NavPanel item={NAV_ITEMS[open]} catalog={catalog} />
-        </div>
-      )}
     </div>
   );
 }

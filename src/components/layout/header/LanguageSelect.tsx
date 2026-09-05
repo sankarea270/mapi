@@ -25,7 +25,7 @@ export function LanguageSelect() {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-semibold text-slate-200 transition-colors outline-none",
+          "flex items-center gap-1.5 px-2 py-1 text-[13px] font-semibold text-slate-200 transition-colors outline-none",
           "hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-amber-400/60"
         )}
       >

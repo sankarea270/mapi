@@ -72,6 +72,10 @@
   --font-sans: var(--font-dm-sans);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-heading: var(--font-syne);
+  /* Romana clásica, solo para el logotipo. El nombre del token y el de
+     la variable que crea next/font tienen que ser distintos: si coinciden,
+     `var()` se referencia a sí misma y la fuente nunca se aplica. */
+  --font-logo: var(--font-cormorant);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -1141,15 +1145,16 @@ html {
   white-space: nowrap;
 }
 
+/* Máquina de escribir: la letra aparece y ya está.
+   Se probó con caída e inclinación —cada letra bajaba girada y se
+   enderezaba— y el conjunto se leía como si el titular se desmoronase, no
+   como si se escribiera. Para que parezca escritura, la letra no puede
+   moverse: solo pasar de no estar a estar, y hacerlo rápido. Todo el ritmo
+   viene de que unas empiezan después que otras, no del recorrido de cada
+   una. */
 @keyframes entra-letra {
-  from {
-    opacity: 0;
-    transform: translateY(0.55em) rotate(8deg);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @supports (animation-timeline: view()) {

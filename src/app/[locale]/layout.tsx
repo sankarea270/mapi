@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans } from "next/font/google";
+import { Syne, DM_Sans, Cormorant_Garamond } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -14,6 +14,17 @@ import "../globals.css";
 const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
+  display: "swap",
+});
+
+/* Serif solo para el logotipo, como en la referencia "Perú Travel": el
+   nombre en romana clásica y el subtítulo en versalitas muy espaciadas.
+   Se cargan únicamente dos grosores porque se usa en una sola palabra;
+   traer la familia entera sería pagar kilobytes por nada. */
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["500", "600"],
   display: "swap",
 });
 
@@ -55,7 +66,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${syne.variable} ${dmSans.variable}`}>
+    <html lang={locale} className={`${syne.variable} ${dmSans.variable} ${cormorant.variable}`}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"

@@ -34,9 +34,11 @@ export function TextoLetras({
   /** Punto del recorrido donde empieza a entrar la primera letra. */
   desde = 10,
   /** Cuánto recorrido separa la primera letra de la última. */
-  reparto = 30,
-  /** Cuánto dura la entrada de cada letra. */
-  duracion = 16,
+  reparto = 34,
+  /** Cuánto dura la entrada de cada letra. Corto a propósito: si se alarga,
+      varias letras están a medio aparecer a la vez y se pierde la sensación
+      de que se están escribiendo una tras otra. */
+  duracion = 3,
 }: {
   texto: string;
   className?: string;
