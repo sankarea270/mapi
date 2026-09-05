@@ -116,46 +116,43 @@ export default async function HomePage({
               centrado obliga a que cada línea empiece en un sitio distinto y
               es lo que hace que una portada parezca una plantilla. */}
           <div className="relative z-20 mx-auto w-full max-w-7xl px-4 py-28 sm:px-6">
-            <div className="max-w-2xl">
+            <div className="max-w-3xl">
               <p
-                className="eyebrow text-amber-300"
+                className="eyebrow text-amber-400 tracking-[0.2em] uppercase text-sm font-semibold mb-6"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
               >
                 {t("eyebrow")}
               </p>
 
               <h1
-                className="mt-5 font-heading text-[2.75rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[5.2rem]"
+                className="mt-2 font-heading text-[3.5rem] font-bold uppercase leading-[0.9] tracking-tighter text-white sm:text-7xl lg:text-[6rem]"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
               >
                 {t("title")}
               </h1>
 
               <p
-                className="mt-7 max-w-lg text-base leading-relaxed text-slate-200 sm:text-lg"
+                className="mt-8 max-w-xl text-lg leading-relaxed text-slate-200 sm:text-xl font-light"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.6s" }}
               >
                 {t("subtitle")}
               </p>
 
               <div
-                className="mt-10 flex flex-wrap items-center gap-x-9 gap-y-4"
+                className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-6"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.8s" }}
               >
                 <Link
                   href="/tours"
-                  className="bg-amber-500 px-9 py-4 text-xs font-bold uppercase tracking-widest text-slate-900 transition-colors hover:bg-amber-400"
+                  className="bg-amber-500 px-10 py-4 text-xs font-bold uppercase tracking-widest text-slate-950 transition-all hover:bg-amber-400 hover:scale-[1.02]"
                 >
                   {t("ctaTours")}
                 </Link>
-                {/* Enlace subrayado y no segundo botón: dos botones macizos
-                    compiten y ninguno manda. El subrayado dice "esto también
-                    se puede pulsar" sin robarle peso al principal. */}
                 <a
                   href={whatsappLink()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border-b-2 border-white/60 pb-1 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:border-amber-400 hover:text-amber-300"
+                  className="border-b border-white/40 pb-1 text-xs font-bold uppercase tracking-widest text-white transition-all hover:border-amber-400 hover:text-amber-300"
                 >
                   {t("ctaContact")}
                 </a>
