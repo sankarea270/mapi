@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { CREDENTIALS } from "@/data/credentials";
 import { pickLocalized } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { TextoLetras } from "@/components/home/TextoLetras";
 
 /**
  * Avales oficiales del sector turismo.
@@ -39,7 +40,7 @@ export async function Credentials({
           <div className="escena-texto mx-auto max-w-2xl text-center">
             <p className="eyebrow text-teal-700">{t("badge")}</p>
             <h2 className="mt-3 font-heading text-2xl font-bold tracking-tight text-slate-900 sm:text-[2.1rem] sm:leading-tight">
-              {t("title")}
+              <TextoLetras texto={t("title")} />
             </h2>
             <p className="mt-4 text-[15px] leading-relaxed text-slate-600 sm:text-base">
               {t("lead")}

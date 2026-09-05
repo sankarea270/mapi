@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { SOCIAL_POSTS } from "@/data/socialFeed";
 import { siteConfig, socials } from "@/config/site";
+import { TextoLetras } from "@/components/home/TextoLetras";
 
 export function SocialFeed() {
   const t = useTranslations("social");
@@ -19,7 +20,7 @@ export function SocialFeed() {
               {t("badge")}
             </p>
             <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              {t("title")}
+              <TextoLetras texto={t("title")} />
             </h2>
             <p className="mt-3 max-w-lg text-base leading-relaxed text-slate-400">
               {t("subtitle")}

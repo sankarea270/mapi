@@ -1003,7 +1003,7 @@ html {
 @keyframes aparece {
   from {
     opacity: 0;
-    transform: translateY(26px) rotate(2.2deg);
+    transform: translateY(26px) rotate(6deg);
     clip-path: inset(100% 0 0 0);
   }
   60% {
@@ -1122,5 +1122,43 @@ html {
     .escena-texto > *:nth-child(3) { animation-range: entry 34% cover 40%; }
     .escena-texto > *:nth-child(4) { animation-range: entry 42% cover 46%; }
     .escena-texto > *:nth-child(n+5) { animation-range: entry 50% cover 52%; }
+  }
+}
+
+/* ── Letras que entran en orden ───────────────────────────────
+   Cada letra lleva su propio tramo de scroll, puesto al renderizar: la
+   primera acaba cuando la última empieza, así que el titular se escribe
+   solo a medida que se baja.
+
+   `.palabra` es lo que permite que el renglón siga cortándose donde debe.
+   Sin ella, cada letra sería un `inline-block` suelto y el navegador podría
+   partir una palabra por la mitad.
+
+   Fuera del @supports —Firefox hoy— no se declara nada: las letras se ven
+   quietas y completas, que es exactamente lo que debe pasar. */
+.letras .palabra {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+@keyframes entra-letra {
+  from {
+    opacity: 0;
+    transform: translateY(0.55em) rotate(8deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .letras .letra {
+      display: inline-block;
+      animation: entra-letra linear both;
+      animation-timeline: view();
+      /* El tramo concreto lo pone cada letra en su atributo `style`. */
+    }
   }
 }

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { TextoLetras } from "@/components/home/TextoLetras";
 
 const FEATURES = [
   { titleKey: "trust.title", descKey: "trust.desc" },
@@ -64,7 +65,7 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
         <div className="escena-texto max-w-2xl">
           <p className="eyebrow text-amber-600">{t("badge")}</p>
           <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.6rem] sm:leading-[1.1]">
-            {t("title")}
+            <TextoLetras texto={t("title")} />
           </h2>
           <p className="mt-5 text-[17px] leading-relaxed text-slate-600">
             {t("subtitle")}

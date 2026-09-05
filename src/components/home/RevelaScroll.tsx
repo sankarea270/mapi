@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { TextoLetras } from "@/components/home/TextoLetras";
 
 /**
  * Sección de revelado a pantalla completa.
@@ -33,7 +34,7 @@ export async function RevelaScroll({ foto }: { foto: string }) {
           <div className="revela-texto order-2 lg:order-1">
             <p className="eyebrow text-amber-400">{t("badge")}</p>
             <h2 className="mt-4 font-heading text-3xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl">
-              {t("title")}
+              <TextoLetras texto={t("title")} />
             </h2>
             <p className="mt-6 max-w-md text-[15px] leading-relaxed text-slate-300 sm:text-base">
               {t("lead")}

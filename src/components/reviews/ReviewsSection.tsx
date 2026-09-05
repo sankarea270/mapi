@@ -3,6 +3,7 @@
 import { Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Review } from "@/data/reviews";
+import { TextoLetras } from "@/components/home/TextoLetras";
 
 /*
  * Las reseñas llegan como propiedad, no importadas.
@@ -22,7 +23,7 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
             {t("badge")}
           </p>
           <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            {t("title")}
+            <TextoLetras texto={t("title")} />
           </h2>
           <p className="mt-4 text-base leading-relaxed text-slate-600">{t("subtitle")}</p>
         </div>
