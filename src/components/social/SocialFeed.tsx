@@ -5,19 +5,15 @@ import { Heart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { SOCIAL_POSTS } from "@/data/socialFeed";
 import { siteConfig, socials } from "@/config/site";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export function SocialFeed() {
   const t = useTranslations("social");
   const instagram = socials.instagram;
-  const reduced = useReducedMotion();
-  const { ref: sectionRef, isVisible } = useScrollAnimation(0.1);
 
   return (
-    <section ref={sectionRef as React.RefObject<HTMLElement>} className="bg-slate-950 py-20">
+    <section className="bg-slate-950 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className={`flex flex-col items-center justify-between gap-6 sm:flex-row scroll-animate ${isVisible ? "animate-fade-in-up" : ""}`}>
+        <div className="aparece flex flex-col items-center justify-between gap-6 sm:flex-row">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-amber-400">
               {t("badge")}
@@ -39,16 +35,14 @@ export function SocialFeed() {
           </a>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-          {SOCIAL_POSTS.map((post, i) => (
+        <div className="aparece-hijos mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+          {SOCIAL_POSTS.map((post) => (
             <a
               key={post.id}
               href={instagram.href}
               target="_blank"
               rel="noopener noreferrer"
-              className={`group relative block aspect-square overflow-hidden rounded-xl scroll-animate ${
-                isVisible && !reduced ? `animate-fade-in-scale delay-${Math.min(i + 1, 6) * 100}` : ""
-              }`}
+              className="group relative block aspect-square overflow-hidden rounded-xl"
             >
               <Image
                 src={post.image}

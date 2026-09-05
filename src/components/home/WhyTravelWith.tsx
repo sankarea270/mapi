@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { cn } from "@/lib/utils";
 
 const FEATURES = [
@@ -30,21 +29,16 @@ const FEATURES = [
  */
 export function WhyTravelWith({ foto }: { foto?: string | null }) {
   const t = useTranslations("whyTravel");
-  const { ref: sectionRef, isVisible } = useScrollAnimation(0.1);
 
   const razones = (
     <div
       className={cn(
-        "grid gap-x-10 gap-y-11",
+        "aparece-hijos grid gap-x-10 gap-y-11",
         foto ? "sm:grid-cols-2" : "mt-14 sm:grid-cols-2 lg:grid-cols-4"
       )}
     >
       {FEATURES.map((feature, index) => (
-        <div
-          key={feature.titleKey}
-          style={{ ["--i" as string]: index }}
-          className={cn("border-t-2 border-slate-900 pt-5", isVisible && "rise-in")}
-        >
+        <div key={feature.titleKey} className="border-t-2 border-slate-900 pt-5">
           <span className="font-heading text-sm font-bold tabular-nums text-amber-600">
             {String(index + 1).padStart(2, "0")}
           </span>
@@ -60,10 +54,7 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
   );
 
   return (
-    <section
-      ref={sectionRef as React.RefObject<HTMLElement>}
-      className="border-t border-slate-200 bg-white py-20 sm:py-24"
-    >
+    <section className="border-t border-slate-200 bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Encabezado alineado a la izquierda: el centrado de todo es otra
             señal de plantilla, y aquí compite con las cuatro columnas. */}
