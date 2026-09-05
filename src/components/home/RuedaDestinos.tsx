@@ -73,7 +73,9 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
      de 100px hace girar mucho cerca del centro y poco lejos. Con el ángulo,
      la rueda sigue al dedo exactamente donde se la agarró. */
   const marcoRef = useRef<HTMLDivElement>(null);
-  const arrastre = useRef<{ anguloInicial: number; giroInicial: number } | null>(null);
+  const arrastre = useRef<{ anguloInicial: number; giroInicial: number; movido: boolean } | null>(
+    null
+  );
   const [arrastrando, setArrastrando] = useState(false);
 
   /** Ángulo del puntero respecto al eje del aro, en grados. */
@@ -122,7 +124,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
   function alAgarrar(e: React.PointerEvent<HTMLDivElement>) {
     if (reducido) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    arrastre.current = { anguloInicial: anguloDe(e), giroInicial: giro };
+    arrastre.current = { anguloInicial: anguloDe(e), giroInicial: giro, movido: false };
     setArrastrando(true);
   }
 
@@ -131,14 +133,23 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
     /* Mientras se arrastra solo cambia el ángulo; el destino activo se
        decide al soltar. Los eventos de puntero llegan como mucho una vez
        por fotograma, así que actualizar el estado aquí no satura. */
-    setGiro(arrastre.current.giroInicial + (anguloDe(e) - arrastre.current.anguloInicial));
+    const delta = anguloDe(e) - arrastre.current.anguloInicial;
+    /* Umbral de 3°: por debajo se considera un clic, no un arrastre. Sin
+       esto, el temblor natural del dedo al pulsar una foto contaría como
+       giro y la selección nunca llegaría a ocurrir. */
+    if (Math.abs(delta) > 3) arrastre.current.movido = true;
+    setGiro(arrastre.current.giroInicial + delta);
   }
 
   function alSoltar(e: React.PointerEvent<HTMLDivElement>) {
     if (!arrastre.current) return;
     (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    const huboArrastre = arrastre.current.movido;
     arrastre.current = null;
     setArrastrando(false);
+    /* Si no se movió, fue un clic sobre una foto: se deja que el botón haga
+       su trabajo y no se encaja nada. */
+    if (!huboArrastre) return;
     /* Al soltar se encaja en el destino más cercano.
        El ángulo se FIJA al valor exacto de ese destino, no se corrige con
        `ir()`: esa función suma un múltiplo del paso al ángulo actual, y si
@@ -166,7 +177,8 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
          en vez de contra la página. La animación se quedaba congelada al
          99%. El recorte del arco lo hace el marco interior, que es donde
          hace falta. */
-      className="relative flex min-h-dvh items-center border-t border-slate-200 bg-white py-16 sm:py-20"
+      /* El alto lo pone la `Escena` que la envuelve; aquí solo el aire. */
+      className="relative border-t border-slate-200 bg-white py-14 sm:py-16"
       onMouseEnter={() => setDetenido(true)}
       onMouseLeave={() => setDetenido(false)}
       onFocusCapture={() => setDetenido(true)}
@@ -203,22 +215,10 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
           </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-            {/* Se parte de `indice.current`, no del estado. Varios clics
-                seguidos ocurren antes de que React repinte, así que todos
-                leerían el mismo valor y la rueda avanzaba un solo paso por
-                muchas veces que se pulsara. La referencia sí está al día. */}
-            <div className="flex gap-2.5">
-              <Control
-                etiqueta={t("prev")}
-                onClick={() => ir(indice.current - 1)}
-                direccion="arriba"
-              />
-              <Control
-                etiqueta={t("next")}
-                onClick={() => ir(indice.current + 1)}
-                direccion="abajo"
-              />
-            </div>
+            {/* Sin botones: la rueda se gira arrastrándola. Quien navegue
+                con teclado no se queda fuera, porque cada foto del aro es un
+                botón enfocable que lleva a su destino. */}
+            <span className="eyebrow text-slate-400">{t("arrastra")}</span>
 
             <Link
               href={`/destinos/${d.slug}`}
@@ -257,6 +257,10 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
           onPointerMove={alMover}
           onPointerUp={alSoltar}
           onPointerCancel={alSoltar}
+          /* Seguro: si el navegador retira la captura del puntero —cambio de
+             pestaña, gesto del sistema— el evento de soltar no llega y la
+             rueda se quedaría agarrada, sin girar sola nunca más. */
+          onLostPointerCapture={alSoltar}
           className="escena-foto relative h-[30rem] w-full touch-pan-y select-none overflow-hidden [--px:13rem] [--r:19rem] sm:h-[38rem] sm:[--px:17rem] sm:[--r:24rem] lg:h-[44rem] lg:[--px:20rem] lg:[--r:28rem]"
           style={{ cursor: arrastrando ? "grabbing" : "grab" }}
         >
@@ -332,35 +336,5 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
         </div>
       </div>
     </section>
-  );
-}
-
-function Control({
-  etiqueta,
-  onClick,
-  direccion,
-}: {
-  etiqueta: string;
-  onClick: () => void;
-  direccion: "arriba" | "abajo";
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={etiqueta}
-      className="grid size-11 place-items-center rounded-full text-slate-500 ring-1 ring-slate-300 transition-colors hover:bg-slate-900 hover:text-white hover:ring-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-    >
-      <svg viewBox="0 0 16 16" className="size-3.5" aria-hidden>
-        <path
-          d={direccion === "arriba" ? "M2 10 L8 4 L14 10" : "M2 6 L8 12 L14 6"}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
   );
 }

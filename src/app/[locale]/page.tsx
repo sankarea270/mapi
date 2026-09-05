@@ -18,6 +18,7 @@ import { Credentials } from "@/components/about/Credentials";
 import { WhyTravelWith } from "@/components/home/WhyTravelWith";
 import { RuedaDestinos } from "@/components/home/RuedaDestinos";
 import { RevelaScroll } from "@/components/home/RevelaScroll";
+import { Escena } from "@/components/home/Escena";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -161,12 +162,26 @@ export default async function HomePage({
         cambio, cierran: quien ha llegado hasta ahí ya está valorando
         reservar, y es entonces cuando importa saber que la agencia está
         registrada. */}
-    <WhyTravelWith foto={fotoViajero ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${fotoViajero}` : null} />
-    <RuedaDestinos destinos={paraRueda} />
+    {/* Cada bloque va clavado: se queda quieto en pantalla mientras se
+        recorre su pista y las animaciones de dentro suceden sobre él.
+        El fondo de cada `Escena` repite el de su sección para que no
+        asomen franjas del color del cuerpo por arriba y por abajo. */}
+    <Escena>
+      <WhyTravelWith foto={fotoViajero ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${fotoViajero}` : null} />
+    </Escena>
+    <Escena>
+      <RuedaDestinos destinos={paraRueda} />
+    </Escena>
     {fotoRevela && <RevelaScroll foto={fotoRevela} />}
-    <SocialFeed />
-    <ReviewsSection reviews={resenas} />
-    <Credentials variant="strip" locale={locale} />
+    <Escena fondo="bg-slate-950">
+      <SocialFeed />
+    </Escena>
+    <Escena>
+      <ReviewsSection reviews={resenas} />
+    </Escena>
+    <Escena fondo="bg-slate-50">
+      <Credentials variant="strip" locale={locale} />
+    </Escena>
     <JourneyBand />
     </>
   );

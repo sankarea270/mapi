@@ -528,7 +528,8 @@
     "badge": "Where we take you",
     "prev": "Previous destination",
     "next": "Next destination",
-    "ver": "See all {count} tours"
+    "ver": "See all {count} tours",
+    "arrastra": "Drag the wheel"
   },
   "revela": {
     "badge": "Designed in Cusco",

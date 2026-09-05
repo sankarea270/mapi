@@ -528,7 +528,8 @@
     "badge": "Para onde te levamos",
     "prev": "Destino anterior",
     "next": "Próximo destino",
-    "ver": "Ver os {count} tours"
+    "ver": "Ver os {count} tours",
+    "arrastra": "Arraste a roda"
   },
   "revela": {
     "badge": "Desenhado em Cusco",
