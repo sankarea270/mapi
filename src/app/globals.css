@@ -988,9 +988,32 @@ html {
    Fuera del @supports —Firefox hoy— no se declara nada y el contenido se ve
    completo y quieto. La animación es adorno; la información no depende de
    ella. */
+/* Entrada de línea, calcada del gesto de snamitravel.com.
+   Allí cada titular se parte en líneas dentro de una caja con
+   `overflow: hidden`, y cada línea sube desde detrás del borde inclinada
+   unos 4° mientras se endereza.
+
+   Aquí no se parte el texto en líneas a propósito: hacerlo obliga a meter
+   un <div> por renglón dentro del <h2>, lo que ensucia el marcado que lee
+   Google y se rompe en cuanto el texto cambia de longitud o de idioma —y
+   este sitio está en tres—. El mismo gesto se consigue recortando el
+   propio elemento: `inset(100% 0 0 0)` lo oculta entero por abajo y, al
+   abrirse, el texto asoma desde su borde inferior como si saliera de una
+   caja. La inclinación y el desplazamiento son los mismos. */
 @keyframes aparece {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(26px) rotate(2.2deg);
+    clip-path: inset(100% 0 0 0);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 @supports (animation-timeline: view()) {
