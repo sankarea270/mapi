@@ -9,8 +9,11 @@ import { CurrencySelect } from "./CurrencySelect";
 export function TopBar() {
   const t = useTranslations("topbar");
 
+  // En el color de la marca, como la banda superior de la referencia. En
+  // gris pizarra la cabecera eran dos franjas oscuras seguidas y la barra no
+  // se distinguía de la navegación de debajo.
   return (
-    <div className="bg-slate-950 text-slate-300">
+    <div className="bg-teal-800 text-teal-50">
       <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 items-center">
           <a

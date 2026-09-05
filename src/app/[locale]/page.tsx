@@ -110,41 +110,54 @@ export default async function HomePage({
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/30 to-slate-950/70" />
           <CloudLayer />
 
-          {/* Composición de la referencia: rótulo pequeño, titular enorme en
-              caja alta, entradilla estrecha y dos llamadas —una maciza y otra
-              subrayada—. Todo alineado a la izquierda y no centrado: el
+          {/* Composición calcada de la referencia: volante GRANDE en blanco,
+              titular enorme en el color de marca, entradilla en romana y dos
+              llamadas —una maciza y otra subrayada—. Todo a la izquierda: el
               centrado obliga a que cada línea empiece en un sitio distinto y
-              es lo que hace que una portada parezca una plantilla. */}
+              es lo que hace que una portada parezca una plantilla.
+
+              El volante ya no es el rótulo diminuto y muy espaciado de antes.
+              En la referencia mide casi la mitad que el titular y es lo que
+              hace que el bloque se lea como una frase encabalgada y no como
+              una etiqueta suelta encima de un título. */}
           <div className="portada-caja relative z-20 mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-28">
             <div className="max-w-3xl">
               <p
-                className="eyebrow text-amber-400 tracking-[0.2em] uppercase text-sm font-semibold mb-4 sm:mb-6"
+                className="portada-volante font-heading text-[1.4rem] font-bold uppercase leading-none tracking-[0.01em] text-white sm:text-[1.9rem] lg:text-[2.2rem]"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
               >
                 {t("eyebrow")}
               </p>
 
+              {/* El titular va en ámbar y no en blanco porque en la
+                  referencia el titular lleva el color de la marca; es lo que
+                  separa la portada de cualquier foto con un texto encima.
+                  Sobre el velo oscuro el ámbar da 8.9:1, de sobra. */}
               <h1
-                className="portada-titular mt-2 font-heading text-[3rem] font-bold uppercase leading-[0.9] tracking-tighter text-white sm:text-7xl lg:text-[6rem]"
+                className="portada-titular mt-3 font-heading text-[3rem] font-bold uppercase leading-[0.88] tracking-tight text-amber-400 sm:text-7xl lg:text-[6rem]"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
               >
                 {t("title")}
               </h1>
 
+              {/* Entradilla en romana, como la referencia. Es la misma
+                  familia del logotipo, así que no entra ninguna fuente nueva
+                  por esto, y el contraste entre la condensada de palo seco y
+                  la romana es justo lo que hace que el bloque respire. */}
               <p
-                className="mt-6 max-w-xl text-base leading-relaxed text-slate-200 sm:mt-8 sm:text-xl font-light"
+                className="mt-6 max-w-xl font-logo text-lg leading-relaxed text-slate-100 sm:mt-8 sm:text-2xl"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.6s" }}
               >
                 {t("subtitle")}
               </p>
 
               <div
-                className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-6 sm:mt-12"
+                className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-6 sm:mt-10"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.8s" }}
               >
                 <Link
                   href="/tours"
-                  className="bg-amber-500 px-10 py-4 text-xs font-bold uppercase tracking-widest text-slate-950 transition-all hover:bg-amber-400 hover:scale-[1.02]"
+                  className="bg-amber-500 px-10 py-4 font-heading text-sm font-bold uppercase tracking-[0.12em] text-slate-950 transition-all hover:bg-amber-400 hover:scale-[1.02]"
                 >
                   {t("ctaTours")}
                 </Link>
@@ -152,11 +165,48 @@ export default async function HomePage({
                   href={whatsappLink()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border-b border-white/40 pb-1 text-xs font-bold uppercase tracking-widest text-white transition-all hover:border-amber-400 hover:text-amber-300"
+                  className="border-b-2 border-white/50 pb-1 font-heading text-sm font-bold uppercase tracking-[0.12em] text-white transition-all hover:border-amber-400 hover:text-amber-300"
                 >
                   {t("ctaContact")}
                 </a>
               </div>
+            </div>
+          </div>
+
+          {/* Fila de pie de la referencia: un dato a cada lado y el aviso de
+              seguir bajando en medio. Se oculta por debajo de `lg` porque en
+              un móvil se comería el sitio que necesitan los botones. */}
+          <div className="portada-pie absolute inset-x-0 bottom-7 z-20 mx-auto hidden max-w-7xl items-end justify-between px-6 lg:flex">
+            <div>
+              <p className="flex items-center gap-3 font-heading text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">
+                <span aria-hidden className="h-px w-7 bg-white/40" />
+                {t("pie.selloTitulo")}
+              </p>
+              <p className="mt-1.5 font-heading text-lg font-bold uppercase tracking-[0.02em] text-white">
+                {t("pie.selloDato")}
+              </p>
+            </div>
+
+            <span
+              aria-hidden
+              className="mb-1 grid h-9 w-[22px] place-items-start rounded-full border border-white/45 pt-1.5"
+            >
+              <span className="portada-rueda block size-1 rounded-full bg-white/85" />
+            </span>
+
+            <div className="text-right">
+              <p className="flex items-center justify-end gap-3 font-logo text-sm text-white/60">
+                {t("pie.contactoTitulo")}
+                <span aria-hidden className="h-px w-7 bg-white/40" />
+              </p>
+              <a
+                href={whatsappLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1.5 block font-heading text-lg font-bold uppercase tracking-[0.02em] text-white transition-colors hover:text-amber-300"
+              >
+                {siteConfig.phone.display}
+              </a>
             </div>
           </div>
         </section>

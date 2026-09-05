@@ -289,7 +289,7 @@ export function MenuCompleto({
       </div>
 
       {/* ─── Columna 3: foto ──────────────────────────────────────────── */}
-      <div className="relative hidden flex-1 bg-slate-900 lg:block">
+      <div className="relative hidden flex-1 bg-slate-900 lg:block xl:flex-[55]">
         {imagen && (
           /* La `key` fuerza un nodo nuevo por foto: sin ella React reutiliza
              el mismo <img> y la entrada no vuelve a dispararse al pasar de
@@ -307,7 +307,7 @@ export function MenuCompleto({
         {/* Rótulo arriba a la izquierda, como la referencia. La sombra
             sustituye al degradado: un degradado a toda la anchura tapaba
             media foto para sostener dos renglones de texto. */}
-        <div className="absolute left-10 top-9 max-w-md">
+        <div className="absolute left-10 top-9 max-w-[85%]">
           <p className="text-[2.1rem] font-bold uppercase leading-none tracking-[0.01em] text-white [text-shadow:0_2px_14px_rgba(2,6,23,0.55)]">
             {foto?.etiqueta ?? actual.etiqueta}
           </p>
@@ -320,6 +320,22 @@ export function MenuCompleto({
           </Link>
         </div>
       </div>
+
+      {/* ─── Hueco: la portada, desenfocada ─────────────────────────────
+          En la referencia el panel NO ocupa toda la pantalla: por la derecha
+          se sigue viendo la página de debajo, borrosa. Es lo que hace que se
+          lea como un panel abierto encima del sitio y no como otra página.
+
+          Va como botón y no como div porque, ocupando ese hueco, lo que
+          cualquiera espera al pulsarlo es que el menú se cierre. Solo
+          aparece a partir de `xl`: por debajo, quitarle 45% del espacio a la
+          foto la dejaría demasiado estrecha para su propio rótulo. */}
+      <button
+        type="button"
+        onClick={cerrar}
+        aria-label={t("nav.close")}
+        className="hidden bg-slate-950/25 backdrop-blur-md xl:block xl:flex-[45]"
+      />
 
       {/* ─── Acciones ─────────────────────────────────────────────────── */}
       <div className="absolute right-6 top-7 flex items-center gap-4">

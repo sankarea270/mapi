@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
+import { DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -11,11 +11,6 @@ import { Analytics } from "@/components/providers/Analytics";
 import { BASE_URL } from "@/lib/seo";
 import "../globals.css";
 
-const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 /* Serif solo para el logotipo, como en la referencia "Perú Travel": el
    nombre en romana clásica y el subtítulo en versalitas muy espaciadas.
@@ -28,11 +23,10 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
-/* Condensada estrecha para el menú a pantalla completa. La de titulares
-   es Syne, una geométrica ANCHA y con mucho carácter: en una columna de
-   335px las secciones o se cortan o hay que encogerlas hasta que dejan de
-   mandar, y además no se parece en nada a la referencia. Solo dos grosores
-   y solo latino, porque se usa en un panel y no en el cuerpo del sitio. */
+/* La condensada de la referencia, y la única de titulares del sitio.
+   Sustituye a Syne, que era una geométrica ancha: convivían mal, porque el
+   menú salía condensado y el inicio no, y parecían dos sitios distintos.
+   Al quitar Syne, además, se deja de descargar una familia entera. */
 const barlowCondensed = Barlow_Condensed({
   variable: "--font-barlow",
   subsets: ["latin"],
@@ -78,7 +72,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${syne.variable} ${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable}`}>
+    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable}`}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"

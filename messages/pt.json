@@ -143,7 +143,12 @@
     "subtitle": "Tours privados e em grupo para Machu Picchu, Vale Sagrado, Amazônia e muito mais. Atendimento 24/7 em espanhol, inglês e português.",
     "ctaTours": "Explorar tours",
     "ctaContact": "Reservar pelo WhatsApp",
-    "eyebrow": "Agência de viagens no Peru"
+    "eyebrow": "Agência de viagens no Peru",
+    "pie": {
+      "selloTitulo": "Atendimento 24/7",
+      "selloDato": "Español · English · Português",
+      "contactoTitulo": "Fale conosco"
+    }
   },
   "tours": {
     "title": "Nossos Tours",
