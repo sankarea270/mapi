@@ -67,7 +67,10 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
       let delta = destino - indice.current;
       if (delta > n / 2) delta -= n;
       if (delta < -n / 2) delta += n;
-      giro.current -= delta * paso;
+      /* Suma en vez de resta: la rueda gira en sentido contrario. El signo
+         es lo único que cambia el sentido; las fotos siguen enderezándose
+         solas porque el contragiro se calcula del mismo `giro.current`. */
+      giro.current += delta * paso;
       indice.current = destino;
       setActivo(destino);
     },
@@ -88,7 +91,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
 
   return (
     <section
-      className="overflow-hidden border-t border-slate-200 bg-white py-20 sm:py-24"
+      className="relative flex min-h-dvh items-center overflow-hidden border-t border-slate-200 bg-white py-16 sm:py-20"
       onMouseEnter={() => setDetenido(true)}
       onMouseLeave={() => setDetenido(false)}
       onFocusCapture={() => setDetenido(true)}
@@ -173,7 +176,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
             rotarlo gira sobre el centro por construcción, sin depender de
             `transform-origin`: encadenar rotaciones y traslaciones en un
             mismo `transform` colocaba las fotos 88px fuera de sitio. */}
-        <div className="relative h-[26rem] w-full overflow-hidden [--px:12rem] [--r:17rem] sm:h-[32rem] sm:[--px:15rem] sm:[--r:21rem] lg:h-[36rem] lg:[--px:17rem] lg:[--r:24rem]">
+        <div className="revela-marco relative h-[30rem] w-full overflow-hidden [--px:13rem] [--r:19rem] sm:h-[38rem] sm:[--px:17rem] sm:[--r:24rem] lg:h-[44rem] lg:[--px:20rem] lg:[--r:28rem]">
           <div
             className="absolute top-1/2"
             style={{
@@ -195,7 +198,12 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                 <div
                   key={x.slug}
                   className="absolute inset-0"
-                  style={{ transform: `rotate(${i * paso}deg)` }}
+                  /* Ángulo negativo: al invertir el sentido de giro hay que
+                     invertir también la colocación. Cambiar solo el signo de
+                     `giro` desalineaba el punto focal —la foto activa acababa
+                     abajo del aro y sin agrandar— porque la condición de foco
+                     es `giro + angulo_i = FOCO`, y ahí hay dos signos, no uno. */
+                  style={{ transform: `rotate(${-i * paso}deg)` }}
                 >
                   <button
                     type="button"
@@ -207,7 +215,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                        que la foto no salga cabeza abajo al recorrer la mitad
                        inferior de la curva. */
                     style={{
-                      transform: `translate(-50%,-50%) rotate(${-giro.current - i * paso}deg)`,
+                      transform: `translate(-50%,-50%) rotate(${-giro.current + i * paso}deg)`,
                       transition: transicion,
                     }}
                   >
@@ -215,7 +223,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                       className={cn(
                         "block overflow-hidden rounded-full bg-slate-100 ring-1 transition-all duration-700",
                         esActivo
-                          ? "size-44 opacity-100 ring-4 ring-amber-500 sm:size-56 lg:size-64"
+                          ? "size-56 opacity-100 ring-4 ring-amber-500 sm:size-72 lg:size-80"
                           : "size-14 opacity-50 ring-slate-200 hover:opacity-90 sm:size-16"
                       )}
                     >
@@ -224,7 +232,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                           src={x.imagen}
                           alt=""
                           fill
-                          sizes={esActivo ? "16rem" : "4rem"}
+                          sizes={esActivo ? "20rem" : "4rem"}
                           className="object-cover"
                         />
                       </span>

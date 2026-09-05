@@ -1026,3 +1026,23 @@ html {
     .aparece-hijos > *:nth-child(n+6) { animation-range: entry 28% cover 42%; }
   }
 }
+
+/* ── Revelado reutilizable ────────────────────────────────────
+   El mismo crecimiento que la sección "Diseñado en Cusco", pero con línea
+   de tiempo anónima —`view()`— en lugar de la nombrada `--revela`.
+
+   La diferencia importa: una animación que apunta a un nombre de línea de
+   tiempo inexistente en su ámbito queda INACTIVA, y con `both` se queda
+   congelada en su fotograma inicial. Aplicar `.revela-foto` fuera de su
+   sección dejaba el recorte fijo al 25%: el bloque cortado para siempre.
+   `view()` siempre resuelve, así que esta clase se puede usar en cualquier
+   parte del inicio. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .revela-marco {
+      animation: revela-crece linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 34%;
+    }
+  }
+}
