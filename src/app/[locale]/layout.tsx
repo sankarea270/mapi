@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans, Cormorant_Garamond } from "next/font/google";
+import { Syne, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -25,6 +25,18 @@ const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   weight: ["500", "600"],
+  display: "swap",
+});
+
+/* Condensada estrecha para el menú a pantalla completa. La de titulares
+   es Syne, una geométrica ANCHA y con mucho carácter: en una columna de
+   335px las secciones o se cortan o hay que encogerlas hasta que dejan de
+   mandar, y además no se parece en nada a la referencia. Solo dos grosores
+   y solo latino, porque se usa en un panel y no en el cuerpo del sitio. */
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -66,7 +78,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${syne.variable} ${dmSans.variable} ${cormorant.variable}`}>
+    <html lang={locale} className={`${syne.variable} ${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable}`}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"
