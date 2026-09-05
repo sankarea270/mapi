@@ -1167,3 +1167,38 @@ html {
     }
   }
 }
+
+/*
+ * Portada en pantallas bajas.
+ *
+ * El titular grande y los márgenes anchos de la referencia funcionan en un
+ * monitor de 900px de alto, pero un portátil corriente de 1366x700 es ancho
+ * y corto: entra por `sm:` y `lg:`, se queda con las medidas de escritorio y
+ * el botón "Explorar tours" cae 174px por debajo del borde. El visitante ve
+ * foto, volante y titular, y ninguna llamada a la acción.
+ *
+ * Por eso el ajuste va por ALTO y no por ancho: el ancho ahí sobra, lo que
+ * falta es alto. Un `max-width` no llega a este caso, y encoger el titular
+ * en escritorio ancho estropearía justo lo que se buscaba.
+ *
+ * Se toca solo el relleno vertical y el cuerpo del titular. Deliberadamente
+ * NO se toca el interlineado ni el espaciado entre letras: son lo que le da
+ * el aire de la referencia, y son también lo primero que se nota si cambia.
+ */
+@media (min-width: 640px) and (max-height: 820px) {
+  .portada-caja {
+    padding-block: 3.5rem;
+  }
+  .portada-titular {
+    font-size: 4.5rem;
+  }
+}
+
+@media (min-width: 640px) and (max-height: 700px) {
+  .portada-caja {
+    padding-block: 2.5rem;
+  }
+  .portada-titular {
+    font-size: 3.75rem;
+  }
+}
