@@ -1046,3 +1046,58 @@ html {
     }
   }
 }
+
+/* ── Escena por etapas ────────────────────────────────────────
+   La secuencia que se buscaba: la foto asoma recortada y grande, el texto
+   va entrando, y la foto se acomoda a su tamaño final mientras sigue
+   bajando el scroll.
+
+   Se hace con UNA animación de tres fotogramas y no con tres animaciones
+   encadenadas, porque el reloj aquí es el scroll: con animaciones separadas
+   habría que adivinar dónde termina cada una y encajarlas a mano, y al
+   cambiar el alto de una sección se descuadrarían todas.
+
+   No se clava la sección (`position: sticky`) como en "Diseñado en Cusco".
+   Clavar cada bloque cuesta dos pantallas y media de scroll cada uno: con
+   seis secciones, la portada pasaría de seis pantallas a más de quince.
+   El mismo efecto por etapas se consigue estirando el tramo de scroll de
+   cada elemento, sin alargar la página. */
+@keyframes escena-foto {
+  0% {
+    opacity: 0;
+    transform: scale(1.22);
+    clip-path: inset(28% 0 28% 0 round 0.5rem);
+  }
+  48% {
+    opacity: 1;
+    transform: scale(1.07);
+    clip-path: inset(7% 0 7% 0 round 0.5rem);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    clip-path: inset(0 0 0 0 round 0.5rem);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .escena-foto {
+      animation: escena-foto linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 52%;
+    }
+
+    /* El texto entra DESPUÉS de que la foto haya asomado, y escalonado, de
+       modo que al seguir bajando van apareciendo las líneas que faltan. */
+    .escena-texto > * {
+      animation: aparece linear both;
+      animation-timeline: view();
+      animation-range: entry 18% cover 28%;
+    }
+    .escena-texto > *:nth-child(2) { animation-range: entry 26% cover 34%; }
+    .escena-texto > *:nth-child(3) { animation-range: entry 34% cover 40%; }
+    .escena-texto > *:nth-child(4) { animation-range: entry 42% cover 46%; }
+    .escena-texto > *:nth-child(n+5) { animation-range: entry 50% cover 52%; }
+  }
+}

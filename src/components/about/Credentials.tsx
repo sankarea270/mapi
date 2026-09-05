@@ -36,7 +36,7 @@ export async function Credentials({
          a 44px, lo que la dejaba como un pie de página adelantado. */
       <section className="border-y border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-          <div className="aparece-hijos mx-auto max-w-2xl text-center">
+          <div className="escena-texto mx-auto max-w-2xl text-center">
             <p className="eyebrow text-teal-700">{t("badge")}</p>
             <h2 className="mt-3 font-heading text-2xl font-bold tracking-tight text-slate-900 sm:text-[2.1rem] sm:leading-tight">
               {t("title")}
@@ -53,7 +53,7 @@ export async function Credentials({
               celda vacía al final. Los filetes se hacen con `gap-px` sobre
               fondo gris y no con `border-r`, que dejaba el borde descolgado
               en el último elemento de cada fila al cambiar de columnas. */}
-          <ul className="aparece mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-200 sm:mt-14 sm:grid-cols-4">
+          <ul className="escena-foto mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-200 sm:mt-14 sm:grid-cols-4">
             {CREDENTIALS.map((c) => (
               <li
                 key={c.file}

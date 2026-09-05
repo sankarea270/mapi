@@ -17,7 +17,7 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
   return (
     <section className="bg-white py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="aparece-hijos mx-auto max-w-2xl text-center">
+        <div className="escena-texto mx-auto max-w-2xl text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
             {t("badge")}
           </p>

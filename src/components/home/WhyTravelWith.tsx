@@ -33,7 +33,7 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
   const razones = (
     <div
       className={cn(
-        "aparece-hijos grid gap-x-10 gap-y-11",
+        "escena-texto grid gap-x-10 gap-y-11",
         foto ? "sm:grid-cols-2" : "mt-14 sm:grid-cols-2 lg:grid-cols-4"
       )}
     >
@@ -61,7 +61,7 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
         {/* `aparece-hijos` en vez de `rise-in`: aquella es una animación de
             tiempo que arranca al cargar la página, así que en una sección
             tan abajo terminaba antes de que nadie la viera. */}
-        <div className="aparece-hijos max-w-2xl">
+        <div className="escena-texto max-w-2xl">
           <p className="eyebrow text-amber-600">{t("badge")}</p>
           <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.6rem] sm:leading-[1.1]">
             {t("title")}
@@ -76,7 +76,7 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
             {/* La foto va en vertical y algo más alta que ancha: es un
                 retrato de viaje, no un banner. El recuadro ámbar desplazado
                 le da profundidad sin recurrir a sombras difusas. */}
-            <figure className="journey-plate relative">
+            <figure className="escena-foto relative">
               <span
                 aria-hidden
                 className="absolute -bottom-3 -left-3 h-full w-full rounded-lg border-2 border-amber-500/70"

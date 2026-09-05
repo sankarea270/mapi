@@ -13,7 +13,7 @@ export function SocialFeed() {
   return (
     <section className="bg-slate-950 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="aparece flex flex-col items-center justify-between gap-6 sm:flex-row">
+        <div className="escena-texto flex flex-col items-center justify-between gap-6 sm:flex-row">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-amber-400">
               {t("badge")}

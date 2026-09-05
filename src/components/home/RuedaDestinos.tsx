@@ -16,6 +16,13 @@ export interface DestinoRueda {
 }
 
 const INTERVALO = 5200;
+
+/* Sentido de avance. +1 hace que las fotos BAJEN por el arco de la derecha,
+   que es lo que se lee como "gira hacia la derecha"; -1 las hace subir.
+   Está en una constante y no repartido por el código porque el sentido
+   depende de dos signos a la vez —el del giro del aro y el de la colocación
+   de cada foto— y cambiar solo uno desalinea el punto focal. */
+const SENTIDO = 1;
 /* Posición focal: 90° = las tres en punto, el punto más a la derecha del
    aro. Es donde el eje —que queda fuera del encuadre, a la izquierda— sitúa
    la foto en el centro vertical del marco. */
@@ -51,9 +58,38 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
   const [activo, setActivo] = useState(0);
   const [detenido, setDetenido] = useState(false);
 
-  /* Ángulo total recorrido por el aro, en grados. */
-  const giro = useRef(FOCO);
+  /* Ángulo total recorrido por el aro, en grados.
+     Es ESTADO y no una referencia: durante el arrastre se escribía el giro
+     directamente en el DOM para evitar repintados, y entonces React seguía
+     dibujando los contragiros de cada foto con el ángulo viejo. Resultado:
+     la foto marcada como activa no era la del punto focal y ninguna se
+     agrandaba. Con estado, cada fotograma es coherente. */
+  const [giro, setGiro] = useState(FOCO);
   const indice = useRef(0);
+
+  /* Arrastre con el ratón o el dedo.
+     Se mide el ÁNGULO desde el eje del aro, no el desplazamiento del
+     puntero: el eje está fuera del encuadre, así que un mismo movimiento
+     de 100px hace girar mucho cerca del centro y poco lejos. Con el ángulo,
+     la rueda sigue al dedo exactamente donde se la agarró. */
+  const marcoRef = useRef<HTMLDivElement>(null);
+  const arrastre = useRef<{ anguloInicial: number; giroInicial: number } | null>(null);
+  const [arrastrando, setArrastrando] = useState(false);
+
+  /** Ángulo del puntero respecto al eje del aro, en grados. */
+  const anguloDe = useCallback((e: React.PointerEvent) => {
+    const marco = marcoRef.current;
+    if (!marco) return 0;
+    const caja = marco.getBoundingClientRect();
+    const estilo = getComputedStyle(marco);
+    const radio = parseFloat(estilo.getPropertyValue("--r")) * 16;
+    const px = parseFloat(estilo.getPropertyValue("--px")) * 16;
+    /* El eje está en `--px - --r` desde el borde izquierdo del marco, a
+       media altura: es la misma cuenta con la que se coloca el aro. */
+    const ejeX = caja.left + px - radio;
+    const ejeY = caja.top + caja.height / 2;
+    return (Math.atan2(e.clientY - ejeY, e.clientX - ejeX) * 180) / Math.PI;
+  }, []);
 
   const n = destinos.length;
   const paso = n > 0 ? 360 / n : 0;
@@ -70,7 +106,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
       /* Suma en vez de resta: la rueda gira en sentido contrario. El signo
          es lo único que cambia el sentido; las fotos siguen enderezándose
          solas porque el contragiro se calcula del mismo `giro.current`. */
-      giro.current += delta * paso;
+      setGiro((g) => g + SENTIDO * delta * paso);
       indice.current = destino;
       setActivo(destino);
     },
@@ -78,27 +114,66 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
   );
 
   useEffect(() => {
-    if (reducido || detenido || n <= 1) return;
+    if (reducido || detenido || arrastrando || n <= 1) return;
     const id = setInterval(() => ir(indice.current + 1), INTERVALO);
     return () => clearInterval(id);
-  }, [reducido, detenido, n, ir]);
+  }, [reducido, detenido, arrastrando, n, ir]);
+
+  function alAgarrar(e: React.PointerEvent<HTMLDivElement>) {
+    if (reducido) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    arrastre.current = { anguloInicial: anguloDe(e), giroInicial: giro };
+    setArrastrando(true);
+  }
+
+  function alMover(e: React.PointerEvent<HTMLDivElement>) {
+    if (!arrastre.current) return;
+    /* Mientras se arrastra solo cambia el ángulo; el destino activo se
+       decide al soltar. Los eventos de puntero llegan como mucho una vez
+       por fotograma, así que actualizar el estado aquí no satura. */
+    setGiro(arrastre.current.giroInicial + (anguloDe(e) - arrastre.current.anguloInicial));
+  }
+
+  function alSoltar(e: React.PointerEvent<HTMLDivElement>) {
+    if (!arrastre.current) return;
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    arrastre.current = null;
+    setArrastrando(false);
+    /* Al soltar se encaja en el destino más cercano.
+       El ángulo se FIJA al valor exacto de ese destino, no se corrige con
+       `ir()`: esa función suma un múltiplo del paso al ángulo actual, y si
+       el actual venía torcido por el arrastre, el resultado seguía torcido
+       —medido: 442,2° cuando el paso es de 45°—. Aquí se redondea a pasos
+       enteros desde el foco y se recalcula el ángulo desde cero. */
+    const pasos = Math.round((giro - FOCO) / (SENTIDO * paso));
+    setGiro(FOCO + SENTIDO * pasos * paso);
+    indice.current = ((pasos % n) + n) % n;
+    setActivo(indice.current);
+  }
 
   if (n === 0) return null;
   const d = destinos[activo];
-  const transicion = reducido
-    ? undefined
-    : "transform 1000ms cubic-bezier(.34,.72,.24,1)";
+  const transicion =
+    reducido || arrastrando
+      ? undefined
+      : "transform 1000ms cubic-bezier(.34,.72,.24,1)";
 
   return (
     <section
-      className="relative flex min-h-dvh items-center overflow-hidden border-t border-slate-200 bg-white py-16 sm:py-20"
+      /* Sin `overflow-hidden` aquí: un ancestro con overflow oculto se
+         convierte en contenedor de scroll, y entonces `animation-timeline:
+         view()` mide el avance contra ESA caja —que no se desplaza jamás—
+         en vez de contra la página. La animación se quedaba congelada al
+         99%. El recorte del arco lo hace el marco interior, que es donde
+         hace falta. */
+      className="relative flex min-h-dvh items-center border-t border-slate-200 bg-white py-16 sm:py-20"
       onMouseEnter={() => setDetenido(true)}
       onMouseLeave={() => setDetenido(false)}
       onFocusCapture={() => setDetenido(true)}
       onBlurCapture={() => setDetenido(false)}
     >
       <div className="mx-auto grid max-w-7xl items-center gap-y-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,30rem)] lg:gap-x-4">
-        <div className="aparece-hijos min-w-0 lg:pr-6">
+        <div className="escena-texto min-w-0 lg:pr-6">
           <p className="eyebrow text-amber-600">{t("badge")}</p>
 
           <div className="mt-6 flex items-start gap-6 sm:gap-9">
@@ -176,14 +251,22 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
             rotarlo gira sobre el centro por construcción, sin depender de
             `transform-origin`: encadenar rotaciones y traslaciones en un
             mismo `transform` colocaba las fotos 88px fuera de sitio. */}
-        <div className="revela-marco relative h-[30rem] w-full overflow-hidden [--px:13rem] [--r:19rem] sm:h-[38rem] sm:[--px:17rem] sm:[--r:24rem] lg:h-[44rem] lg:[--px:20rem] lg:[--r:28rem]">
+        <div
+          ref={marcoRef}
+          onPointerDown={alAgarrar}
+          onPointerMove={alMover}
+          onPointerUp={alSoltar}
+          onPointerCancel={alSoltar}
+          className="escena-foto relative h-[30rem] w-full touch-pan-y select-none overflow-hidden [--px:13rem] [--r:19rem] sm:h-[38rem] sm:[--px:17rem] sm:[--r:24rem] lg:h-[44rem] lg:[--px:20rem] lg:[--r:28rem]"
+          style={{ cursor: arrastrando ? "grabbing" : "grab" }}
+        >
           <div
             className="absolute top-1/2"
             style={{
               width: "calc(2 * var(--r))",
               height: "calc(2 * var(--r))",
               left: "calc(var(--px) - 2 * var(--r))",
-              transform: `translateY(-50%) rotate(${giro.current}deg)`,
+              transform: `translateY(-50%) rotate(${giro}deg)`,
               transition: transicion,
             }}
           >
@@ -203,7 +286,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                      `giro` desalineaba el punto focal —la foto activa acababa
                      abajo del aro y sin agrandar— porque la condición de foco
                      es `giro + angulo_i = FOCO`, y ahí hay dos signos, no uno. */
-                  style={{ transform: `rotate(${-i * paso}deg)` }}
+                  style={{ transform: `rotate(${-SENTIDO * i * paso}deg)` }}
                 >
                   <button
                     type="button"
@@ -215,7 +298,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
                        que la foto no salga cabeza abajo al recorrer la mitad
                        inferior de la curva. */
                     style={{
-                      transform: `translate(-50%,-50%) rotate(${-giro.current + i * paso}deg)`,
+                      transform: `translate(-50%,-50%) rotate(${-giro + SENTIDO * i * paso}deg)`,
                       transition: transicion,
                     }}
                   >
