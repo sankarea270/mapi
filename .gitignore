@@ -45,3 +45,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Capturas de referencia sueltas en la raíz: material de trabajo, no del sitio.
+/Captura de pantalla*.png
+/Screenshot_*.png
