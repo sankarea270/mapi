@@ -12,6 +12,7 @@ import { getCategoriesWithTours } from "@/lib/tours";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
+import { ToursPackagesCarousel } from "@/components/home/ToursPackagesCarousel";
 import { CloudLayer } from "@/components/home/CloudLayer";
 import { JourneyBand } from "@/components/home/JourneyBand";
 import { Credentials } from "@/components/about/Credentials";
@@ -53,6 +54,18 @@ export default async function HomePage({
     getDestinations(),
     getHeroSlides(),
   ]);
+
+  /* Destacados para la tira de debajo de la portada.
+     Los marcados van primero y el resto se completa con los mejor
+     valorados. No es un adorno: hoy hay UN solo tour marcado, y una tira
+     de una tarjeta sola no se lee como una selección, se lee como algo
+     que falló al cargar. */
+  const todos = categorias.flatMap((c) => c.tours);
+  const porNota = [...todos].sort((a, b) => b.rating - a.rating);
+  const destacados = [
+    ...porNota.filter((t) => t.featured),
+    ...porNota.filter((t) => !t.featured),
+  ].slice(0, 8);
 
   /* Solo los destinos que ya tienen tours: una rueda que gira hasta un
      destino sin nada que reservar frustra en vez de invitar. */
@@ -212,6 +225,10 @@ export default async function HomePage({
           </div>
         </section>
       </div>
+
+      {/* Nada más pasar la portada. Los destacados del catálogo, no una
+          muestra fija: es lo primero que se ve al bajar. */}
+      <ToursPackagesCarousel tours={destacados} locale={locale} />
 
     <script
       type="application/ld+json"

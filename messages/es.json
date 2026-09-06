@@ -544,5 +544,9 @@
     "lead": "Somos de aquí. Conocemos los horarios que no salen en internet, el guía que sabe explicar y el mirador al que no llega el autobús. Eso no se improvisa desde una oficina a diez mil kilómetros.",
     "cta": "Ver todos los tours",
     "photoAlt": "Paisaje andino al amanecer durante uno de nuestros recorridos"
+  },
+  "historias": {
+    "title": "Descubre nuestros tours",
+    "subtitle": "Las salidas que más nos piden, listas para reservar."
   }
 }
