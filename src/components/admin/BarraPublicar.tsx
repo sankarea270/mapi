@@ -6,6 +6,50 @@ import { Boton } from "./campos";
 
 const CLAVE = "gotomapi-cambios-sin-publicar";
 
+/* Salida de emergencia: el mismo despliegue se puede lanzar a mano desde
+   aquí. No es un secreto —quien no tenga acceso al repositorio verá un 404—
+   y es lo único que desatasca al que se encuentra el botón roto. */
+const ACCIONES = "https://github.com/sankarea270/mapi/actions/workflows/deploy-cpanel.yml";
+
+/**
+ * Traduce el fallo a algo accionable.
+ *
+ * `functions.invoke` devuelve un error casi mudo: sin esto, un 404 —la
+ * función nunca se desplegó— y un 403 —la cuenta no es administradora— se
+ * ven exactamente igual, y son problemas completamente distintos. El 404 es
+ * además el caso más probable, porque desplegar la función es un paso aparte
+ * que se hace una sola vez y es fácil que se quede pendiente.
+ */
+async function explicar(error: unknown): Promise<string> {
+  const respuesta = (error as { context?: Response })?.context;
+  const codigo = respuesta?.status;
+
+  if (codigo === 404) {
+    return (
+      "La función `publicar` no está desplegada en Supabase, así que no hay a quién " +
+      "avisar. Se despliega una sola vez con `supabase functions deploy publicar`. " +
+      "Mientras tanto, usa el enlace de abajo."
+    );
+  }
+  if (codigo === 401) return "Tu sesión ha caducado. Vuelve a entrar.";
+  if (codigo === 403) return "Esta cuenta no está en la tabla `admins` de Supabase.";
+
+  if (codigo === 500) {
+    /* El cuerpo de la función dice cuál de los dos secretos falta; leerlo
+       ahorra tener que abrir los registros de Supabase. */
+    try {
+      const cuerpo = await respuesta!.clone().json();
+      if (typeof cuerpo?.error === "string") return cuerpo.error;
+    } catch {
+      /* Sin cuerpo legible: se queda el mensaje genérico. */
+    }
+  }
+  if (codigo === 502) {
+    return "GitHub rechazó la petición. Suele ser el token: caducado o sin permiso sobre el repositorio.";
+  }
+  return "No se pudo avisar a GitHub. Usa el enlace de abajo para lanzarlo a mano.";
+}
+
 /**
  * Botón de publicar.
  *
@@ -56,10 +100,7 @@ export function BarraPublicar({ revision }: { revision: number }) {
 
     if (error) {
       setEstado("error");
-      setDetalle(
-        "No se pudo avisar a GitHub. Comprueba que la función `publicar` está desplegada, " +
-          "o lanza el despliegue a mano desde la pestaña Actions del repositorio."
-      );
+      setDetalle(await explicar(error));
       return;
     }
 
@@ -95,9 +136,17 @@ export function BarraPublicar({ revision }: { revision: number }) {
       )}
 
       {estado === "error" && (
-        <p role="alert" className="max-w-xs text-xs leading-relaxed text-red-600">
-          {detalle}
-        </p>
+        <div role="alert" className="max-w-xs text-xs leading-relaxed text-red-600">
+          <p>{detalle}</p>
+          <a
+            href={ACCIONES}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-block font-semibold underline underline-offset-2"
+          >
+            Lanzar el despliegue a mano →
+          </a>
+        </div>
       )}
     </div>
   );

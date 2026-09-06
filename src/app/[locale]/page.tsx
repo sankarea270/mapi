@@ -7,7 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
 import { buildMetadata } from "@/lib/seo";
 import { pickLocalized } from "@/lib/format";
-import { getDestinations, getReviews } from "@/lib/content";
+import { getDestinations, getReviews, getHeroSlides } from "@/lib/content";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
@@ -48,9 +48,10 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations("hero");
   const resenas = await getReviews();
-  const [categorias, destinos] = await Promise.all([
+  const [categorias, destinos, slidesPortada] = await Promise.all([
     getCategoriesWithTours(),
     getDestinations(),
+    getHeroSlides(),
   ]);
 
   /* Solo los destinos que ya tienen tours: una rueda que gira hasta un
@@ -100,7 +101,7 @@ export default async function HomePage({
           data-hero-sentinel
           className="relative flex min-h-[92dvh] items-center overflow-hidden bg-slate-950"
         >
-          <HeroCarousel />
+          <HeroCarousel slides={slidesPortada} />
 
           {/* Orden de capas: foto (z-10) -> velo -> neblina (z-11) -> texto
               (z-20) -> controles (z-30). La neblina va ENCIMA del velo porque
@@ -134,7 +135,7 @@ export default async function HomePage({
                   separa la portada de cualquier foto con un texto encima.
                   Sobre el velo oscuro el ámbar da 8.9:1, de sobra. */}
               <h1
-                className="portada-titular mt-3 font-heading text-[3rem] font-bold uppercase leading-[0.88] tracking-tight text-amber-400 sm:text-7xl lg:text-[6rem]"
+                className="portada-titular mt-3 font-heading text-[3rem] font-bold uppercase leading-[0.88] text-amber-400 sm:text-7xl lg:text-[6rem]"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
               >
                 {t("title")}

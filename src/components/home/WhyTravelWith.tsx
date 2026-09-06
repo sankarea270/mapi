@@ -64,7 +64,7 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
             tan abajo terminaba antes de que nadie la viera. */}
         <div className="escena-texto max-w-2xl">
           <p className="eyebrow text-amber-600">{t("badge")}</p>
-          <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.6rem] sm:leading-[1.1]">
+          <h2 className="mt-3 font-heading text-3xl font-bold text-slate-900 sm:text-[2.6rem] sm:leading-[1.1]">
             <TextoLetras texto={t("title")} />
           </h2>
           <p className="mt-5 text-[17px] leading-relaxed text-slate-600">

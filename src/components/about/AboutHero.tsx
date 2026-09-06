@@ -32,7 +32,7 @@ export function AboutHero() {
       {/* Contenido principal */}
       <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
         <div className={`scroll-animate ${isVisible ? "animate-fade-in-down" : ""}`}>
-          <h1 className="font-heading text-5xl font-bold leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl">
+          <h1 className="font-heading text-5xl font-bold leading-tight text-white sm:text-6xl lg:text-7xl">
             {t("hero.title")}
           </h1>
           <p className="mt-6 text-xl leading-relaxed text-slate-200 sm:text-2xl">

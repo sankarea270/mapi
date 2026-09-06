@@ -60,7 +60,7 @@ export function Logo({
       <span className={cn("leading-none", centrado && "text-center")}>
         <span
           className={cn(
-            "block font-logo font-medium tracking-tight transition-colors",
+            "block font-logo font-medium transition-colors",
             centrado ? "text-[1.6rem]" : "text-2xl",
             light ? "text-white" : "text-slate-900"
           )}

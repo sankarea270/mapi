@@ -86,7 +86,7 @@ export default async function GuideArticlePage({
         <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
           {t(`cat.${guide.category}`)}
         </p>
-        <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-2 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
           {title}
         </h1>
         <p className="mt-4 text-base leading-relaxed text-slate-600">

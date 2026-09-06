@@ -100,7 +100,7 @@ export function TourFaq({ tour, locale, bookingPolicy }: TourFaqProps) {
   return (
     <section className="mt-12 border-t border-slate-200 pt-10">
       <p className="eyebrow text-amber-600">{t("badge")}</p>
-      <h2 className="mt-2 font-heading text-2xl font-bold tracking-tight text-slate-900">
+      <h2 className="mt-2 font-heading text-2xl font-bold text-slate-900">
         {t("title")}
       </h2>
 

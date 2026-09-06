@@ -33,7 +33,7 @@ export async function RevelaScroll({ foto }: { foto: string }) {
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
           <div className="revela-texto order-2 lg:order-1">
             <p className="eyebrow text-amber-400">{t("badge")}</p>
-            <h2 className="mt-4 font-heading text-3xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl">
+            <h2 className="mt-4 font-heading text-3xl font-bold leading-[1.1] text-white sm:text-5xl">
               <TextoLetras texto={t("title")} />
             </h2>
             <p className="mt-6 max-w-md text-[15px] leading-relaxed text-slate-300 sm:text-base">

@@ -19,7 +19,7 @@ export async function CertificationsSection({ locale }: { locale: string }) {
     <section className="border-t border-slate-200 bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl">
-          <h2 className="font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.6rem] sm:leading-[1.1]">
+          <h2 className="font-heading text-3xl font-bold text-slate-900 sm:text-[2.6rem] sm:leading-[1.1]">
             {t("certifications.title")}
           </h2>
           <p className="mt-5 text-[17px] leading-relaxed text-slate-600">

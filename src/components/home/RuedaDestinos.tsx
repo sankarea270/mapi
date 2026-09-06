@@ -200,7 +200,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
             <div className="min-w-0 pt-1">
               <h2
                 key={`h-${activo}`}
-                className="rueda-entra font-heading text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-[2.5rem]"
+                className="rueda-entra font-heading text-3xl font-bold leading-tight text-slate-900 sm:text-[2.5rem]"
               >
                 {d.nombre}
               </h2>

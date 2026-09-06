@@ -351,7 +351,7 @@ export function SeasonPanel({ categorySlug, locale }: SeasonPanelProps) {
   return (
     <section className="border-t border-slate-200 pt-10">
       <p className="eyebrow text-amber-600">{t("badge")}</p>
-      <h2 className="mt-2 font-heading text-2xl font-bold tracking-tight text-slate-900">
+      <h2 className="mt-2 font-heading text-2xl font-bold text-slate-900">
         {t("title")}
       </h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500">

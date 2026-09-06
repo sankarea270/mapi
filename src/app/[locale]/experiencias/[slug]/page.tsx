@@ -77,7 +77,7 @@ export default async function ExperiencePage({
             <ArrowLeft className="size-4" />
             {t("back")}
           </Link>
-          <h1 className="mt-6 max-w-2xl font-heading text-3xl font-bold tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-6 max-w-2xl font-heading text-3xl font-bold text-white sm:text-5xl">
             {name}
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200">

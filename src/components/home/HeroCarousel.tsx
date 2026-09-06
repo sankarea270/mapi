@@ -1,49 +1,32 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-
-const SLIDES = [
-  {
-    src: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?q=80&w=1920&auto=format&fit=crop",
-    alt: "Machu Picchu, maravilla del mundo",
-    blur: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAASACADASIAAhEBAxEB/8QAGAAAAwEBAAAAAAAAAAAAAAAAAAQFBgf/xAAoEAACAQMDAwMFAQAAAAAAAAABAgMABBEFEiETMUEGUXEUIjJhgZH/xAAWAQEBAQAAAAAAAAAAAAAAAAABAAL/xAAXEQEBAQEAAAAAAAAAAAAAAAAAAREx/9oADAMBAAIRAxEAPwDnvTLwg5BGcU5aadNPqEcdw3hjDMueATjFW9PtlW2EcKfUDaQW7HB7U1p8Ct1brH3E5z75pxXR9W0P6lTI08LgZ7c/FY4SX2jajPb64zt0nKRzR8SRnsMjngj5rZ3mDk9uO1LeL0xJql3eCa12W0jSRqHyXA7cmiwmMf/Z",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=1920&auto=format&fit=crop",
-    alt: "Valle Sagrado de los Incas",
-    blur: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAASACADASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAAAAQCAwUG/8QAJhAAAgEDBAEEAwEAAAAAAAAAAQIDAAQRBRIhMRNBUWFxFCKBkf/EABYBAQEBAAAAAAAAAAAAAAAAAAECA//EABkRAQEBAQEBAAAAAAAAAAAAAAEAAhExIf/aAAwDAQACEQMRAD8A5kLjvr5pxI8DJqhJgOc9088/FevcMGK4AGM8VXGzuDdwsvbmPYJf0Z5z2ahc31xMi+Vuf1OMD/KhDI5nJDEZPOTg05cXKnHi+sCBjuKa1l6YmjIyD3T1q0iKGlfcxPfgCs1bt0kBY+wOKt/InETJu2fkDzigJa//2Q==",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1531968455001-5c5272a41129?q=80&w=1920&auto=format&fit=crop",
-    alt: "Vinicunca, montaña de 7 colores",
-    blur: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAASACADASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAAAAUBBAYH/8QAJxAAAgEDAwQBBQEAAAAAAAAAAQIDBAURAAYhBxITMRQiI0FRYXH/xAAWAQEBAQAAAAAAAAAAAAAAAAABAAL/xAAYEQEBAQEBAAAAAAAAAAAAAAABAAIRMf/aAAwDAQACEQMRAD8A54EJOCMEaIFY8jBxjB1crB0wvV3pDUU1JGE9wil3YkqCQSOB5OjF70avVdYkuRkQRj3eopI+WVcjkn5OtIuBYVq+xRw+NpBI75JCDBGPzqt6i3X3N2SzMWpp5TKBw2wY/rVbtLePdu+tpWt1UZkWZZhBUlBESMhTgjGeOeBqUtS2yWzr1Ga3VEUtJVRmOREVlJKkZXODxj41n73f7k29TUIpqaUzOBJFI5d0AAPq4PJAJJ+daOvzN8gLc57jeq2nlrY4Ioo2hklqJ2OMJkrH6icnH9Z1ZuPVG5VVPJSLGIXkbLzhnL4C58Y9QB9Hzq1arPcr/cJLZTMFo9sofiWeblVHJA9Y/Os/vWnhprqKKl2rR28U6lBWo5d5Wf5ZioAXnoAHTGowLZXblr5pKSsqGf3k+QqWZV9uCyjPK+0Dpk/I0aNG5v/Z",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?q=80&w=1920&auto=format&fit=crop",
-    alt: "Laguna Humantay, joya de los Andes",
-    blur: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAASACADASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAAAAQBAgUG/8QAKBAAAgEDAwMEAgMAAAAAAAAAAQIDAAQRBRIhMUEGE1FhIoEjMnGh0f/EABYBAQEBAAAAAAAAAAAAAAAAAAIBA//EABkRAQEBAQEBAAAAAAAAAAAAAAEAAhExIf/aAAwDAQACEQMRAD8A5oxD4qSgU5GCKf0+xkvrmOCBT7jDt4GP7rVXnTg05Ub9oW6dvrj1o3WVQG+MdcH/ABpSaLqNrq1kl1bk4PBU8lT4IroYPWdxb3EaTJHOYjlXU/kv3/leXOs2N/dLDcxuJWXcs4BXcPzOJ72kjbmvjVWKJbXqk26L/FdWNuQ0oEauRu3qB/JHjpXqGjQ3+naNBBftum35LRjAJwPNFdBn//Z",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1621887178805-37e802d9ed4c?q=80&w=1920&auto=format&fit=crop",
-    alt: "Sacsayhuamán, fortaleza inca en Cusco",
-    blur: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAASACADASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAAAAQCAwUG/8QAKBAAAgECBAYCAwEAAAAAAAAAAQIDBBEABRIhMRMUIkFRYXGBBpGh/8QAFgEBAQEAAAAAAAAAAAAAAAAAAgAD/8QAHBEAAgICAwAAAAAAAAAAAAAAAAECEQMSITFh/9oADAMBAAIRAxEAPwDlY80p2i1wRTSnqLamqr/PbmVXPmWfKaOsqqp2Vpp29Cg8LYg+r73wrjJVJImg3sTxD1Yx/mOi4OZKD1gC22+13iDxxdHYycXU7bM80pJ5GeWeqhBF/UrggFrE7X7YrfM81qFiqpJp2Qs+h2UbqLAAX3/mMuGXSVVfVQh+GdTqCRcH8sMaKVPqpRi9JVZ3ndfmtbJWVTH1WVQqiwUCwGGCrhHF1Kx0r+OLbW/OGM0RHE//2Q==",
-  },
-];
+import { HERO_SLIDES, type HeroSlide } from "@/data/portada";
 
 const INTERVAL = 7000;
 
-export function HeroCarousel() {
+/**
+ * Las fotos llegan desde arriba, leídas de Supabase al compilar. Antes
+ * estaban escritas aquí dentro, así que cambiar la primera pantalla del sitio
+ * exigía tocar el código y volver a desplegar a mano.
+ */
+export function HeroCarousel({ slides }: { slides?: HeroSlide[] }) {
+  /* Memorizado porque `next` depende de cuántas hay: sin esto la referencia
+     cambia en cada render, el temporizador se reinicia y el carrusel no
+     llega a pasar de foto nunca. */
+  const SLIDES = useMemo(() => (slides?.length ? slides : HERO_SLIDES), [slides]);
+
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const reduced = useReducedMotion();
 
   const next = useCallback(() => {
     setActive((i) => (i + 1) % SLIDES.length);
-  }, []);
+  }, [SLIDES.length]);
 
   useEffect(() => {
     if (paused || reduced) return;

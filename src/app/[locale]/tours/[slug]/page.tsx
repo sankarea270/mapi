@@ -256,7 +256,7 @@ export default async function TourDetailPage({
               en dos sitios obliga a mantenerlos sincronizados a mano. */}
           <div className="mt-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <div className="min-w-0">
-              <h1 className="max-w-3xl font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+              <h1 className="max-w-3xl font-heading text-3xl font-bold text-slate-900 sm:text-4xl lg:text-5xl">
                 {name}
               </h1>
               <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">

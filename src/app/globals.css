@@ -209,8 +209,25 @@
     scroll-behavior: smooth;
   }
   h1, h2, h3, h4, h5, h6 {
-    letter-spacing: -0.02em;
+    /*
+     * Ni una pizca de negativo. Ese -0.02em estaba puesto para Syne, que es
+     * una geométrica ANCHA y lo agradecía. Barlow Condensed ya viene
+     * estrecha de fábrica, así que apretarla más juntaba las letras.
+     *
+     * Y el espacio entre palabras hay que devolvérselo a mano: el glifo de
+     * espacio de esta familia mide 0.077em, un tercio de lo normal. Medido
+     * en un titular de 41.6px el hueco entre palabras salía de 2px y se leía
+     * "¿Porquéviajar". Con 0.14em vuelve a un hueco de tipografía normal.
+     */
+    letter-spacing: 0;
+    word-spacing: 0.14em;
     line-height: 1.2;
+  }
+
+  /* El menú y cualquier otro sitio que use la condensada fuera de un
+     encabezado necesitan la misma corrección de espacio. */
+  .font-condensada {
+    word-spacing: 0.14em;
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;

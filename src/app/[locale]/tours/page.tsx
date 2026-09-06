@@ -75,7 +75,7 @@ export default async function ToursPage({ params }: ToursPageProps) {
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
             {t("found", { count: allTours.length })}
           </p>
-          <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="mt-2 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
             {t("title")}
           </h1>
           <p className="mt-3 max-w-2xl text-base text-slate-500">{t("subtitle")}</p>

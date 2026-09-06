@@ -39,7 +39,7 @@ export async function Credentials({
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="escena-texto mx-auto max-w-2xl text-center">
             <p className="eyebrow text-teal-700">{t("badge")}</p>
-            <h2 className="mt-3 font-heading text-2xl font-bold tracking-tight text-slate-900 sm:text-[2.1rem] sm:leading-tight">
+            <h2 className="mt-3 font-heading text-2xl font-bold text-slate-900 sm:text-[2.1rem] sm:leading-tight">
               <TextoLetras texto={t("title")} />
             </h2>
             <p className="mt-4 text-[15px] leading-relaxed text-slate-600 sm:text-base">

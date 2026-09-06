@@ -39,7 +39,7 @@ export function MissionVision() {
     <section ref={sectionRef as React.RefObject<HTMLElement>} className="bg-white py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className={`mx-auto max-w-2xl text-center scroll-animate ${isVisible ? "animate-fade-in-down" : ""}`}>
-          <h2 className="font-heading text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          <h2 className="font-heading text-4xl font-bold text-slate-900 sm:text-5xl">
             {t("missionVision.title")}
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-slate-600">

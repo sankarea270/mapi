@@ -96,7 +96,7 @@ export default async function PackagePage({
 
           <div className="mt-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <div className="min-w-0">
-              <h1 className="max-w-3xl font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+              <h1 className="max-w-3xl font-heading text-3xl font-bold text-slate-900 sm:text-4xl lg:text-5xl">
                 {name}
               </h1>
               <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-slate-600">

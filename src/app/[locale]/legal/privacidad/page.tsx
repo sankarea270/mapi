@@ -39,7 +39,7 @@ export default async function PrivacidadPage({
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
             {PRIVACY.badge[l]}
           </p>
-          <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="mt-2 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
             {PRIVACY.title[l]}
           </h1>
           <p className="mt-3 max-w-2xl text-base text-slate-500">{PRIVACY.updated[l]}</p>

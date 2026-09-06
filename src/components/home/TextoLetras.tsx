@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,6 +15,14 @@ import { cn } from "@/lib/utils";
  *    y entonces el navegador puede cortar el renglón en mitad de una
  *    palabra. Agrupando primero por palabras, el salto de línea sigue
  *    ocurriendo donde debe.
+ *
+ *  · El espacio entre palabras va FUERA del `<span>` de la palabra. Dentro
+ *    no vale: la palabra es un `inline-block`, y un espacio al final de la
+ *    única línea de una caja así se descarta por las reglas normales de
+ *    espacio en blanco. Medido, el hueco entre palabras salía de 0px y el
+ *    titular se leía "¿Porquéviajar". Fuera, el espacio es un nodo de texto
+ *    del flujo de al lado y además vuelve a ser un punto donde cortar el
+ *    renglón.
  *
  *  · El texto completo va en `aria-label` y las letras en `aria-hidden`.
  *    Sin eso, un lector de pantalla leería el titular letra a letra: "eme,
@@ -53,22 +62,24 @@ export function TextoLetras({
   return (
     <span aria-label={texto} className={cn("letras", className)}>
       {palabras.map((palabra, p) => (
-        <span key={`${palabra}-${p}`} className="palabra">
-          {[...palabra].map((letra, i) => {
-            const inicio = desde + (n++ / total) * reparto;
-            return (
-              <span
-                key={i}
-                aria-hidden
-                className="letra"
-                style={{ animationRange: `entry ${inicio}% cover ${inicio + duracion}%` }}
-              >
-                {letra}
-              </span>
-            );
-          })}
+        <Fragment key={`${palabra}-${p}`}>
+          <span className="palabra">
+            {[...palabra].map((letra, i) => {
+              const inicio = desde + (n++ / total) * reparto;
+              return (
+                <span
+                  key={i}
+                  aria-hidden
+                  className="letra"
+                  style={{ animationRange: `entry ${inicio}% cover ${inicio + duracion}%` }}
+                >
+                  {letra}
+                </span>
+              );
+            })}
+          </span>
           {p < palabras.length - 1 ? " " : null}
-        </span>
+        </Fragment>
       ))}
     </span>
   );

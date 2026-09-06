@@ -130,7 +130,7 @@ export function BookingForm({
             dentro de otra que ya tiene su encabezado. La página de reservas
             se quedaba sin h1 porque aquí siempre había un h2: para Google,
             una página sin h1 no declara de qué trata. */}
-        <Titulo className="mt-2 font-heading text-2xl font-bold tracking-tight text-slate-900">
+        <Titulo className="mt-2 font-heading text-2xl font-bold text-slate-900">
           {t("title")}
         </Titulo>
         <p className="mt-2 max-w-lg text-[15px] leading-relaxed text-slate-500">

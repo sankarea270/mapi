@@ -19,7 +19,7 @@ export function SocialFeed() {
             <p className="text-xs font-bold uppercase tracking-widest text-amber-400">
               {t("badge")}
             </p>
-            <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">
               <TextoLetras texto={t("title")} />
             </h2>
             <p className="mt-3 max-w-lg text-base leading-relaxed text-slate-400">

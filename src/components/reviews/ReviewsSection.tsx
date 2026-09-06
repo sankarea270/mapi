@@ -22,7 +22,7 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
             {t("badge")}
           </p>
-          <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="mt-3 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
             <TextoLetras texto={t("title")} />
           </h2>
           <p className="mt-4 text-base leading-relaxed text-slate-600">{t("subtitle")}</p>

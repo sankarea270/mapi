@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { DESTINATIONS, type Destination } from "@/data/destinations";
 import { PACKAGES, type TourPackage } from "@/data/packages";
 import { REVIEWS, type Review } from "@/data/reviews";
+import { HERO_SLIDES, type HeroSlide } from "@/data/portada";
 import type { LocalizedText } from "@/types/tour";
 import type { FilaDestino, FilaPaquete, FilaResena } from "@/types/db";
 
@@ -114,5 +115,30 @@ export async function getReviews(): Promise<Review[]> {
       text: loc(r.text_es, r.text_en, r.text_pt),
       ...(r.tour_slug ? { tourSlug: r.tour_slug } : {}),
     }));
+  });
+}
+
+/**
+ * Fotos de la portada.
+ *
+ * Solo se piden las publicadas y en el orden fijado en el panel. Si la tabla
+ * no existe todavía —el panel es posterior al sitio— o está vacía, se
+ * devuelven las del repositorio: la primera pantalla nunca se queda en negro
+ * por un problema de base de datos.
+ */
+export async function getHeroSlides(): Promise<HeroSlide[]> {
+  return conRespaldo("portada", HERO_SLIDES, async () => {
+    const { data, error } = await supabase!
+      .from("hero_slides")
+      .select("image_url, alt_es, sort_order, status")
+      .eq("status", "published")
+      .order("sort_order");
+    if (error) throw error;
+    return (data ?? [])
+      .filter((f) => typeof f.image_url === "string" && f.image_url.trim() !== "")
+      .map((f) => ({
+        src: f.image_url as string,
+        alt: (f.alt_es as string) ?? "",
+      }));
   });
 }

@@ -85,7 +85,7 @@ export default async function DestinationPage({
             <MapPin className="size-3.5" />
             {t("toursCount", { count: tours.length })}
           </p>
-          <h1 className="mt-2 max-w-2xl font-heading text-3xl font-bold tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-2 max-w-2xl font-heading text-3xl font-bold text-white sm:text-5xl">
             {name}
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200">
