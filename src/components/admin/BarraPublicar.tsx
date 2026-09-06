@@ -40,6 +40,17 @@ const NOMBRES = ["hyper-handler", "publicar"];
  * además el caso más probable, porque desplegar la función es un paso aparte
  * que se hace una sola vez y es fácil que se quede pendiente.
  */
+/** Saca el campo `error` del cuerpo, si es que se puede leer. */
+async function leerCuerpo(respuesta: Response | undefined): Promise<string> {
+  if (!respuesta) return "";
+  try {
+    const cuerpo = await respuesta.clone().json();
+    return typeof cuerpo?.error === "string" ? cuerpo.error : "";
+  } catch {
+    return "";
+  }
+}
+
 async function explicar(error: unknown): Promise<string> {
   const respuesta = (error as { context?: Response })?.context;
   const codigo = respuesta?.status;
@@ -66,15 +77,39 @@ async function explicar(error: unknown): Promise<string> {
   if (codigo === 500) {
     /* El cuerpo de la función dice cuál de los dos secretos falta; leerlo
        ahorra tener que abrir los registros de Supabase. */
-    try {
-      const cuerpo = await respuesta!.clone().json();
-      if (typeof cuerpo?.error === "string") return cuerpo.error;
-    } catch {
-      /* Sin cuerpo legible: se queda el mensaje genérico. */
-    }
+    const detalle = await leerCuerpo(respuesta);
+    if (detalle) return detalle;
   }
   if (codigo === 502) {
-    return "GitHub rechazó la petición. Suele ser el token: caducado o sin permiso sobre el repositorio.";
+    /* Un 502 significa que la función SÍ llegó a GitHub y GitHub dijo que
+       no. Cuál de los tres motivos es cambia por completo qué hay que
+       tocar, y el número viene dentro del cuerpo: leerlo evita mandar a
+       nadie a revisar el token cuando lo que está mal es el nombre del
+       repositorio. */
+    const detalle = await leerCuerpo(respuesta);
+    const github = Number(detalle.match(/\((\d{3})\)/)?.[1]);
+
+    if (github === 401) {
+      return (
+        "GitHub no reconoce el token: está caducado o mal copiado. Crea uno " +
+        "nuevo y vuelve a poner GITHUB_TOKEN en los secretos de Supabase."
+      );
+    }
+    if (github === 403) {
+      return (
+        "El token es válido pero no tiene permiso sobre el repositorio. Si es " +
+        "de tipo fine-grained necesita «Contents: Read and write» sobre " +
+        "sankarea270/mapi; si es clásico, el ámbito «repo»."
+      );
+    }
+    if (github === 404) {
+      return (
+        "GitHub no encuentra el repositorio. Revisa el secreto GITHUB_REPO: " +
+        "tiene que ser exactamente sankarea270/mapi, sin https:// ni .git. " +
+        "Un token sin acceso al repositorio también da este error."
+      );
+    }
+    return detalle || "GitHub rechazó la petición.";
   }
   return "No se pudo avisar a GitHub. Usa el enlace de abajo para lanzarlo a mano.";
 }

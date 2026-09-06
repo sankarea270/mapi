@@ -78,6 +78,8 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
   const pistaRef = useRef<HTMLDivElement>(null);
   const inicio = useRef<number | null>(null);
   const movido = useRef(false);
+  /* Qué puntero se capturó, para poder soltarlo. -1 = ninguno. */
+  const puntero = useRef(-1);
   /* Dónde estaba el ratón la última vez que el cursor cambió de tarjeta. */
   const xUltimoCambio = useRef(Number.NaN);
   /* Cuándo terminó el último arrastre de verdad. Se guarda el INSTANTE y no
@@ -138,24 +140,47 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
     setActivo(i);
   }
 
+  /*
+   * Al pulsar NO se captura el puntero. Esa es la corrección importante.
+   *
+   * Capturar en `pointerdown` rompía el clic entero: con el puntero
+   * capturado por la pista, el navegador dispara el `click` sobre la PISTA
+   * y no sobre el enlace que hay debajo del dedo. O sea que el `onClick` de
+   * la tarjeta no llegaba a ejecutarse y el enlace no se activaba nunca:
+   * pulsabas y no pasaba nada.
+   *
+   * No se vio en las pruebas porque llamar a `.click()` sobre el enlace se
+   * salta todo el gesto del puntero, y ahí sí funcionaba. Hace falta un
+   * ratón de verdad para reproducirlo.
+   *
+   * Ahora la captura se pide solo cuando el arrastre supera el umbral, que
+   * es cuando de verdad hace falta —para seguir recibiendo el movimiento
+   * aunque el ratón se salga de la pista—. Un clic normal nunca llega ahí,
+   * así que llega intacto a su enlace.
+   */
   function alAgarrar(e: React.PointerEvent) {
     inicio.current = e.clientX;
+    puntero.current = e.pointerId;
     movido.current = false;
-    setAgarrando(true);
     setQuieto(true);
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      /* El puntero puede haberse ido ya. Sin captura el arrastre sigue
-         valiendo mientras no se salga de la pista; peor sería quedarse a
-         medias con el estado ya tocado. */
-    }
   }
 
   function alMover(e: React.PointerEvent) {
     if (inicio.current === null) return;
     const dx = e.clientX - inicio.current;
-    if (Math.abs(dx) > UMBRAL) movido.current = true;
+
+    if (!movido.current) {
+      if (Math.abs(dx) <= UMBRAL) return;
+      movido.current = true;
+      setAgarrando(true);
+      try {
+        pistaRef.current?.setPointerCapture(e.pointerId);
+      } catch {
+        /* El puntero puede haberse ido ya. Sin captura el arrastre sigue
+           valiendo mientras no se salga de la pista. */
+      }
+    }
+
     setArrastre(dx);
   }
 
@@ -163,6 +188,12 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
     if (inicio.current === null) return;
     const saltos = Math.round(-arrastre / paso);
     if (movido.current) finArrastre.current = Date.now();
+
+    if (puntero.current !== -1 && pistaRef.current?.hasPointerCapture(puntero.current)) {
+      pistaRef.current.releasePointerCapture(puntero.current);
+    }
+    puntero.current = -1;
+
     inicio.current = null;
     setArrastre(0);
     setAgarrando(false);
