@@ -1356,7 +1356,21 @@ html {
   will-change: transform;
 }
 
-.pendulum-container:hover {
+/*
+ * El disparador va en la SECCIÓN, no en la propia foto.
+ *
+ * `.pendulum-container:hover` no se activaba jamás. Encima de la foto hay
+ * tres capas hermanas a pantalla completa —el velo oscuro, la neblina y el
+ * bloque de texto—, así que el puntero siempre cae sobre una de ellas.
+ * Comprobado en tres puntos de la portada: el elemento bajo el cursor era
+ * el titular o su caja, nunca nada dentro del contenedor de la foto. Y
+ * `:hover` alcanza al elemento apuntado y a sus ANTEPASADOS; esas capas son
+ * hermanas, no antepasados, así que la regla estaba muerta.
+ *
+ * Desde la sección sí funciona, porque la sección es antepasada de las
+ * cuatro capas. `:has()` evita tener que marcar la sección en el JSX.
+ */
+section:has(.pendulum-container):hover .pendulum-container {
   animation: pendulum-sway 2s ease-in-out infinite;
 }
 
