@@ -11,6 +11,21 @@ const CLAVE = "gotomapi-cambios-sin-publicar";
    y es lo único que desatasca al que se encuentra el botón roto. */
 const ACCIONES = "https://github.com/sankarea270/mapi/actions/workflows/deploy-cpanel.yml";
 
+/*
+ * Nombres con los que buscar la función, en orden.
+ *
+ * El primero es el que le corresponde. El segundo es el identificador que
+ * generó solo el editor del panel de Supabase: ahí el nombre que se escribe
+ * es una etiqueta, y la URL se queda con un nombre inventado. Se probó y la
+ * función respondía correctamente en `hyper-handler` mientras `publicar`
+ * daba 404.
+ *
+ * Se intentan los dos en vez de fijar el que hay hoy porque, si algún día se
+ * vuelve a desplegar con el nombre correcto, esto sigue funcionando sin tocar
+ * nada. Solo hay una llamada de más cuando la primera no existe.
+ */
+const NOMBRES = ["publicar", "hyper-handler"];
+
 /**
  * Traduce el fallo a algo accionable.
  *
@@ -26,8 +41,8 @@ async function explicar(error: unknown): Promise<string> {
 
   if (codigo === 404) {
     return (
-      "La función `publicar` no está desplegada en Supabase, así que no hay a quién " +
-      "avisar. Se despliega una sola vez con `supabase functions deploy publicar`. " +
+      "No se encuentra la función en Supabase, ni como `publicar` ni como " +
+      "`hyper-handler`. Comprueba en Edge Functions con qué nombre quedó la URL. " +
       "Mientras tanto, usa el enlace de abajo."
     );
   }
@@ -96,11 +111,24 @@ export function BarraPublicar({ revision }: { revision: number }) {
     setEstado("enviando");
     setDetalle("");
 
-    const { error } = await supabase.functions.invoke("publicar");
+    let ultimo: unknown = null;
+    for (const nombre of NOMBRES) {
+      const { error } = await supabase.functions.invoke(nombre);
+      if (!error) {
+        ultimo = null;
+        break;
+      }
+      ultimo = error;
+      /* Solo se sigue probando si es que NO existe. Un 403 o un 500 son
+         respuestas de la función buena: insistir con otro nombre solo
+         cambiaría un error certero por un "no encontrada" que despista. */
+      const codigo = (error as { context?: Response })?.context?.status;
+      if (codigo !== 404) break;
+    }
 
-    if (error) {
+    if (ultimo) {
       setEstado("error");
-      setDetalle(await explicar(error));
+      setDetalle(await explicar(ultimo));
       return;
     }
 

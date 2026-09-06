@@ -12,7 +12,10 @@
 // Despliegue:  supabase functions deploy publicar
 // Secretos:    supabase secrets set GITHUB_TOKEN=... GITHUB_REPO=usuario/repo
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// `npm:` y no un CDN de terceros: es lo que el runtime de Supabase resuelve
+// de forma nativa. Con esm.sh la función depende de que un tercero siga en
+// pie cada vez que arranca en frío.
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 // El panel se sirve desde otro dominio, así que el navegador manda antes una
 // petición OPTIONS para preguntar si tiene permiso.
