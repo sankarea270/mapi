@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 
@@ -33,9 +33,14 @@ const LADOS = 2;
  *
  * El reparto de gestos: el CURSOR cambia de tarjeta —pasar por encima de una
  * la trae al centro con el mismo movimiento que usa el giro automático—, el
- * ARRASTRE mueve varias de golpe, y el CLIC abre el tour, esté la tarjeta
- * donde esté. Antes el clic en una lateral la centraba en vez de abrirla, y
- * eso convertía en dos pasos lo que la gente espera que sea uno.
+ * ARRASTRE mueve varias de golpe, y el CLIC abre el tour SEÑALADO.
+ *
+ * Ojo con esa última palabra, porque ahí está la trampa: al señalar una
+ * lateral, esa tarjeta se va al centro, y bajo el cursor queda la que ocupa
+ * ahora su antiguo sitio. Si cada tarjeta abriera simplemente su propio
+ * enlace, al pulsar te llevaría a un tour que no es el que estabas mirando.
+ * Por eso el clic va siempre al que está en el centro, que es exactamente el
+ * que acabas de señalar y el que se ve grande.
  *
  * Cuatro decisiones que no se ven pero deciden si esto funciona:
  *
@@ -61,6 +66,7 @@ const LADOS = 2;
  */
 export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
   const t = useTranslations();
+  const router = useRouter();
   const reducido = useReducedMotion();
 
   const [activo, setActivo] = useState(0);
@@ -232,11 +238,20 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
                 tabIndex={visible ? 0 : -1}
                 onFocus={() => setActivo(i)}
                 onClick={(e) => {
-                  /* Lo único que frena un clic es venir de un arrastre: ahí
-                     el clic cierra el gesto y no es intención de abrir nada.
-                     En cualquier otro caso abre el tour, esté la tarjeta en
-                     el centro o en un lado. */
-                  if (Date.now() - finArrastre.current < GRACIA) e.preventDefault();
+                  /* Venir de un arrastre no es intención de abrir nada: ahí
+                     el clic solo cierra el gesto. */
+                  if (Date.now() - finArrastre.current < GRACIA) {
+                    e.preventDefault();
+                    return;
+                  }
+                  /* Y si lo pulsado no es la del centro, el destino sigue
+                     siendo el del centro: es la que el cursor acaba de
+                     señalar y la que se está viendo grande. Esta se limitó a
+                     ocupar su hueco al desplazarse. */
+                  if (!centro) {
+                    e.preventDefault();
+                    router.push(`/tours/${tours[activo].slug}`);
+                  }
                 }}
                 className={cn(
                   "story-card-container block rounded-[2rem] bg-white p-3 outline-none transition-shadow duration-300 focus-visible:ring-2 focus-visible:ring-teal-600",

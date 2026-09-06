@@ -12,19 +12,24 @@ const CLAVE = "gotomapi-cambios-sin-publicar";
 const ACCIONES = "https://github.com/sankarea270/mapi/actions/workflows/deploy-cpanel.yml";
 
 /*
- * Nombres con los que buscar la función, en orden.
+ * Nombres con los que buscar la función, EN ESTE ORDEN.
  *
- * El primero es el que le corresponde. El segundo es el identificador que
- * generó solo el editor del panel de Supabase: ahí el nombre que se escribe
- * es una etiqueta, y la URL se queda con un nombre inventado. Se probó y la
- * función respondía correctamente en `hyper-handler` mientras `publicar`
- * daba 404.
+ * `hyper-handler` va primero aunque el nombre que le toca sea `publicar`.
+ * El editor del panel de Supabase trata el nombre que escribes como una
+ * etiqueta y le pone a la URL uno inventado; ahí es donde quedó desplegada.
  *
- * Se intentan los dos en vez de fijar el que hay hoy porque, si algún día se
- * vuelve a desplegar con el nombre correcto, esto sigue funcionando sin tocar
- * nada. Solo hay una llamada de más cuando la primera no existe.
+ * El orden importa, y no por ahorrar una petición. Cuando una función no
+ * existe, Supabase devuelve un 404 SIN cabeceras CORS, así que el navegador
+ * no deja leer la respuesta y lo que llega es un "Failed to fetch" sin
+ * código. Medido desde el propio dominio: `publicar` daba TypeError y
+ * `hyper-handler` respondía 401 —el correcto, al ir sin sesión—. Probar
+ * primero la que no existe dejaba un error de CORS en la consola en cada
+ * publicación.
+ *
+ * Se mantienen las dos para que esto siga funcionando si algún día se
+ * vuelve a desplegar con el nombre bueno.
  */
-const NOMBRES = ["publicar", "hyper-handler"];
+const NOMBRES = ["hyper-handler", "publicar"];
 
 /**
  * Traduce el fallo a algo accionable.
@@ -39,6 +44,15 @@ async function explicar(error: unknown): Promise<string> {
   const respuesta = (error as { context?: Response })?.context;
   const codigo = respuesta?.status;
 
+  if (codigo === undefined) {
+    /* Sin código no hubo respuesta legible: o la función no existe —su 404
+       llega sin cabeceras CORS y el navegador lo tapa— o no hay red. */
+    return (
+      "No se pudo llegar a la función de Supabase. Comprueba en Edge Functions " +
+      "que sigue desplegada y con qué nombre quedó su URL. Mientras tanto, usa " +
+      "el enlace de abajo."
+    );
+  }
   if (codigo === 404) {
     return (
       "No se encuentra la función en Supabase, ni como `publicar` ni como " +
@@ -119,11 +133,14 @@ export function BarraPublicar({ revision }: { revision: number }) {
         break;
       }
       ultimo = error;
-      /* Solo se sigue probando si es que NO existe. Un 403 o un 500 son
-         respuestas de la función buena: insistir con otro nombre solo
-         cambiaría un error certero por un "no encontrada" que despista. */
+      /* Se sigue probando si la función no existe. Eso puede llegar de dos
+         formas: un 404 legible, o un fallo de red seco —sin código— porque
+         el 404 de Supabase viene sin cabeceras CORS y el navegador lo tapa.
+         Con cualquier otro código la respuesta ya es de la función buena, y
+         volver a probar solo cambiaría un error certero por un "no
+         encontrada" que despista. */
       const codigo = (error as { context?: Response })?.context?.status;
-      if (codigo !== 404) break;
+      if (codigo !== undefined && codigo !== 404) break;
     }
 
     if (ultimo) {
