@@ -1360,26 +1360,19 @@ html {
 }
 
 /*
- * La línea de tiempo la marca la SECCIÓN, no cada tarjeta.
+ * La línea de tiempo la marca la SECCIÓN, no las tarjetas.
  *
- * Con `animation-timeline: view()` esto no se movía: la tira se desplaza en
- * horizontal, y un bloque con `overflow-x: auto` calcula `overflow-y: auto`,
- * o sea que es contenedor de scroll también en vertical. `view()` busca el
- * contenedor más cercano y encontraba ESE, dentro del cual la tarjeta está
- * siempre entera a la vista y nunca "entra". Medido a cinco alturas de
- * scroll: opacidad 1.00 y transform identidad en las cinco.
+ * Antes iba tarjeta a tarjeta con `animation-timeline: view()` y no se
+ * movía: la tira se desplazaba en horizontal, y un bloque con
+ * `overflow-x: auto` calcula `overflow-y: auto`, o sea que era contenedor
+ * de scroll también en vertical. `view()` buscaba el más cercano y
+ * encontraba ESE, dentro del cual la tarjeta está siempre entera a la
+ * vista y nunca "entra".
  *
- * Con un nombre puesto en la sección —que no es contenedor de scroll— la
- * referencia se resuelve contra la página, que es lo que se quería.
- *
- * El escalonado va por posición: cada tarjeta arranca un poco después que
- * la anterior, así la tira se despliega en cascada en vez de aparecer de
- * golpe.
- *
- * La regla se limita a `.tira-tours` a propósito. Una línea de tiempo con
- * nombre que no se encuentra deja la animación congelada en su primer
- * fotograma, y como este empieza en opacidad 0, la misma clase usada fuera
- * de esta sección dejaría el elemento invisible para siempre.
+ * Ahora, además, las tarjetas se colocan con `transform` en línea, así que
+ * una animación encima de ellas les pisaría la posición. La entrada va en
+ * el bloque del titular, que no lleva transform propio, y la sección le
+ * presta la línea de tiempo por nombre.
  */
 .tira-tours {
   view-timeline-name: --tira-tours;
@@ -1387,33 +1380,11 @@ html {
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .tira-tours .story-scroll-animate {
+    .tira-entra {
       animation: photo-reveal-scroll-story linear both;
       animation-timeline: --tira-tours;
-      animation-range: entry 10% cover 34%;
+      animation-range: entry 8% cover 32%;
     }
-    .tira-tours .story-scroll-animate:nth-child(2) { animation-range: entry 14% cover 38%; }
-    .tira-tours .story-scroll-animate:nth-child(3) { animation-range: entry 18% cover 42%; }
-    .tira-tours .story-scroll-animate:nth-child(4) { animation-range: entry 22% cover 46%; }
-    .tira-tours .story-scroll-animate:nth-child(5) { animation-range: entry 26% cover 50%; }
-    .tira-tours .story-scroll-animate:nth-child(6) { animation-range: entry 30% cover 54%; }
-    .tira-tours .story-scroll-animate:nth-child(7) { animation-range: entry 34% cover 58%; }
-    .tira-tours .story-scroll-animate:nth-child(n+8) { animation-range: entry 38% cover 62%; }
   }
 }
 
-/*
- * Oculta la barra de desplazamiento SIN quitar el desplazamiento.
- *
- * `scrollbar-hide` no existe en Tailwind: es de un complemento que este
- * proyecto no tiene, así que la clase no hacía nada y la barra salía. Ojo
- * con la tentación de arreglarlo con `overflow: hidden`: eso esconde la
- * barra y además deja fuera de alcance todo lo que no cabe.
- */
-.sin-barra {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.sin-barra::-webkit-scrollbar {
-  display: none;
-}

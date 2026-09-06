@@ -65,7 +65,18 @@ export default async function HomePage({
   const destacados = [
     ...porNota.filter((t) => t.featured),
     ...porNota.filter((t) => !t.featured),
-  ].slice(0, 8);
+  ]
+    .slice(0, 8)
+    /* Se traduce aquí, al compilar. El carrusel es de cliente —arrastre y
+       giro automático— y mandarle los textos en los tres idiomas para que
+       elija uno sería enviar al navegador el triple de lo que va a usar. */
+    .map((tour) => ({
+      slug: tour.slug,
+      nombre: pickLocalized(tour.name, locale),
+      duracion: pickLocalized(tour.duration, locale),
+      precio: tour.price,
+      imagen: tour.image,
+    }));
 
   /* Solo los destinos que ya tienen tours: una rueda que gira hasta un
      destino sin nada que reservar frustra en vez de invitar. */
@@ -228,7 +239,7 @@ export default async function HomePage({
 
       {/* Nada más pasar la portada. Los destacados del catálogo, no una
           muestra fija: es lo primero que se ve al bajar. */}
-      <ToursPackagesCarousel tours={destacados} locale={locale} />
+      <ToursPackagesCarousel tours={destacados} />
 
     <script
       type="application/ld+json"
