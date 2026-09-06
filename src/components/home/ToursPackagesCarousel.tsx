@@ -29,8 +29,13 @@ const LADOS = 2;
  * Carrusel de tours, debajo de la portada.
  *
  * La del medio va entera y las de los lados encogidas y atenuadas, así que
- * la mirada cae donde tiene que caer. Pasa sola, se arrastra con el ratón y
- * se puede pulsar una de los lados para traerla al centro.
+ * la mirada cae donde tiene que caer.
+ *
+ * El reparto de gestos: el CURSOR cambia de tarjeta —pasar por encima de una
+ * la trae al centro con el mismo movimiento que usa el giro automático—, el
+ * ARRASTRE mueve varias de golpe, y el CLIC abre el tour, esté la tarjeta
+ * donde esté. Antes el clic en una lateral la centraba en vez de abrirla, y
+ * eso convertía en dos pasos lo que la gente espera que sea uno.
  *
  * Cuatro decisiones que no se ven pero deciden si esto funciona:
  *
@@ -67,6 +72,8 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
   const pistaRef = useRef<HTMLDivElement>(null);
   const inicio = useRef<number | null>(null);
   const movido = useRef(false);
+  /* Dónde estaba el ratón la última vez que el cursor cambió de tarjeta. */
+  const xUltimoCambio = useRef(Number.NaN);
   /* Cuándo terminó el último arrastre de verdad. Se guarda el INSTANTE y no
      un simple "sí/no": un indicador que solo se apaga al volver a pulsar se
      queda encendido para siempre si el siguiente clic no viene del ratón, y
@@ -107,6 +114,23 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
 
   const paso = ancho * 0.9;
   const alto = Math.round((ancho * 4) / 3 + 96);
+
+  /**
+   * Traer al centro la tarjeta señalada.
+   *
+   * Exige que el ratón se haya MOVIDO de verdad desde el cambio anterior, y
+   * eso no es una precaución de más: al centrar la señalada, las demás se
+   * desplazan, así que bajo un cursor completamente quieto acaba llegando
+   * otra tarjeta y el navegador dispara un `mouseenter` nuevo. Sin esta
+   * comprobación el carrusel se pondría a girar solo mientras dejas la mano
+   * parada, que es lo contrario de manejarlo con el cursor.
+   */
+  function alSeñalar(i: number, x: number) {
+    if (inicio.current !== null) return; /* arrastrando: manda el arrastre */
+    if (Math.abs(x - xUltimoCambio.current) < UMBRAL) return;
+    xUltimoCambio.current = x;
+    setActivo(i);
+  }
 
   function alAgarrar(e: React.PointerEvent) {
     inicio.current = e.clientX;
@@ -169,6 +193,7 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
         onPointerCancel={alSoltar}
         onMouseEnter={() => setQuieto(true)}
         onMouseLeave={() => {
+          xUltimoCambio.current = Number.NaN;
           if (inicio.current === null) setQuieto(false);
         }}
       >
@@ -187,6 +212,7 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
             <div
               key={tour.slug}
               aria-hidden={!visible}
+              onMouseEnter={(e) => alSeñalar(i, e.clientX)}
               className={cn(
                 "absolute left-1/2 top-1/2",
                 !reducido &&
@@ -206,14 +232,11 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
                 tabIndex={visible ? 0 : -1}
                 onFocus={() => setActivo(i)}
                 onClick={(e) => {
-                  /* Si viene de un arrastre, el clic es el final del gesto y
-                     no una intención de abrir. Y si la tarjeta no está en el
-                     centro, el primer clic la trae; abrirla es el segundo. */
-                  const trasArrastre = Date.now() - finArrastre.current < GRACIA;
-                  if (trasArrastre || !centro) {
-                    e.preventDefault();
-                    if (!trasArrastre) setActivo(i);
-                  }
+                  /* Lo único que frena un clic es venir de un arrastre: ahí
+                     el clic cierra el gesto y no es intención de abrir nada.
+                     En cualquier otro caso abre el tour, esté la tarjeta en
+                     el centro o en un lado. */
+                  if (Date.now() - finArrastre.current < GRACIA) e.preventDefault();
                 }}
                 className={cn(
                   "story-card-container block rounded-[2rem] bg-white p-3 outline-none transition-shadow duration-300 focus-visible:ring-2 focus-visible:ring-teal-600",
