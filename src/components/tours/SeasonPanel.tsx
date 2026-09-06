@@ -86,7 +86,7 @@ function RainGlyph({ intensity }: { intensity: number }) {
 /** Barras de nivel: cuatro trazos que se llenan según el valor. */
 function Level({ value, tone }: { value: number; tone: "rain" | "crowd" }) {
   return (
-    <span className="mt-2 flex gap-1" aria-hidden="true">
+    <span className="mt-2 flex gap-1 bar-level" aria-hidden="true">
       {[0, 1, 2, 3].map((i) => (
         <span
           key={i}
@@ -373,10 +373,13 @@ export function SeasonPanel({ categorySlug, locale }: SeasonPanelProps) {
         }}
       />
 
-      <div className="mt-8 grid gap-6 sm:grid-cols-[auto_1fr]">
-        {/* Dibujo del mes. `key` fuerza el remontaje para reanimar al cambiar. */}
+      {/* `key` en el contenedor, y no solo en el dibujo: sin él esta caja se
+          monta una vez y su entrada solo se ve al cargar la página, no al
+          cambiar de mes, que es cuando tiene sentido. Al remontar el
+          contenedor se remonta también el dibujo, así que ambas entradas
+          arrancan a la vez en lugar de por separado. */}
+      <div key={month} className="mt-8 grid gap-6 sm:grid-cols-[auto_1fr] month-content">
         <div
-          key={month}
           className="season-glyph flex size-24 items-center justify-center rounded-md bg-slate-900 p-4 text-teal-300"
         >
           {glyph}

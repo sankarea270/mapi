@@ -746,7 +746,7 @@ html {
   animation: underline-grow 0.32s cubic-bezier(0.22, 0.68, 0.35, 1) both;
 }
 
-/* ===== CLIMA Y TEMPORADA ===== */
+/* ===== CLIMA Y TEMPORADA (MEJORADO) ===== */
 
 /* El sol gira despacio; a esta velocidad se percibe vivo, no inquieto. */
 @keyframes sun-spin {
@@ -803,7 +803,38 @@ html {
   }
 }
 .season-glyph {
-  animation: glyph-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  animation: glyph-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Transición suave para el contenido del panel */
+@keyframes content-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.month-content {
+  animation: content-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Nivel de barras con escala suave */
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+.bar-level {
+  animation: bar-grow 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: left;
 }
 
 /* ===== PREGUNTAS FRECUENTES ===== */
@@ -1290,5 +1321,73 @@ html {
 @media (max-height: 780px) {
   .portada-pie {
     display: none;
+  }
+}
+
+/* ===== CARRUSEL DINÁMICO ===== */
+
+/*
+ * El balanceo lleva un `scale` en todos los fotogramas, y no es adorno.
+ *
+ * La foto ocupa exactamente la caja de la portada. Al girarla 2 grados
+ * sobre el borde superior, la esquina inferior se levanta (ancho/2)·sen2°
+ * sobre el suelo de la sección: con la portada medida, 1425x828, son unos
+ * 25px de cuña por la que se veía el fondo oscuro de detrás.
+ *
+ * El factor que hace falta para que la foto siga tapando la caja al girar
+ * es cos0 + (ancho/alto)·sen0 = 1.06. Se usa 1.07 para tener margen en
+ * pantallas más apaisadas, donde la proporción ancho/alto es mayor.
+ */
+@keyframes pendulum-sway {
+  0%, 100% {
+    transform: rotate(0deg) scale(1.07);
+  }
+  25% {
+    transform: rotate(-2deg) scale(1.07);
+  }
+  75% {
+    transform: rotate(1.5deg) scale(1.07);
+  }
+}
+
+.pendulum-container {
+  transform-origin: top center;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+.pendulum-container:hover {
+  animation: pendulum-sway 2s ease-in-out infinite;
+}
+
+/*
+ * Revelado de foto atado al scroll.
+ *
+ * OJO con dónde se pone: esto NO sirve en la portada. Un elemento que ya
+ * está en pantalla en el primer pintado nunca "entra", así que la fase
+ * `entry` está agotada antes de tocar la rueda; medido, el transform salía
+ * en identidad, sin hacer nada. Y como declara `animation`, ganaba al
+ * `animate-[ken-burns…]` de la foto activa y dejaba la portada sin el zoom
+ * lento. Por eso se quitó de ahí.
+ *
+ * Donde sí funciona es en cualquier foto de más abajo, que entra en pantalla
+ * al bajar. Ahí basta con añadirle la clase.
+ */
+@keyframes photo-reveal-scroll {
+  from {
+    transform: scale(1.1) translateY(20px);
+  }
+  to {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .photo-scroll-animate {
+      animation: photo-reveal-scroll linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
   }
 }

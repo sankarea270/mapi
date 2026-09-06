@@ -44,7 +44,7 @@ export function HeroCarousel({ slides }: { slides?: HeroSlide[] }) {
         <div
           key={slide.src}
           className={cn(
-            "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+            "absolute inset-0 transition-opacity duration-1000 ease-in-out pendulum-container",
             i === active ? "z-10 opacity-100" : "z-0 opacity-0"
           )}
         >
