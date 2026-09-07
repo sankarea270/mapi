@@ -81,13 +81,14 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
 
   const total = tours.length;
 
-  /* La tarjeta se dimensiona con el hueco disponible. En la referencia caben
-     unas cuatro y media a lo ancho, que es lo que hace que la fila se lea
-     como si siguiera más allá del borde. */
+  /* La tarjeta se dimensiona con el hueco disponible. Se busca que quepan
+     unas cuatro a lo ancho: bastantes para que la fila se lea como si
+     siguiera más allá del borde, y suficientemente grandes para que la foto
+     mande. Con 4.4 quedaban algo pequeñas. */
   useEffect(() => {
     const el = pistaRef.current;
     if (!el) return;
-    const medir = () => setAncho(Math.min(340, Math.max(230, el.clientWidth / 4.4)));
+    const medir = () => setAncho(Math.min(400, Math.max(250, el.clientWidth / 3.85)));
     medir();
     const ro = new ResizeObserver(medir);
     ro.observe(el);

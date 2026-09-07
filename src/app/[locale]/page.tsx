@@ -237,8 +237,14 @@ export default async function HomePage({
         </section>
       </div>
 
-      {/* Nada más pasar la portada. Los destacados del catálogo, no una
-          muestra fija: es lo primero que se ve al bajar. */}
+      {/* Los sellos, en tira baja nada más pasar la portada. Estaban al
+          final, después de las reseñas; se suben aquí porque es donde los
+          pone la referencia y donde despejan la duda antes de que empiece a
+          mirar tours, no después de haberlo decidido todo. */}
+      <Credentials variant="banda" locale={locale} />
+
+      {/* Los destacados del catálogo, no una muestra fija: es lo primero que
+          se ve al bajar. */}
       <ToursPackagesCarousel tours={destacados} />
 
     <script
@@ -268,9 +274,6 @@ export default async function HomePage({
     </Escena>
     <Escena>
       <ReviewsSection reviews={resenas} />
-    </Escena>
-    <Escena fondo="bg-slate-50">
-      <Credentials variant="strip" locale={locale} />
     </Escena>
     <JourneyBand />
     </>

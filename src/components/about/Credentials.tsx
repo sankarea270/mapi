@@ -23,11 +23,51 @@ export async function Credentials({
   variant = "grid",
   locale,
 }: {
-  variant?: "strip" | "grid";
+  variant?: "strip" | "banda" | "grid";
   locale: string;
 }) {
   const t = await getTranslations("credentials");
   const l = locale as "es" | "en" | "pt";
+
+  /*
+   * Banda: la tira baja y clara que va justo debajo de la portada, calcada
+   * de la referencia. Los sellos van sueltos sobre el fondo, en una sola
+   * fila repartida a lo ancho, sin cajas ni filetes ni recuadros.
+   *
+   * El rótulo va en pequeño encima. La referencia no lleva ninguno porque
+   * sus logotipos son cabeceras de prensa que se reconocen solas; aquí son
+   * sellos de organismos peruanos, y sin nombrarlos un visitante de fuera no
+   * sabe qué está mirando.
+   */
+  if (variant === "banda") {
+    return (
+      <section className="border-b border-slate-200/80 bg-[#f4f3f0]">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
+          <p className="text-center text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+            {t("badge")} · {t("title")}
+          </p>
+
+          <ul className="mt-9 flex flex-wrap items-center justify-center gap-x-12 gap-y-9 sm:justify-between sm:gap-x-6">
+            {CREDENTIALS.map((c) => (
+              <li key={c.file}>
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${c.file}`}
+                  alt={`${c.name} — ${pickLocalized(c.label, l)}`}
+                  width={c.width}
+                  height={c.height}
+                  sizes="200px"
+                  /* Alto fijo y ancho automático: los sellos tienen
+                     proporciones muy distintas y así quedan ópticamente
+                     igualados en la fila. */
+                  className="h-10 w-auto object-contain sm:h-12 lg:h-14"
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    );
+  }
 
   if (variant === "strip") {
     return (
