@@ -295,7 +295,12 @@
   "reviews": {
     "badge": "Opiniones reales",
     "title": "Lo que dicen nuestros viajeros",
-    "subtitle": "Miles de viajeros ya descubrieron Perú con nosotros. Estas son algunas de sus experiencias."
+    "subtitle": "Miles de viajeros ya descubrieron Perú con nosotros. Estas son algunas de sus experiencias.",
+    "titlePlain": "Lo que dicen",
+    "titleAccent": "nuestros viajeros",
+    "count": "{from}–{to} de {total} opiniones",
+    "prev": "Opiniones anteriores",
+    "next": "Opiniones siguientes"
   },
   "social": {
     "badge": "Síguenos",

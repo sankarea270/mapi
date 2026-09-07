@@ -295,7 +295,12 @@
   "reviews": {
     "badge": "Real reviews",
     "title": "What our travelers say",
-    "subtitle": "Thousands of travelers have already discovered Peru with us. Here are some of their experiences."
+    "subtitle": "Thousands of travelers have already discovered Peru with us. Here are some of their experiences.",
+    "titlePlain": "What our",
+    "titleAccent": "travelers say",
+    "count": "{from}–{to} of {total} reviews",
+    "prev": "Previous reviews",
+    "next": "Next reviews"
   },
   "social": {
     "badge": "Follow us",

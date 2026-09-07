@@ -295,7 +295,12 @@
   "reviews": {
     "badge": "Avaliações reais",
     "title": "O que nossos viajantes dizem",
-    "subtitle": "Milhares de viajantes já descobriram o Peru conosco. Estas são algumas de suas experiências."
+    "subtitle": "Milhares de viajantes já descobriram o Peru conosco. Estas são algumas de suas experiências.",
+    "titlePlain": "O que nossos",
+    "titleAccent": "viajantes dizem",
+    "count": "{from}–{to} de {total} avaliações",
+    "prev": "Avaliações anteriores",
+    "next": "Próximas avaliações"
   },
   "social": {
     "badge": "Siga-nos",
