@@ -3,59 +3,10 @@
 import Image from "next/image";
 import { Mail, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { mailAt, siteConfig } from "@/config/site";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { EQUIPO, type MiembroEquipo } from "@/data/equipo";
 
-const TEAM = [
-  {
-    name: "Carlos Mendoza",
-    position: "Gerente General",
-    department: "Administración",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    email: mailAt("carlos"),
-    phone: siteConfig.phone.display
-  },
-  {
-    name: "Ana Quispe",
-    position: "Jefa de Operaciones",
-    department: "Operaciones",
-    image: "https://images.unsplash.com/photo-1494790108755-2616b612b999?w=400&h=400&fit=crop&crop=face",
-    email: mailAt("ana"),
-    phone: "+51 984 123 457"
-  },
-  {
-    name: "Miguel Torres",
-    position: "Guía Senior",
-    department: "Guías",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    email: mailAt("miguel"),
-    phone: "+51 984 123 458"
-  },
-  {
-    name: "Rosa Huamán",
-    position: "Ejecutiva de Ventas",
-    department: "Ventas",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-    email: mailAt("rosa"),
-    phone: "+51 984 123 459"
-  },
-  {
-    name: "Pedro Ccama",
-    position: "Guía Especializado",
-    department: "Guías",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    email: mailAt("pedro"),
-    phone: "+51 984 123 460"
-  },
-  {
-    name: "Lucia Vargas",
-    position: "Coordinadora de Tours",
-    department: "Operaciones",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
-    email: mailAt("lucia"),
-    phone: "+51 984 123 461"
-  }
-];
+
 
 const DEPARTMENTS = {
   "Administración": { color: "text-amber-600", bgColor: "bg-amber-50" },
@@ -64,7 +15,13 @@ const DEPARTMENTS = {
   "Ventas": { color: "text-rose-600", bgColor: "bg-rose-50" }
 };
 
-export function TeamSection() {
+/**
+ * El equipo llega desde arriba, leído de Supabase al compilar. Antes estaba
+ * escrito aquí dentro con datos inventados.
+ */
+export function TeamSection({ miembros }: { miembros?: MiembroEquipo[] }) {
+  const TEAM = miembros?.length ? miembros : EQUIPO;
+
   const t = useTranslations("about");
   const { ref: sectionRef, isVisible } = useScrollAnimation(0.1);
 
@@ -82,10 +39,18 @@ export function TeamSection() {
 
         <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {TEAM.map((member, index) => {
-            const departmentStyle = DEPARTMENTS[member.department as keyof typeof DEPARTMENTS];
+            /* Las áreas se escriben a mano en el panel, así que puede
+               llegar una que no esté en el mapa de colores. Sin reserva,
+               la etiqueta salía con `undefined` de clase: texto negro sobre
+               fondo transparente, o sea sin etiqueta. */
+            const departmentStyle =
+              DEPARTMENTS[member.area as keyof typeof DEPARTMENTS] ?? {
+                color: "text-slate-600",
+                bgColor: "bg-slate-100",
+              };
             return (
               <div
-                key={member.name}
+                key={member.nombre}
                 className={`group relative overflow-hidden rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-100 transition-all duration-500 hover:shadow-xl hover:ring-slate-200 scroll-animate ${
                   isVisible ? `animate-fade-in-up delay-${(index + 1) * 100}` : ""
                 }`}
@@ -96,8 +61,8 @@ export function TeamSection() {
                 {/* Imagen con efecto hover */}
                 <div className="relative mx-auto size-24 overflow-hidden rounded-full ring-4 ring-white shadow-lg transition-transform duration-500 group-hover:scale-110">
                   <Image
-                    src={member.image}
-                    alt={member.name}
+                    src={member.foto}
+                    alt={member.nombre}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -106,33 +71,42 @@ export function TeamSection() {
                 {/* Información del miembro */}
                 <div className="relative mt-6">
                   <h3 className="font-heading text-xl font-bold text-slate-900">
-                    {member.name}
+                    {member.nombre}
                   </h3>
                   <p className="mt-1 font-semibold text-slate-700">
-                    {member.position}
+                    {member.cargo}
                   </p>
-                  <span className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${departmentStyle?.color} ${departmentStyle?.bgColor}`}>
-                    {member.department}
-                  </span>
+                  {member.area && (
+                    <span className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${departmentStyle.color} ${departmentStyle.bgColor}`}>
+                      {member.area}
+                    </span>
+                  )}
+                  {member.idiomas && (
+                    <p className="mt-2 text-xs text-slate-500">{member.idiomas}</p>
+                  )}
                 </div>
 
                 {/* Información de contacto (visible al hover) */}
                 <div className="relative mt-4 opacity-0 transition-all duration-500 group-hover:opacity-100">
                   <div className="flex flex-col gap-2 text-sm text-slate-600">
+                    {member.correo && (
                     <a
-                      href={`mailto:${member.email}`}
+                      href={`mailto:${member.correo}`}
                       className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 px-3 py-2 transition-colors hover:bg-slate-100"
                     >
                       <Mail className="size-4" />
-                      <span className="truncate">{member.email}</span>
+                      <span className="truncate">{member.correo}</span>
                     </a>
+                    )}
+                    {member.telefono && (
                     <a
-                      href={`tel:${member.phone}`}
+                      href={`tel:${member.telefono}`}
                       className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 px-3 py-2 transition-colors hover:bg-slate-100"
                     >
                       <Phone className="size-4" />
-                      <span>{member.phone}</span>
+                      <span>{member.telefono}</span>
                     </a>
+                    )}
                   </div>
                 </div>
               </div>

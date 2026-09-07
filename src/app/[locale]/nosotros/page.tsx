@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
+import { getTeam } from "@/lib/content";
 import { AboutHero } from "@/components/about/AboutHero";
 import { MissionVision } from "@/components/about/MissionVision";
 import { StatsSection } from "@/components/about/StatsSection";
@@ -35,6 +36,7 @@ export default async function AboutPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const equipo = await getTeam(locale);
 
   return (
     <>
@@ -42,7 +44,7 @@ export default async function AboutPage({
       <MissionVision />
       <StatsSection />
       <CertificationsSection locale={locale} />
-      <TeamSection />
+      <TeamSection miembros={equipo} />
       <CompanyInfo />
     </>
   );

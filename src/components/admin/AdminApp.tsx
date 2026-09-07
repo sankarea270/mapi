@@ -14,6 +14,7 @@ import { PanelTours } from "./PanelTours";
 import { PanelReservas } from "./PanelReservas";
 import { PanelContenido } from "./PanelContenido";
 import { PanelPortada } from "./PanelPortada";
+import { PanelEquipo } from "./PanelEquipo";
 import { Resumen } from "./Resumen";
 import { BarraPublicar } from "./BarraPublicar";
 import { Boton } from "./campos";
@@ -27,6 +28,7 @@ const VISTAS = [
   { id: "paquetes", etiqueta: "Paquetes" },
   { id: "destinos", etiqueta: "Destinos" },
   { id: "resenas", etiqueta: "Reseñas" },
+  { id: "equipo", etiqueta: "Equipo" },
 ] as const;
 
 export type Vista = (typeof VISTAS)[number]["id"];
@@ -171,6 +173,7 @@ export function AdminApp() {
         <main className="px-4 py-7 sm:px-8">
           {vista === "resumen" && <Resumen revision={revision} onIr={irA} />}
           {vista === "portada" && <PanelPortada revision={revision} onCambio={cambiado} />}
+          {vista === "equipo" && <PanelEquipo revision={revision} onCambio={cambiado} />}
           {vista === "tours" && <PanelTours revision={revision} onCambio={cambiado} />}
           {vista === "reservas" && <PanelReservas revision={revision} onCambio={cambiado} />}
           {vista === "paquetes" && (

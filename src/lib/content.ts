@@ -1,8 +1,10 @@
 import { supabase } from "@/lib/supabase";
+import { pickLocalized } from "@/lib/format";
 import { DESTINATIONS, type Destination } from "@/data/destinations";
 import { PACKAGES, type TourPackage } from "@/data/packages";
 import { REVIEWS, type Review } from "@/data/reviews";
 import { HERO_SLIDES, type HeroSlide } from "@/data/portada";
+import { EQUIPO, type MiembroEquipo } from "@/data/equipo";
 import type { LocalizedText } from "@/types/tour";
 import type { FilaDestino, FilaPaquete, FilaResena } from "@/types/db";
 
@@ -140,5 +142,35 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
         src: f.image_url as string,
         alt: (f.alt_es as string) ?? "",
       }));
+  });
+}
+
+/**
+ * Equipo.
+ *
+ * Solo los publicados y en el orden fijado en el panel. Si la tabla no
+ * existe todavía o está vacía, se devuelven las fichas del repositorio, que
+ * son de relleno: es lo que había antes escrito dentro del componente.
+ */
+export async function getTeam(locale: string): Promise<MiembroEquipo[]> {
+  return conRespaldo("equipo", EQUIPO, async () => {
+    const { data, error } = await supabase!
+      .from("team_members")
+      .select("*")
+      .eq("status", "published")
+      .order("sort_order");
+    if (error) throw error;
+    return (data ?? []).map((f) => ({
+      nombre: (f.name as string) ?? "",
+      cargo: pickLocalized(
+        loc(f.position_es as string, f.position_en as string, f.position_pt as string),
+        locale
+      ),
+      area: (f.department as string) ?? "",
+      foto: (f.photo_url as string) ?? "",
+      correo: (f.email as string) ?? "",
+      telefono: (f.phone as string) ?? "",
+      idiomas: (f.languages as string) ?? "",
+    }));
   });
 }

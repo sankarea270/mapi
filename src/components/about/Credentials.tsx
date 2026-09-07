@@ -47,18 +47,16 @@ export async function Credentials({
             </p>
           </div>
 
-          {/* Los sellos van sobre blanco y separados por filete: destacan
-              del fondo gris de la sección y se leen como una fila de
-              credenciales, no como logos sueltos flotando. */}
-          {/* Cuatro columnas porque son cuatro sellos: con cinco quedaba una
-              celda vacía al final. Los filetes se hacen con `gap-px` sobre
-              fondo gris y no con `border-r`, que dejaba el borde descolgado
-              en el último elemento de cada fila al cambiar de columnas. */}
-          <ul className="escena-foto mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-200 sm:mt-14 sm:grid-cols-4">
+          {/* Los sellos van sobre una sola pieza blanca, sin filetes entre
+              ellos. Antes se separaban con `gap-px` sobre fondo gris: la
+              rejilla partía la fila en cuatro casillas y los avales se leían
+              como una tabla, no como un respaldo. Cuatro columnas porque son
+              cuatro sellos; con cinco quedaba una celda vacía al final. */}
+          <ul className="escena-foto mt-12 grid grid-cols-2 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200 sm:mt-14 sm:grid-cols-4">
             {CREDENTIALS.map((c) => (
               <li
                 key={c.file}
-                className="flex items-center justify-center bg-white px-6 py-8 sm:px-8 sm:py-10"
+                className="flex items-center justify-center px-6 py-8 sm:px-8 sm:py-10"
               >
                 <Image
                   src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${c.file}`}
