@@ -1266,7 +1266,8 @@ html {
 }
 
 /*
- * Trama de curvas de nivel para la segunda columna del menú.
+ * Trama de curvas de nivel. La usan la segunda columna del menú y la
+ * sección del carrusel de tours.
  *
  * La referencia lleva un dibujo topográfico muy tenue detrás de la lista.
  * Va como SVG en línea y no como archivo: son 400 bytes, y una imagen
@@ -1277,7 +1278,7 @@ html {
  * defecto se queda fija respecto a la caja y el papel parece resbalar por
  * debajo del texto.
  */
-.menu-curvas {
+.trama-curvas {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Cg fill='none' stroke='%23c9bfa8' stroke-width='1' opacity='.5'%3E%3Cpath d='M-20 96c60-34 118-14 168 12s96 40 152 14'/%3E%3Cpath d='M-20 124c64-36 122-14 172 12s94 38 148 12'/%3E%3Cpath d='M-20 152c68-38 126-14 176 12s92 36 144 10'/%3E%3Cpath d='M-20 186c72-40 130-12 180 14s90 34 140 8'/%3E%3Cpath d='M-20 226c76-42 134-10 184 16s88 32 136 6'/%3E%3Cpath d='M-20 274c80-44 138-8 188 18s86 30 132 4'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: repeat;
   background-attachment: local;

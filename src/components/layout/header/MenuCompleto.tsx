@@ -247,7 +247,7 @@ export function MenuCompleto({
       </div>
 
       {/* ─── Columna 2: contenido de la sección ───────────────────────── */}
-      <div className="menu-curvas hidden w-[18rem] shrink-0 flex-col overflow-y-auto bg-[#f3eee4] px-6 py-9 sm:flex lg:w-[20rem]">
+      <div className="trama-curvas hidden w-[18rem] shrink-0 flex-col overflow-y-auto bg-[#f3eee4] px-6 py-9 sm:flex lg:w-[20rem]">
         <p className="px-4 text-[13px] font-bold uppercase tracking-[0.16em] text-teal-700">
           {actual.etiqueta}
         </p>

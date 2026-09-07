@@ -22,47 +22,42 @@ const INTERVALO = 4200;
 const UMBRAL = 8;
 /** Ventana tras soltar en la que un clic se considera final del arrastre. */
 const GRACIA = 250;
-/** Tarjetas visibles a cada lado de la del medio. */
-const LADOS = 2;
+/** Tarjetas dibujadas a cada lado. Tres porque la fila se sale de pantalla. */
+const LADOS = 3;
 
 /**
  * Carrusel de tours, debajo de la portada.
  *
- * La del medio va entera y las de los lados encogidas y atenuadas, así que
- * la mirada cae donde tiene que caer.
+ * Calcado de la referencia de ingamba.pro: una fila de tarjetas rectas que
+ * se sale por los dos lados de la pantalla, cada una con su foto a sangre y
+ * el rótulo abajo a la izquierda precedido de un filete. La señalada se
+ * levanta un poco, coge sombra y pasa su título al color de marca. Debajo,
+ * una barra de progreso en lugar de puntos.
  *
- * El reparto de gestos: el CURSOR cambia de tarjeta —pasar por encima de una
- * la trae al centro con el mismo movimiento que usa el giro automático—, el
- * ARRASTRE mueve varias de golpe, y el CLIC abre el tour SEÑALADO.
+ * El reparto de gestos: el CURSOR cambia de tarjeta, el ARRASTRE mueve
+ * varias de golpe, y el CLIC abre el tour SEÑALADO.
  *
  * Ojo con esa última palabra, porque ahí está la trampa: al señalar una
- * lateral, esa tarjeta se va al centro, y bajo el cursor queda la que ocupa
- * ahora su antiguo sitio. Si cada tarjeta abriera simplemente su propio
- * enlace, al pulsar te llevaría a un tour que no es el que estabas mirando.
- * Por eso el clic va siempre al que está en el centro, que es exactamente el
- * que acabas de señalar y el que se ve grande.
+ * tarjeta, esa tarjeta se mueve al centro, y bajo el cursor queda la que
+ * ocupa ahora su antiguo sitio. Si cada tarjeta abriera simplemente su
+ * propio enlace, al pulsar te llevaría a un tour que no es el que estabas
+ * mirando. Por eso el clic va siempre al del centro.
  *
- * Cuatro decisiones que no se ven pero deciden si esto funciona:
+ * Otras tres cosas que no se ven pero deciden si esto funciona:
  *
- *  · Cada tarjeta se coloca por su DISTANCIA a la del medio, tomada por el
- *    camino más corto del círculo. Por eso al pasar de la última a la
- *    primera no hay un salto hacia atrás recorriendo toda la fila: la
- *    primera ya venía llegando por el otro lado.
+ *  · Cada tarjeta se coloca por su DISTANCIA a la señalada, por el camino
+ *    más corto del círculo, así que al pasar de la última a la primera no
+ *    hay un salto hacia atrás recorriendo toda la fila.
  *
- *  · Arrastrar y pulsar comparten el mismo gesto, así que hace falta un
- *    umbral. Sin él, soltar tras mover el ratón tres píxeles abre el tour,
- *    que es justo lo que no querías al arrastrar.
+ *  · El puntero NO se captura al pulsar, solo cuando el arrastre supera el
+ *    umbral. Capturarlo antes hace que el navegador dispare el `click` sobre
+ *    la pista y no sobre el enlace: pulsabas y no pasaba nada.
  *
- *  · La colocación va en `transform` en línea, y por eso la animación de
- *    entrada NO puede ir en la tarjeta: son la misma propiedad y una
- *    anularía a la otra. Va en un envoltorio de más arriba.
+ *  · El círculo que sigue al ratón se mueve escribiendo su `transform`
+ *    directamente. Con estado, cada píxel de movimiento volvería a dibujar
+ *    las ocho tarjetas.
  *
- *  · El giro automático se para al pasar el ratón, al tabular dentro y
- *    mientras se arrastra. Un carrusel que sigue girando mientras lees una
- *    tarjeta te la quita de delante.
- *
- * Con `prefers-reduced-motion` no gira solo ni hay transiciones: se queda
- * quieto y se maneja a mano, que es lo que pide quien activa esa opción.
+ * Con `prefers-reduced-motion` no gira solo ni hay transiciones.
  */
 export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
   const t = useTranslations();
@@ -74,31 +69,25 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
   const [ancho, setAncho] = useState(300);
   const [arrastre, setArrastre] = useState(0);
   const [agarrando, setAgarrando] = useState(false);
+  const [conRaton, setConRaton] = useState(false);
 
   const pistaRef = useRef<HTMLDivElement>(null);
+  const circuloRef = useRef<HTMLSpanElement>(null);
   const inicio = useRef<number | null>(null);
   const movido = useRef(false);
-  /* Qué puntero se capturó, para poder soltarlo. -1 = ninguno. */
   const puntero = useRef(-1);
-  /* Dónde estaba el ratón la última vez que el cursor cambió de tarjeta. */
   const xUltimoCambio = useRef(Number.NaN);
-  /* Cuándo terminó el último arrastre de verdad. Se guarda el INSTANTE y no
-     un simple "sí/no": un indicador que solo se apaga al volver a pulsar se
-     queda encendido para siempre si el siguiente clic no viene del ratón, y
-     entonces Enter sobre una tarjeta enfocada no abría el tour. Con una
-     ventana corta, el clic que cierra el gesto se descarta y el del teclado,
-     que llega mucho después, pasa. */
   const finArrastre = useRef(0);
 
   const total = tours.length;
 
-  /* La tarjeta se dimensiona con el hueco disponible y no con un ancho fijo:
-     a 375px una tarjeta de 310 no deja ver las de los lados, y sin esos
-     bordes asomando nadie sabe que hay más ni que se puede arrastrar. */
+  /* La tarjeta se dimensiona con el hueco disponible. En la referencia caben
+     unas cuatro y media a lo ancho, que es lo que hace que la fila se lea
+     como si siguiera más allá del borde. */
   useEffect(() => {
     const el = pistaRef.current;
     if (!el) return;
-    const medir = () => setAncho(Math.min(310, Math.max(196, el.clientWidth * 0.62)));
+    const medir = () => setAncho(Math.min(340, Math.max(230, el.clientWidth / 4.4)));
     medir();
     const ro = new ResizeObserver(medir);
     ro.observe(el);
@@ -120,8 +109,8 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
     return () => clearInterval(id);
   }, [quieto, reducido, total, avanzar]);
 
-  const paso = ancho * 0.9;
-  const alto = Math.round((ancho * 4) / 3 + 96);
+  const paso = ancho + 20;
+  const alto = Math.round((ancho * 5) / 4);
 
   /**
    * Traer al centro la tarjeta señalada.
@@ -130,34 +119,15 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
    * eso no es una precaución de más: al centrar la señalada, las demás se
    * desplazan, así que bajo un cursor completamente quieto acaba llegando
    * otra tarjeta y el navegador dispara un `mouseenter` nuevo. Sin esta
-   * comprobación el carrusel se pondría a girar solo mientras dejas la mano
-   * parada, que es lo contrario de manejarlo con el cursor.
+   * comprobación el carrusel se pondría a girar solo con la mano parada.
    */
   function alSeñalar(i: number, x: number) {
-    if (inicio.current !== null) return; /* arrastrando: manda el arrastre */
+    if (inicio.current !== null) return;
     if (Math.abs(x - xUltimoCambio.current) < UMBRAL) return;
     xUltimoCambio.current = x;
     setActivo(i);
   }
 
-  /*
-   * Al pulsar NO se captura el puntero. Esa es la corrección importante.
-   *
-   * Capturar en `pointerdown` rompía el clic entero: con el puntero
-   * capturado por la pista, el navegador dispara el `click` sobre la PISTA
-   * y no sobre el enlace que hay debajo del dedo. O sea que el `onClick` de
-   * la tarjeta no llegaba a ejecutarse y el enlace no se activaba nunca:
-   * pulsabas y no pasaba nada.
-   *
-   * No se vio en las pruebas porque llamar a `.click()` sobre el enlace se
-   * salta todo el gesto del puntero, y ahí sí funcionaba. Hace falta un
-   * ratón de verdad para reproducirlo.
-   *
-   * Ahora la captura se pide solo cuando el arrastre supera el umbral, que
-   * es cuando de verdad hace falta —para seguir recibiendo el movimiento
-   * aunque el ratón se salga de la pista—. Un clic normal nunca llega ahí,
-   * así que llega intacto a su enlace.
-   */
   function alAgarrar(e: React.PointerEvent) {
     inicio.current = e.clientX;
     puntero.current = e.pointerId;
@@ -166,6 +136,14 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
   }
 
   function alMover(e: React.PointerEvent) {
+    /* El círculo se mueve a mano, sin estado: recorrer la fila con el ratón
+       dispara este manejador decenas de veces por segundo. */
+    const caja = pistaRef.current?.getBoundingClientRect();
+    if (caja && circuloRef.current) {
+      circuloRef.current.style.transform =
+        `translate(${e.clientX - caja.left}px, ${e.clientY - caja.top}px) translate(-50%, -50%)`;
+    }
+
     if (inicio.current === null) return;
     const dx = e.clientX - inicio.current;
 
@@ -176,7 +154,7 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
       try {
         pistaRef.current?.setPointerCapture(e.pointerId);
       } catch {
-        /* El puntero puede haberse ido ya. Sin captura el arrastre sigue
+        /* El puntero puede haberse ido ya; sin captura el arrastre sigue
            valiendo mientras no se salga de la pista. */
       }
     }
@@ -203,40 +181,53 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
 
   if (total === 0) return null;
 
+  /* El titular lleva la primera palabra en el color de la marca, como la
+     referencia. Se parte por el primer espacio y no se guarda troceado en
+     las traducciones: así funciona igual en los tres idiomas sin duplicar
+     la cadena ni obligar a mantener dos trozos en cada una. */
+  const titulo = t("historias.title");
+  const corte = titulo.indexOf(" ");
+  const primera = corte === -1 ? titulo : titulo.slice(0, corte);
+  const resto = corte === -1 ? "" : titulo.slice(corte);
+
   return (
-    <section className="tira-tours overflow-hidden bg-slate-50 py-16 sm:py-20">
+    <section className="trama-curvas tira-tours overflow-hidden bg-[#faf8f4] py-16 sm:py-20">
       <div className="tira-entra mx-auto max-w-7xl px-4 sm:px-6">
-        <h2 className="font-heading text-3xl font-bold text-slate-900 sm:text-[2.6rem]">
-          {t("historias.title")}
+        <h2 className="font-heading text-3xl font-bold uppercase leading-none text-slate-900 sm:text-[3.2rem]">
+          <span className="text-teal-700">{primera}</span>
+          {resto}
         </h2>
-        <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500 sm:text-base">
+        <p className="mt-4 max-w-2xl font-logo text-lg leading-relaxed text-slate-600 sm:text-xl">
           {t("historias.subtitle")}
         </p>
       </div>
 
-      {/* `touch-pan-y`: en un móvil el dedo arrastra el carrusel a lo ancho
-          pero la página sigue bajando a lo alto. Sin esto, tocar aquí
-          bloquea el scroll vertical y el visitante se queda encallado. */}
+      {/* `touch-pan-y`: en un móvil el dedo arrastra la fila a lo ancho pero
+          la página sigue bajando. Sin esto, tocar aquí bloquea el scroll
+          vertical y el visitante se queda encallado. */}
       <div
         ref={pistaRef}
         className={cn(
           "relative mt-12 touch-pan-y select-none",
-          agarrando ? "cursor-grabbing" : "cursor-grab"
+          conRaton && !agarrando && "cursor-none",
+          agarrando && "cursor-grabbing"
         )}
-        style={{ height: alto }}
+        style={{ height: Math.round(alto * 1.06) }}
         onPointerDown={alAgarrar}
         onPointerMove={alMover}
         onPointerUp={alSoltar}
         onPointerCancel={alSoltar}
-        onMouseEnter={() => setQuieto(true)}
+        onMouseEnter={() => {
+          setQuieto(true);
+          setConRaton(true);
+        }}
         onMouseLeave={() => {
           xUltimoCambio.current = Number.NaN;
+          setConRaton(false);
           if (inicio.current === null) setQuieto(false);
         }}
       >
         {tours.map((tour, i) => {
-          /* Distancia por el camino corto: con 8 tarjetas y la del medio en
-             la 7, la 0 está a +1 y no a −7. */
           let d = i - activo;
           if (d > total / 2) d -= total;
           if (d < -total / 2) d += total;
@@ -259,9 +250,12 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
               )}
               style={{
                 width: ancho,
-                zIndex: 10 - Math.abs(d),
-                opacity: visible ? (centro ? 1 : 0.55) : 0,
-                transform: `translate(-50%, -50%) translateX(${x}px) scale(${centro ? 1 : 0.82})`,
+                zIndex: centro ? 20 : 10 - Math.abs(d),
+                opacity: visible ? 1 : 0,
+                /* Solo la señalada crece, y poco: en la referencia asoma unos
+                   pocos píxeles por arriba y por abajo respecto a sus
+                   vecinas. Un salto mayor rompe la fila. */
+                transform: `translate(-50%, -50%) translateX(${x}px) scale(${centro ? 1.045 : 1})`,
               }}
             >
               <Link
@@ -269,70 +263,83 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
                 tabIndex={visible ? 0 : -1}
                 onFocus={() => setActivo(i)}
                 onClick={(e) => {
-                  /* Venir de un arrastre no es intención de abrir nada: ahí
-                     el clic solo cierra el gesto. */
                   if (Date.now() - finArrastre.current < GRACIA) {
                     e.preventDefault();
                     return;
                   }
-                  /* Y si lo pulsado no es la del centro, el destino sigue
-                     siendo el del centro: es la que el cursor acaba de
-                     señalar y la que se está viendo grande. Esta se limitó a
-                     ocupar su hueco al desplazarse. */
                   if (!centro) {
                     e.preventDefault();
                     router.push(`/tours/${tours[activo].slug}`);
                   }
                 }}
                 className={cn(
-                  "story-card-container block rounded-[2rem] bg-white p-3 outline-none transition-shadow duration-300 focus-visible:ring-2 focus-visible:ring-teal-600",
-                  centro ? "shadow-2xl shadow-slate-900/25" : "shadow-lg"
+                  "relative block overflow-hidden outline-none transition-shadow duration-500 focus-visible:ring-2 focus-visible:ring-teal-600",
+                  centro ? "shadow-2xl shadow-slate-900/30" : "shadow-none"
                 )}
+                style={{ height: alto }}
               >
-                <div className="relative aspect-3/4 w-full overflow-hidden rounded-[1.5rem]">
-                  <Image
-                    src={tour.imagen}
-                    alt={tour.nombre}
-                    fill
-                    sizes="320px"
-                    draggable={false}
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                  <h3 className="absolute inset-x-5 bottom-5 font-heading text-xl font-bold leading-tight text-white">
+                <Image
+                  src={tour.imagen}
+                  alt={tour.nombre}
+                  fill
+                  sizes="340px"
+                  draggable={false}
+                  className="object-cover"
+                />
+                {/* El velo solo abajo y en degradado: cubre el rótulo sin
+                    apagar la foto entera, que es lo que se ve en la
+                    referencia. */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/15 to-transparent" />
+
+                <div className="absolute inset-x-5 bottom-5">
+                  {/* Ámbar y no el petróleo de la marca: sobre una foto
+                      oscura el petróleo se pierde —2.4:1—, el ámbar da 9:1.
+                      Es el mismo criterio que en el menú, al revés: allí el
+                      fondo era crema y el que no valía era el ámbar. */}
+                  <h3
+                    className={cn(
+                      "font-heading text-[1.7rem] font-bold uppercase leading-none transition-colors duration-500",
+                      centro ? "text-amber-400" : "text-white"
+                    )}
+                  >
                     {tour.nombre}
                   </h3>
+                  <p className="mt-3 flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[0.1em] text-white/85">
+                    <span aria-hidden className="h-px w-7 bg-white/60" />
+                    {t("nav.seeTour")}
+                  </p>
                 </div>
-
-                <p className="flex items-baseline justify-between gap-2 px-2 pb-1 pt-3.5 text-sm text-slate-500">
-                  {tour.duracion}
-                  <span className="font-heading text-lg font-bold text-slate-900">
-                    ${tour.precio}
-                  </span>
-                </p>
               </Link>
             </div>
           );
         })}
+
+        {/* El círculo que acompaña al cursor. Decorativo y solo con ratón:
+            en una pantalla táctil no hay puntero al que seguir. */}
+        <span
+          ref={circuloRef}
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute left-0 top-0 z-30 grid size-16 place-items-center rounded-full border border-white/70 transition-opacity duration-300",
+            conRaton && !agarrando ? "opacity-100" : "opacity-0"
+          )}
+        >
+          <span className="flex w-full items-center justify-between px-2 text-sm text-white/90">
+            <span>‹</span>
+            <span>›</span>
+          </span>
+        </span>
       </div>
 
-      {/* Marcas de posición. Sin ellas no hay forma de saber cuántas hay ni
-          por dónde vas, y el giro automático se lee como algo que se mueve
-          sin motivo. */}
-      <div className="mt-10 flex justify-center gap-2">
-        {tours.map((tour, i) => (
-          <button
-            key={tour.slug}
-            type="button"
-            onClick={() => setActivo(i)}
-            aria-label={tour.nombre}
-            aria-current={i === activo}
-            className={cn(
-              "h-1.5 rounded-full transition-all duration-500",
-              i === activo ? "w-7 bg-teal-700" : "w-1.5 bg-slate-300 hover:bg-slate-400"
-            )}
+      {/* Barra de progreso. Dice cuántas hay y por dónde vas sin ocupar una
+          fila de puntos, que con ocho tours ya empezaba a leerse como ruido. */}
+      <div className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
+        <div className="h-px w-full bg-slate-300">
+          <div
+            className="h-px bg-teal-700 transition-[width] duration-[650ms] ease-[cubic-bezier(0.22,0.68,0.35,1)]"
+            style={{ width: `${((activo + 1) / total) * 100}%` }}
           />
-        ))}
+        </div>
       </div>
     </section>
   );
