@@ -125,7 +125,68 @@ function Level({ value, tone }: { value: number; tone: "rain" | "crowd" }) {
 const TEMP = "#d88527";
 const LLUVIA = "#07908c";
 
-function CurvaAnual({
+/**
+ * Convierte una serie de puntos en una curva suave.
+ *
+ * Es la mitad del cambio de aspecto: una polilínea de doce tramos rectos se
+ * lee como un gráfico de hoja de cálculo por mucho que se le cambien los
+ * colores. Con los vértices redondeados, la misma serie pasa a leerse como
+ * un trazo dibujado.
+ *
+ * El método es Catmull-Rom convertido a Bézier: cada punto de control sale
+ * de la pendiente entre el vecino anterior y el siguiente, dividida por
+ * seis. En los extremos, el vecino que falta se sustituye por el propio
+ * punto, que es lo que evita que la curva se dispare al empezar y al acabar.
+ */
+function curvaSuave(puntos: Array<[number, number]>): string {
+  if (puntos.length < 2) return "";
+  let d = `M ${puntos[0][0].toFixed(1)} ${puntos[0][1].toFixed(1)}`;
+  for (let i = 0; i < puntos.length - 1; i++) {
+    const p0 = puntos[i - 1] ?? puntos[i];
+    const p1 = puntos[i];
+    const p2 = puntos[i + 1];
+    const p3 = puntos[i + 2] ?? p2;
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+
+/** Los mismos puntos, pero solo los tramos: sirve para encadenar el camino
+    de vuelta de la cinta sin que su `M` inicial rompa el trazado. */
+function tramosSuaves(puntos: Array<[number, number]>): string {
+  const d = curvaSuave(puntos);
+  const corte = d.indexOf(" C ");
+  return corte === -1 ? "" : d.slice(corte);
+}
+
+/**
+ * La cinta del año.
+ *
+ * Reemplaza al gráfico anterior —dos líneas, una rejilla, una plomada y una
+ * fila de barras—, que informaba bien pero parecía sacado de un informe.
+ * Aquí la misma información se cuenta con una sola forma:
+ *
+ *  · Una CINTA cuyo borde de arriba son las máximas y el de abajo las
+ *    mínimas. Su grosor es, literalmente, cuánto cambia la temperatura entre
+ *    el día y la noche de ese mes: no hay que leer dos líneas y restar.
+ *
+ *  · El degradado NO recorre el eje del tiempo, sino la ALTURA: ámbar arriba,
+ *    petróleo abajo. Así el color dice lo mismo que la posición, y la cinta
+ *    se entiende antes de mirar ninguna escala.
+ *
+ *  · La lluvia son GOTAS, de cero a tres bajo cada mes, y no barras. Una
+ *    barra invita a compararla con la vecina al milímetro; una gota se
+ *    cuenta de un vistazo, que es toda la precisión que tiene el dato.
+ *
+ * Se quitan la rejilla y la línea discontinua de mínimas: con la cinta, la
+ * rejilla solo añadía trazos con los que competir, y las mínimas ya son su
+ * borde inferior.
+ */
+function CintaAnual({
   meses,
   etiquetas,
   seleccionado,
@@ -140,14 +201,11 @@ function CurvaAnual({
   recomendados: number[];
   rotulos: { max: string; min: string; rain: string; best: string; aria: string };
 }) {
-  /* El lienzo se dimensiona cerca del tamaño real al que se dibuja (unos
-     800px en la columna de contenido). Con un viewBox más pequeño, el SVG se
-     amplía para llenar el ancho y arrastra consigo grosores y radios: un
-     trazo de 2 se ve de 3,4 y las barras de lluvia salen como ladrillos. */
+  /* El lienzo se dimensiona cerca del tamaño real al que se dibuja. Con un
+     viewBox más pequeño, el SVG se amplía para llenar el ancho y arrastra
+     consigo grosores y radios. */
   const A = 800;
-  const ALTO_T = 158;
-  const ALTO_LL = 42;
-  const HUECO = 10;
+  const ALTO = 190;
   const PASO = A / 12;
 
   const maximos = meses.map((m) => m.tMax);
@@ -157,99 +215,102 @@ function CurvaAnual({
   const rango = Math.max(techo - suelo, 1);
 
   const x = (i: number) => PASO * i + PASO / 2;
-  const y = (t: number) => ALTO_T - ((t - suelo) / rango) * (ALTO_T - 24) - 12;
+  const y = (t: number) => ALTO - ((t - suelo) / rango) * (ALTO - 78) - 44;
 
-  const linea = (vals: number[]) =>
-    vals.map((v, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+  const arriba = maximos.map((v, i) => [x(i), y(v)] as [number, number]);
+  const abajo = minimos.map((v, i) => [x(i), y(v)] as [number, number]);
+  const abajoInverso = [...abajo].reverse();
 
-  /* La banda se cierra recorriendo las máximas de ida y las mínimas de
-     vuelta: el hueco entre ambas es la oscilación de cada mes.
-     El camino de vuelta tiene que recorrer los DOCE meses. Saltarse alguno
-     no deja un hueco pequeño: dibuja una diagonal recta entre dos puntos
-     lejanos y la banda deja de representar los datos. */
-  const banda =
-    linea(maximos) +
-    " " +
-    minimos
-      .map((_, i) => {
-        const j = 11 - i;
-        return `L ${x(j).toFixed(1)} ${y(minimos[j]).toFixed(1)}`;
-      })
-      .join(" ") +
+  /* La cinta se cierra recorriendo las máximas de ida y las mínimas de
+     vuelta. El camino de vuelta recorre los DOCE meses: saltarse alguno no
+     deja un hueco pequeño, dibuja una recta entre dos puntos lejanos y la
+     cinta deja de representar los datos. */
+  const cinta =
+    curvaSuave(arriba) +
+    ` L ${abajoInverso[0][0].toFixed(1)} ${abajoInverso[0][1].toFixed(1)}` +
+    tramosSuaves(abajoInverso) +
     " Z";
 
   return (
-    <figure className="mt-7">
+    <figure className="mt-8">
       <svg
-        viewBox={`0 0 ${A} ${ALTO_T + ALTO_LL + HUECO}`}
+        viewBox={`0 0 ${A} ${ALTO}`}
         className="w-full"
         role="img"
         aria-label={rotulos.aria}
       >
-        {/* Rejilla: solo dos trazos, para situar sin competir. */}
-        {[0.25, 0.75].map((f) => (
-          <line
-            key={f}
-            x1="0"
-            x2={A}
-            y1={ALTO_T * f}
-            y2={ALTO_T * f}
-            stroke="#e1e0d9"
-            strokeWidth="1"
-          />
-        ))}
+        <defs>
+          <linearGradient id="cinta-temp" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#e29a3c" stopOpacity="0.85" />
+            <stop offset="55%" stopColor="#d88527" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#07908c" stopOpacity="0.3" />
+          </linearGradient>
+        </defs>
 
-        <path d={banda} fill={TEMP} opacity="0.16" />
-        <path d={linea(maximos)} fill="none" stroke={TEMP} strokeWidth="2" strokeLinejoin="round" />
+        {/* Realce del mes elegido: una franja suave detrás, en vez de la
+            plomada de lado a lado que había antes. Señala igual y no cruza
+            el dibujo por la mitad. */}
+        <rect
+          x={PASO * seleccionado}
+          y="0"
+          width={PASO}
+          height={ALTO}
+          fill="#0f3736"
+          opacity="0.06"
+          rx="10"
+        />
+
+        <path d={cinta} fill="url(#cinta-temp)" />
         <path
-          d={linea(minimos)}
+          d={curvaSuave(arriba)}
           fill="none"
           stroke={TEMP}
-          strokeWidth="1.5"
-          strokeDasharray="3 3"
-          opacity="0.75"
-          strokeLinejoin="round"
+          strokeOpacity="0.85"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <path
+          d={curvaSuave(abajo)}
+          fill="none"
+          stroke={LLUVIA}
+          strokeOpacity="0.6"
+          strokeWidth="2"
+          strokeLinecap="round"
         />
 
-        {/* Lluvia: franja propia bajo la curva, mismo eje de meses.
-            La línea de base es lo que distingue "aquí no llueve" de "aquí
-            falta el dato": sin ella, los meses secos son un hueco. */}
-        <line
-          x1="0"
-          x2={A}
-          y1={ALTO_T + HUECO + ALTO_LL}
-          y2={ALTO_T + HUECO + ALTO_LL}
-          stroke="#c3c2b7"
-          strokeWidth="1"
-        />
-        {meses.map((m, i) => {
-          const h = (m.rain / 3) * ALTO_LL;
-          return (
-            <rect
-              key={`ll-${i}`}
-              x={x(i) - PASO * 0.18}
-              y={ALTO_T + HUECO + (ALTO_LL - h)}
-              width={PASO * 0.36}
-              height={h}
-              rx="2"
+        {/* Gotas de lluvia, de cero a tres. */}
+        {meses.map((m, i) =>
+          Array.from({ length: m.rain }).map((_, g) => (
+            <circle
+              key={`g-${i}-${g}`}
+              cx={x(i)}
+              cy={ALTO - 9 - g * 9}
+              r="3"
               fill={LLUVIA}
-              opacity={i === seleccionado ? 1 : 0.4}
+              opacity={i === seleccionado ? 0.95 : 0.32}
             />
-          );
-        })}
+          ))
+        )}
 
-        {/* Marca del mes elegido: una plomada de lado a lado que ata la
-            temperatura con la lluvia de ese mes. */}
-        <line
-          x1={x(seleccionado)}
-          x2={x(seleccionado)}
-          y1="0"
-          y2={ALTO_T + HUECO + ALTO_LL}
-          stroke="#0f3736"
-          strokeWidth="1.5"
-        />
-        <circle cx={x(seleccionado)} cy={y(maximos[seleccionado])} r="4" fill="#0f3736" />
-        <circle cx={x(seleccionado)} cy={y(minimos[seleccionado])} r="3" fill="#0f3736" />
+        {/* Los dos extremos del mes elegido, con su cifra. */}
+        <circle cx={x(seleccionado)} cy={y(maximos[seleccionado])} r="5" fill="#0f3736" />
+        <circle cx={x(seleccionado)} cy={y(minimos[seleccionado])} r="4" fill="#0f3736" />
+        <text
+          x={x(seleccionado)}
+          y={y(maximos[seleccionado]) - 14}
+          textAnchor="middle"
+          className="fill-slate-900 font-heading text-[16px] font-bold"
+        >
+          {maximos[seleccionado]}°
+        </text>
+        <text
+          x={x(seleccionado)}
+          y={y(minimos[seleccionado]) + 22}
+          textAnchor="middle"
+          className="fill-slate-500 font-heading text-[13px] font-bold"
+        >
+          {minimos[seleccionado]}°
+        </text>
 
         {/* Zonas de pulsación: ocupan todo el alto, mucho mayores que la
             marca, para que se pueda acertar con el dedo. */}
@@ -259,7 +320,7 @@ function CurvaAnual({
             x={PASO * i}
             y="0"
             width={PASO}
-            height={ALTO_T + ALTO_LL + HUECO}
+            height={ALTO}
             fill="transparent"
             className="cursor-pointer"
             onClick={() => onSeleccionar(i)}
@@ -269,8 +330,10 @@ function CurvaAnual({
         ))}
       </svg>
 
-      {/* Eje de meses. Los recomendados llevan filete ámbar debajo. */}
-      <div className="mt-1.5 grid grid-cols-12">
+      {/* Los meses, en pastillas. Antes eran doce rótulos de 10px con un
+          filete debajo: para elegir mes había que apuntar a una palabra
+          diminuta, y en un móvil eso no se acierta. */}
+      <div className="mt-4 grid grid-cols-6 gap-1.5 sm:grid-cols-12">
         {etiquetas.map((m, i) => (
           <button
             key={m}
@@ -278,37 +341,44 @@ function CurvaAnual({
             onClick={() => onSeleccionar(i)}
             aria-pressed={i === seleccionado}
             className={cn(
-              "border-b-2 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors",
+              "relative rounded-lg py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider transition-colors",
               i === seleccionado
-                ? "border-slate-900 text-slate-900"
-                : recomendados.includes(i)
-                  ? "border-amber-500 text-slate-500 hover:text-slate-900"
-                  : "border-transparent text-slate-400 hover:text-slate-700"
+                ? "bg-slate-900 text-white"
+                : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
             )}
           >
             {m}
+            {/* Punto ámbar en los meses recomendados. Va SOBRE la pastilla,
+                así que sigue viéndose cuando está elegida; el filete de
+                antes quedaba tapado. */}
+            {recomendados.includes(i) && (
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute left-1/2 top-1 size-1.5 -translate-x-1/2 rounded-full",
+                  i === seleccionado ? "bg-amber-400" : "bg-amber-500"
+                )}
+              />
+            )}
           </button>
         ))}
       </div>
 
-      <figcaption className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-slate-400">
+      <figcaption className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-slate-400">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-0.5 w-4 rounded-full" style={{ background: TEMP }} />
           {rotulos.max}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span
-            className="h-0.5 w-4 rounded-full opacity-70"
-            style={{ backgroundImage: `repeating-linear-gradient(90deg, ${TEMP} 0 3px, transparent 3px 6px)` }}
-          />
+          <span className="h-0.5 w-4 rounded-full opacity-70" style={{ background: LLUVIA }} />
           {rotulos.min}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2 rounded-sm" style={{ background: LLUVIA }} />
+          <span className="size-1.5 rounded-full" style={{ background: LLUVIA }} />
           {rotulos.rain}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-0.5 w-4 rounded-full bg-amber-500" />
+          <span className="size-1.5 rounded-full bg-amber-500" />
           {rotulos.best}
         </span>
         <span className="ml-auto tabular-nums">
@@ -358,7 +428,7 @@ export function SeasonPanel({ categorySlug, locale }: SeasonPanelProps) {
         {t("lead")}
       </p>
 
-      <CurvaAnual
+      <CintaAnual
         meses={region.months}
         etiquetas={months}
         seleccionado={month}

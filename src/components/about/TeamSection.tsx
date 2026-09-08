@@ -56,8 +56,13 @@ export function TeamSection({ miembros }: { miembros?: MiembroEquipo[] }) {
             {/* El rótulo del área solo aparece si hay más de un área. Con
                 todo el equipo en una sola, un único encabezado repetido
                 encima de la rejilla no separa nada: solo estorba. */}
+            {/* Rótulo centrado con su filete a cada lado, en vez de pegado
+                a la izquierda: los grupos suelen tener una o dos personas y
+                una etiqueta en la esquina de una fila casi vacía se lee
+                descolgada. */}
             {grupo.area && porAreas(TEAM).length > 1 && (
-              <div className="mb-8 flex items-center gap-4">
+              <div className="mb-9 flex items-center gap-5">
+                <span aria-hidden className="h-px flex-1 bg-slate-200" />
                 <h3
                   className={`shrink-0 rounded-full px-4 py-1.5 font-heading text-sm font-bold uppercase tracking-[0.12em] ${colorDeArea(grupo.area).color} ${colorDeArea(grupo.area).fondo}`}
                 >
@@ -67,13 +72,18 @@ export function TeamSection({ miembros }: { miembros?: MiembroEquipo[] }) {
               </div>
             )}
 
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Centrado y con ancho por ficha en lugar de rejilla de tres
+                columnas fijas. Con la rejilla, un área de una sola persona
+                dejaba esa ficha pegada a la izquierda y dos tercios de fila
+                vacíos; así queda siempre en medio, y con tres o más se
+                comporta igual que antes. */}
+            <div className="flex flex-wrap justify-center gap-8">
           {grupo.gente.map((member, index) => {
             const departmentStyle = colorDeArea(member.area);
             return (
               <div
                 key={member.nombre}
-                className={`group relative overflow-hidden rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-100 transition-all duration-500 hover:shadow-xl hover:ring-slate-200 scroll-animate ${
+                className={`group relative w-full max-w-sm overflow-hidden rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-100 transition-all duration-500 hover:shadow-xl hover:ring-slate-200 sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] scroll-animate ${
                   isVisible ? `animate-fade-in-up delay-${(index + 1) * 100}` : ""
                 }`}
               >
