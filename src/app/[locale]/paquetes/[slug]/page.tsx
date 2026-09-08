@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 /* `Map` se importa con alias: el nombre ya lo ocupa el Map de JavaScript,
    que se usa unas líneas más abajo para indexar los tours por slug. */
-import { ArrowLeft, CalendarRange, Languages, Map as MapaIcono, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarRange,
+  Compass,
+  Languages,
+  Map as MapaIcono,
+  Route,
+  Sun,
+  Users,
+} from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
@@ -15,6 +23,8 @@ import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
 import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
 import { FranjaDatos } from "@/components/tours/FranjaDatos";
+import { TourTabs } from "@/components/tours/TourTabs";
+import { SeasonPanel } from "@/components/tours/SeasonPanel";
 
 /* Asíncrona: los paquetes salen de Supabase al compilar. */
 export async function generateStaticParams() {
@@ -150,22 +160,77 @@ export default async function PackagePage({
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <h2 className="font-heading text-2xl font-bold text-slate-900">{t("includedTours")}</h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {tours.map((tour) => {
-            const category = categories.find((c) => c.slug === tour!.categorySlug);
-            return (
-              <TourCard
-                key={tour!.slug}
-                tour={tour!}
-                categoryName={category ? pickLocalized(category.name, locale) : ""}
-                locale={locale}
-                fromLabel={tn("from")}
-              />
-            );
-          })}
-        </div>
+      {/* Mismas pestañas que la ficha de tour. Un paquete tiene tanto que
+          contar como un tour —qué incluye, qué tours lleva dentro, cuándo
+          conviene ir— y antes todo eso iba en una sola columna larga que
+          había que recorrer entera.
+
+          Son tres y no cinco: aquí no hay galería propia, porque las fotos
+          del paquete ya están en el mosaico de arriba, ni reseñas, porque
+          las que hay están escritas sobre tours concretos y colgarlas de un
+          paquete sería atribuirlas a algo que esa persona no compró. */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6">
+        <TourTabs
+          ariaLabel={tt("tabsAria")}
+          tabs={[
+            {
+              id: "info",
+              label: tt("tabInfo"),
+              icon: <Compass className="size-4" />,
+              content: (
+                <div className="max-w-3xl">
+                  <h2 className="font-heading text-2xl font-bold text-slate-900">
+                    {tt("overview")}
+                  </h2>
+                  <p className="mt-5 text-[15px] leading-relaxed text-slate-600 sm:text-base">
+                    {pickLocalized(pkg.description, locale)}
+                  </p>
+                </div>
+              ),
+            },
+            {
+              id: "tours",
+              label: t("includedTours"),
+              icon: <Route className="size-4" />,
+              content: (
+                <div>
+                  <h2 className="font-heading text-2xl font-bold text-slate-900">
+                    {t("includedTours")}
+                  </h2>
+                  <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {tours.map((tour) => {
+                      const category = categories.find((c) => c.slug === tour!.categorySlug);
+                      return (
+                        <TourCard
+                          key={tour!.slug}
+                          tour={tour!}
+                          categoryName={category ? pickLocalized(category.name, locale) : ""}
+                          locale={locale}
+                          fromLabel={tn("from")}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ),
+            },
+            /* El clima solo si el paquete lleva tours: la ficha se arma con
+               la categoría del primero, así que sin tours no hay de dónde
+               sacar la región y saldría el clima de otro sitio. */
+            ...(tours.length > 0
+              ? [
+                  {
+                    id: "clima",
+                    label: tt("tabSeason"),
+                    icon: <Sun className="size-4" />,
+                    content: (
+                      <SeasonPanel categorySlug={tours[0]!.categorySlug} locale={locale} />
+                    ),
+                  },
+                ]
+              : []),
+          ]}
+        />
       </section>
     </div>
   );

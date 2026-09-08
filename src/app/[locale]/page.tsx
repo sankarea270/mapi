@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, LOGO_URL } from "@/lib/seo";
 import { pickLocalized } from "@/lib/format";
 import { getDestinations, getReviews, getHeroSlides } from "@/lib/content";
 import { getCategoriesWithTours } from "@/lib/tours";
@@ -112,6 +112,12 @@ export default async function HomePage({
     name: siteConfig.fullName,
     description: t("subtitle"),
     url: buildMetadata({ locale, title: "", path: "/" }).alternates?.canonical,
+    /* `logo` es lo que Google usa para poner una marca junto al resultado.
+       Sin él elige lo que encuentre por el dominio, y aquí llegó a salir un
+       logotipo que no era el nuestro. `image` va también porque parte de las
+       fichas de resultado leen esa y no la otra. */
+    logo: LOGO_URL,
+    image: LOGO_URL,
     telephone: siteConfig.phone.display,
     email: siteEmail,
     address: { "@type": "PostalAddress", addressLocality: "Cusco", addressCountry: "PE" },

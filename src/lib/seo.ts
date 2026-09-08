@@ -4,7 +4,23 @@ import { siteUrl } from "@/config/site";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? siteUrl;
 
-export const DEFAULT_OG_IMAGE = "https://picsum.photos/seed/mapi-og/1200/630";
+/*
+ * Imagen de compartir por defecto y logotipo para los buscadores.
+ *
+ * Antes la de compartir era `https://picsum.photos/seed/mapi-og/1200/630`:
+ * una fotografía de archivo ALEATORIA servida por un tercero. Cada enlace de
+ * la web pegado en WhatsApp o en redes salía con una imagen distinta y sin
+ * relación con la agencia, y quedaba en manos de que ese servicio siguiera
+ * en pie.
+ *
+ * Van en absoluto y no en relativo: quien lee estas etiquetas —Google,
+ * WhatsApp, Facebook— no está en el dominio y no sabe resolver una ruta que
+ * empiece por barra.
+ */
+export const DEFAULT_OG_IMAGE = `${BASE_URL}/gotomapi-og.png`;
+
+/** Cuadrado y sobre fondo sólido, que es lo que pide Google para el logo. */
+export const LOGO_URL = `${BASE_URL}/gotomapi-mark.webp`;
 
 /*
  * El prefijo de idioma va SIEMPRE, incluido el español. La versión anterior
@@ -45,7 +61,21 @@ export function buildMetadata({
   path: string;
   image?: string;
 }): Metadata {
-  const ogImage = image ?? DEFAULT_OG_IMAGE;
+  /*
+   * Una foto de relleno NO se anuncia como imagen de compartir.
+   *
+   * Los tours y paquetes que todavía no tienen fotografía propia llevan una
+   * de picsum.photos, que devuelve una imagen distinta en cada petición.
+   * Pasarla a `og:image` significa que Google, WhatsApp y las redes guardan
+   * como cara de esa página una fotografía aleatoria sin relación con el
+   * viaje —y en 309 páginas a la vez—. Mejor el logotipo: dice menos, pero
+   * dice la verdad, y es estable.
+   *
+   * Se cae solo cuando se suban fotos de verdad: la condición mira el origen
+   * de la imagen, no una lista de páginas.
+   */
+  const esRelleno = image?.includes("picsum.photos");
+  const ogImage = image && !esRelleno ? image : DEFAULT_OG_IMAGE;
   return {
     title,
     description,
