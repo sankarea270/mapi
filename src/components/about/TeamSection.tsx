@@ -5,15 +5,29 @@ import { Mail, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { EQUIPO, type MiembroEquipo } from "@/data/equipo";
+import { colorDeArea, ordenDeArea } from "@/config/areas";
 
 
 
-const DEPARTMENTS = {
-  "Administración": { color: "text-amber-600", bgColor: "bg-amber-50" },
-  "Operaciones": { color: "text-blue-600", bgColor: "bg-blue-50" },
-  "Guías": { color: "text-emerald-600", bgColor: "bg-emerald-50" },
-  "Ventas": { color: "text-rose-600", bgColor: "bg-rose-50" }
-};
+/**
+ * Agrupa por área respetando el orden de la lista de configuración, y deja
+ * al final las áreas escritas a mano que no estén en ella.
+ *
+ * Se agrupa, y no se pinta todo en una rejilla seguida, porque con equipos
+ * de cierto tamaño una cuadrícula de doce caras sin separar no dice quién
+ * hace qué. Con un rótulo por área, se lee de un vistazo.
+ */
+function porAreas(miembros: MiembroEquipo[]) {
+  const mapa = new Map<string, MiembroEquipo[]>();
+  for (const m of miembros) {
+    const area = m.area?.trim() || "";
+    if (!mapa.has(area)) mapa.set(area, []);
+    mapa.get(area)!.push(m);
+  }
+  return [...mapa.entries()]
+    .map(([area, gente]) => ({ area, gente }))
+    .sort((a, b) => ordenDeArea(a.area) - ordenDeArea(b.area));
+}
 
 /**
  * El equipo llega desde arriba, leído de Supabase al compilar. Antes estaba
@@ -37,17 +51,25 @@ export function TeamSection({ miembros }: { miembros?: MiembroEquipo[] }) {
           </p>
         </div>
 
-        <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {TEAM.map((member, index) => {
-            /* Las áreas se escriben a mano en el panel, así que puede
-               llegar una que no esté en el mapa de colores. Sin reserva,
-               la etiqueta salía con `undefined` de clase: texto negro sobre
-               fondo transparente, o sea sin etiqueta. */
-            const departmentStyle =
-              DEPARTMENTS[member.area as keyof typeof DEPARTMENTS] ?? {
-                color: "text-slate-600",
-                bgColor: "bg-slate-100",
-              };
+        {porAreas(TEAM).map((grupo, g) => (
+          <section key={grupo.area || `sin-area-${g}`} className="mt-16">
+            {/* El rótulo del área solo aparece si hay más de un área. Con
+                todo el equipo en una sola, un único encabezado repetido
+                encima de la rejilla no separa nada: solo estorba. */}
+            {grupo.area && porAreas(TEAM).length > 1 && (
+              <div className="mb-8 flex items-center gap-4">
+                <h3
+                  className={`shrink-0 rounded-full px-4 py-1.5 font-heading text-sm font-bold uppercase tracking-[0.12em] ${colorDeArea(grupo.area).color} ${colorDeArea(grupo.area).fondo}`}
+                >
+                  {grupo.area}
+                </h3>
+                <span aria-hidden className="h-px flex-1 bg-slate-200" />
+              </div>
+            )}
+
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {grupo.gente.map((member, index) => {
+            const departmentStyle = colorDeArea(member.area);
             return (
               <div
                 key={member.nombre}
@@ -77,7 +99,7 @@ export function TeamSection({ miembros }: { miembros?: MiembroEquipo[] }) {
                     {member.cargo}
                   </p>
                   {member.area && (
-                    <span className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${departmentStyle.color} ${departmentStyle.bgColor}`}>
+                    <span className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${departmentStyle.color} ${departmentStyle.fondo}`}>
                       {member.area}
                     </span>
                   )}
@@ -112,7 +134,9 @@ export function TeamSection({ miembros }: { miembros?: MiembroEquipo[] }) {
               </div>
             );
           })}
-        </div>
+            </div>
+          </section>
+        ))}
       </div>
     </section>
   );

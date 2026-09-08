@@ -112,13 +112,18 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
               className="resena flex flex-col bg-white p-8 shadow-xl shadow-slate-900/10"
             >
               <figcaption>
-                <p className="font-heading text-lg font-bold uppercase tracking-wide text-slate-900">
+                {/* Las clases `resena-*` son las que el color de la tarjeta
+                    invierte al llenarse: sin ellas el texto se quedaría gris
+                    sobre petróleo. */}
+                <p className="resena-nombre font-heading text-lg font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300">
                   {review.name}
                 </p>
-                <p className="mt-1 font-logo text-[15px] text-teal-700">{review.country}</p>
+                <p className="resena-pais mt-1 font-logo text-[15px] text-teal-700 transition-colors duration-300">
+                  {review.country}
+                </p>
               </figcaption>
 
-              <blockquote className="mt-5 flex-1 font-logo text-lg leading-relaxed text-slate-700">
+              <blockquote className="resena-cita mt-5 flex-1 font-logo text-lg leading-relaxed text-slate-700 transition-colors duration-300">
                 &ldquo;{pickLocalized(review.text, locale)}&rdquo;
               </blockquote>
 

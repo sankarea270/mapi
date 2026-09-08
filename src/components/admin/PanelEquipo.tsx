@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 import { Boton, Campo, Etiqueta, IDIOMAS } from "./campos";
 import { CampoImagen } from "./CampoImagen";
+import { AREAS, colorDeArea } from "@/config/areas";
 
 interface FilaEquipo {
   id: string;
@@ -24,8 +26,7 @@ interface FilaEquipo {
 
 type Borrador = Omit<FilaEquipo, "id"> & { id: string | null };
 
-/** Áreas que ya tienen color propio en la web. Se pueden escribir otras. */
-const AREAS = ["Administración", "Operaciones", "Guías", "Ventas"];
+
 
 function nuevo(orden: number): Borrador {
   return {
@@ -34,7 +35,7 @@ function nuevo(orden: number): Borrador {
     position_es: "",
     position_en: "",
     position_pt: "",
-    department: AREAS[0],
+    department: AREAS[0].nombre,
     photo_url: "",
     email: "",
     phone: "",
@@ -190,26 +191,50 @@ export function PanelEquipo({
           })}
         </div>
 
-        <label className="block">
+        {/* Botones y no un campo de texto con sugerencias. Antes era un
+            `datalist`, y un `datalist` no enseña nada hasta que escribes:
+            el campo aparecía con "Administración" puesto y parecía que no
+            hubiera más áreas. Aquí se ven las diez de golpe, cada una con
+            el color que tendrá en la web. */}
+        <div>
           <span className="eyebrow text-slate-400">Área</span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {AREAS.map((a) => {
+              const elegida = b.department === a.nombre;
+              return (
+                <button
+                  key={a.nombre}
+                  type="button"
+                  onClick={() => setEditando({ ...b, department: a.nombre })}
+                  className={cn(
+                    "rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide transition-all",
+                    a.color,
+                    a.fondo,
+                    elegida
+                      ? "ring-2 ring-slate-900 ring-offset-1"
+                      : "opacity-60 hover:opacity-100"
+                  )}
+                >
+                  {a.nombre}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Y sigue admitiendo una escrita a mano: una agencia añade áreas
+              con el tiempo y eso no debería exigir tocar código. La que no
+              esté en la lista sale en gris en la web. */}
           <input
-            list="areas-equipo"
             value={b.department ?? ""}
             onChange={(e) => setEditando({ ...b, department: e.target.value })}
-            className="mt-1.5 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-600"
+            placeholder="…o escribe otra"
+            className="mt-3 w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-600"
           />
-          {/* Sugerencias, no una lista cerrada: las cuatro de siempre tienen
-              color propio en la web, pero una agencia añade áreas con el
-              tiempo y no tiene sentido que eso exija tocar código. */}
-          <datalist id="areas-equipo">
-            {AREAS.map((a) => (
-              <option key={a} value={a} />
-            ))}
-          </datalist>
           <span className="mt-1 block text-xs text-slate-400">
-            {AREAS.join(" · ")} llevan color propio. Puedes escribir otra.
+            En la web, cada área lleva su color y separa a su gente en un bloque
+            propio.
           </span>
-        </label>
+        </div>
 
         <CampoImagen
           etiqueta="Foto"
@@ -330,9 +355,18 @@ export function PanelEquipo({
 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-slate-900">{f.name}</p>
-                <p className="truncate text-xs text-slate-500">
-                  {[f.position_es, f.department].filter(Boolean).join(" · ")}
-                </p>
+                <p className="truncate text-xs text-slate-500">{f.position_es}</p>
+                {f.department && (
+                  <span
+                    className={cn(
+                      "mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide",
+                      colorDeArea(f.department).color,
+                      colorDeArea(f.department).fondo
+                    )}
+                  >
+                    {f.department}
+                  </span>
+                )}
                 {f.languages && (
                   <p className="truncate text-xs text-slate-400">{f.languages}</p>
                 )}

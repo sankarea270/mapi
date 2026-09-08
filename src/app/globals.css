@@ -1445,23 +1445,27 @@ html {
 
 
 /* ── Ficha de reseña ──────────────────────────────────────────
-   El anillo difuso de la referencia: un círculo de borde grueso y
-   desenfocado escondido en la esquina, que al pasar el ratón crece, se
-   desplaza y se enfoca.
+   El círculo que crece: una moneda escondida en la esquina superior
+   derecha que, al pasar el ratón, se agranda hasta llenar la tarjeta y le
+   da la vuelta al color. Es el `card1` de la referencia.
 
-   Dos cambios respecto al original, y los dos por el fondo. El original
-   pinta el anillo en blanco al 10% sobre una tarjeta morada; aquí la
-   tarjeta es blanca, así que en blanco no se vería nada: va en el petróleo
-   de la marca, muy rebajado. Y se queda DENTRO de la tarjeta —el original
-   lo saca por arriba y por la izquierda— porque sobre blanco un cuarto de
-   círculo cortado se lee como un defecto de pintado, no como un adorno.
+   Tres cosas cambian respecto al original.
 
-   Va detrás del contenido con `z-index`, no con opacidad: el texto de una
-   reseña tiene que leerse igual con el ratón encima que sin él. */
-/* La entrada va por tiempo y no atada al scroll, a propósito: el momento
-   que importa es el CAMBIO de página, y una animación de scroll ya estaría
-   agotada para entonces. Se dispara sola al montar porque la `key` de la
-   ficha lleva la página. */
+   El color es el petróleo de la marca en vez de su `#00838d`, y el texto
+   pasa a blanco: sobre ese fondo, el gris de la cita y el petróleo del país
+   se volverían ilegibles.
+
+   Se queda SIN la flecha de la esquina, como se pidió. En la referencia esa
+   flecha anuncia que la tarjeta es un enlace; estas no llevan a ningún
+   sitio, así que prometería algo que no pasa.
+
+   Y el círculo se mide en `rem`, no con el `scale(21)` fijo del original.
+   Aquel número está calculado para una tarjeta de 262px; las nuestras son
+   fluidas y en pantalla ancha se quedaban a medio llenar. Con un tamaño
+   final en `rem` mayor que la diagonal de cualquier tarjeta, siempre llena.
+
+   `overflow: hidden` recorta el círculo a la tarjeta, y el `z-index`
+   negativo lo deja por debajo del texto. */
 @keyframes resena-entra {
   from {
     opacity: 0;
@@ -1478,6 +1482,7 @@ html {
   overflow: hidden;
   isolation: isolate;
   animation: resena-entra 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: color 0.3s ease-out;
 }
 
 /* Escalonadas: la segunda entra tras la primera y la tercera tras la
@@ -1494,41 +1499,39 @@ html {
   content: "";
   position: absolute;
   z-index: -1;
-  top: -18%;
-  right: -14%;
-  width: 92px;
-  height: 92px;
+  top: -1rem;
+  right: -1rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
-  border: 34px solid rgb(15 118 110 / 0.16);
-  filter: blur(0.5rem);
-  transition:
-    width 0.8s ease,
-    height 0.8s ease,
-    top 0.8s ease,
-    right 0.8s ease,
-    filter 0.8s ease;
+  background: var(--color-teal-700);
+  transform: scale(1);
+  transform-origin: 50% 50%;
+  transition: transform 0.32s ease-out;
 }
 
 .resena:hover::before {
-  width: 170px;
-  height: 170px;
-  top: 42%;
-  right: 58%;
-  filter: blur(0);
+  /* 46 veces 2rem son 92rem: más que la diagonal de la tarjeta más ancha
+     que puede darse aquí, así que la cubre entera venga como venga. */
+  transform: scale(46);
 }
 
-/* Quien pide menos movimiento no quiere un adorno de 0.8s persiguiéndole
-   el ratón por la tarjeta. */
+/* El texto se invierte al llenarse la tarjeta. Las estrellas se quedan en
+   ámbar: siguen leyéndose sobre el petróleo y son la única pieza cuyo color
+   significa algo. */
+.resena:hover .resena-nombre,
+.resena:hover .resena-cita {
+  color: #fff;
+}
+
+.resena:hover .resena-pais {
+  color: rgb(255 255 255 / 0.75);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .resena::before {
-    transition: none;
-  }
+  .resena::before,
   .resena:hover::before {
-    width: 92px;
-    height: 92px;
-    top: -18%;
-    right: -14%;
-    filter: blur(0.5rem);
+    transition: none;
   }
 }
 
