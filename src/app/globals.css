@@ -1185,41 +1185,66 @@ html {
   }
 }
 
-/* ── Letras que entran en orden ───────────────────────────────
-   Cada letra lleva su propio tramo de scroll, puesto al renderizar: la
-   primera acaba cuando la última empieza, así que el titular se escribe
-   solo a medida que se baja.
+/* ── El titular se escribe al aparecer ────────────────────────
+   El texto se recorta sobre un degradado horizontal que va de su propio
+   color a transparente, y lo único que se anima es la POSICIÓN de ese
+   degradado. Al desplazarlo, el borde entre lo sólido y lo transparente
+   barre el titular de izquierda a derecha: detrás queda escrito, delante
+   todavía no está.
 
-   `.palabra` es lo que permite que el renglón siga cortándose donde debe.
-   Sin ella, cada letra sería un `inline-block` suelto y el navegador podría
-   partir una palabra por la mitad.
+   `currentColor` en las paradas es lo que hace que valga igual para un
+   titular negro sobre crema y para uno blanco sobre foto.
 
-   Fuera del @supports —Firefox hoy— no se declara nada: las letras se ven
-   quietas y completas, que es exactamente lo que debe pasar. */
-.letras .palabra {
-  display: inline-block;
-  white-space: nowrap;
+   El degradado mide 260% del ancho para que la franja de transición sea
+   suave incluso en titulares cortos, donde un 100% la dejaría abrupta.
+
+   Se anima la propiedad ABREVIADA: con `background-position-x` suelta el
+   navegador aplicaba el recorte pero no movía nada.
+
+   OJO con cómo se esconde el texto: con `-webkit-text-fill-color` y NO con
+   `color: transparent`. Parecen lo mismo y no lo son. `color` es lo que
+   resuelve `currentColor`, así que ponerlo transparente deja el degradado
+   entero en transparente —comprobado: las tres paradas salían en
+   rgba(0,0,0,0)— y el titular no se ve JAMÁS, ni al terminar. La propiedad
+   de relleno cambia solo con qué se pinta el glifo y deja `color` intacto.
+
+   El @supports pide las tres piezas por lo mismo: si alguna faltara, el
+   texto se escondería sin que nada volviera a enseñarlo. Donde no haya
+   soporte se ve completo y quieto en su color. */
+@keyframes escribe-barrido {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
 }
 
-/* Máquina de escribir: la letra aparece y ya está.
-   Se probó con caída e inclinación —cada letra bajaba girada y se
-   enderezaba— y el conjunto se leía como si el titular se desmoronase, no
-   como si se escribiera. Para que parezca escritura, la letra no puede
-   moverse: solo pasar de no estar a estar, y hacerlo rápido. Todo el ritmo
-   viene de que unas empiezan después que otras, no del recorrido de cada
-   una. */
-@keyframes entra-letra {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@supports (animation-timeline: view()) {
+@supports ((background-clip: text) or (-webkit-background-clip: text)) and
+  (-webkit-text-fill-color: transparent) {
   @media (prefers-reduced-motion: no-preference) {
-    .letras .letra {
+    .escribe {
+      /* En bloque en línea: el recorte se apoya en la caja del elemento, y
+         un `<span>` corriente que se parta en varios renglones no tiene una
+         sola caja donde apoyarlo. */
       display: inline-block;
-      animation: entra-letra linear both;
-      animation-timeline: view();
-      /* El tramo concreto lo pone cada letra en su atributo `style`. */
+      -webkit-text-fill-color: transparent;
+      background-image: linear-gradient(
+        90deg,
+        currentColor 0 38%,
+        transparent 56% 100%
+      );
+      background-size: 260% 100%;
+      background-repeat: no-repeat;
+      background-position: 100% 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    /* La clase la pone el observador al entrar en pantalla. El `both` deja
+       el titular escrito y quieto al terminar. */
+    .escribe--ya {
+      animation: escribe-barrido 1.5s cubic-bezier(0.33, 0, 0.2, 1) both;
     }
   }
 }
@@ -1389,3 +1414,91 @@ html {
   }
 }
 
+
+/* ── Ficha de reseña ──────────────────────────────────────────
+   El anillo difuso de la referencia: un círculo de borde grueso y
+   desenfocado escondido en la esquina, que al pasar el ratón crece, se
+   desplaza y se enfoca.
+
+   Dos cambios respecto al original, y los dos por el fondo. El original
+   pinta el anillo en blanco al 10% sobre una tarjeta morada; aquí la
+   tarjeta es blanca, así que en blanco no se vería nada: va en el petróleo
+   de la marca, muy rebajado. Y se queda DENTRO de la tarjeta —el original
+   lo saca por arriba y por la izquierda— porque sobre blanco un cuarto de
+   círculo cortado se lee como un defecto de pintado, no como un adorno.
+
+   Va detrás del contenido con `z-index`, no con opacidad: el texto de una
+   reseña tiene que leerse igual con el ratón encima que sin él. */
+/* La entrada va por tiempo y no atada al scroll, a propósito: el momento
+   que importa es el CAMBIO de página, y una animación de scroll ya estaría
+   agotada para entonces. Se dispara sola al montar porque la `key` de la
+   ficha lleva la página. */
+@keyframes resena-entra {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.resena {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: resena-entra 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Escalonadas: la segunda entra tras la primera y la tercera tras la
+   segunda, que es lo que hace que se lea como un cambio y no como un
+   parpadeo de las tres a la vez. */
+.resena:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.resena:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.resena::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -18%;
+  right: -14%;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  border: 30px solid rgb(15 118 110 / 0.09);
+  filter: blur(0.5rem);
+  transition:
+    width 0.8s ease,
+    height 0.8s ease,
+    top 0.8s ease,
+    right 0.8s ease,
+    filter 0.8s ease;
+}
+
+.resena:hover::before {
+  width: 150px;
+  height: 150px;
+  top: 42%;
+  right: 58%;
+  filter: blur(0);
+}
+
+/* Quien pide menos movimiento no quiere un adorno de 0.8s persiguiéndole
+   el ratón por la tarjeta. */
+@media (prefers-reduced-motion: reduce) {
+  .resena::before {
+    transition: none;
+  }
+  .resena:hover::before {
+    width: 92px;
+    height: 92px;
+    top: -18%;
+    right: -14%;
+    filter: blur(0.5rem);
+  }
+}

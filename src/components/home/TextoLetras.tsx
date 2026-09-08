@@ -1,86 +1,92 @@
-import { Fragment } from "react";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Titular cuyas letras entran en orden al bajar el scroll.
+ * Titular que se escribe solo al aparecer en pantalla.
  *
- * Cada letra es un tramo de scroll distinto: la primera termina su entrada
- * cuando la última empieza la suya, de modo que el titular se escribe solo
- * a medida que se baja.
+ * El texto arranca invisible y una franja lo va revelando de izquierda a
+ * derecha: detrás queda escrito, delante todavía no está. Es el efecto de
+ * la referencia `DiaText`.
  *
- * Tres decisiones que hacen que esto no rompa nada:
+ * Cómo se hace: el elemento pinta un degradado horizontal y se recorta con
+ * `background-clip: text`, así que del degradado solo se ve la silueta de
+ * las letras. Ese degradado va del propio color del titular a transparente,
+ * y lo único que se anima es su POSICIÓN. Al desplazarlo, el borde entre lo
+ * sólido y lo transparente barre el texto.
  *
- *  · Se parte por PALABRAS y, dentro de cada palabra, por letras. Partir
- *    directamente por letras obliga a poner cada una en un `inline-block`,
- *    y entonces el navegador puede cortar el renglón en mitad de una
- *    palabra. Agrupando primero por palabras, el salto de línea sigue
- *    ocurriendo donde debe.
+ * Usar `currentColor` en las paradas es lo que hace que esto valga igual
+ * para un titular negro sobre crema y para uno blanco sobre foto: se
+ * escribe en su propio color, sin ninguna constante que mantener a mano.
  *
- *  · El espacio entre palabras va FUERA del `<span>` de la palabra. Dentro
- *    no vale: la palabra es un `inline-block`, y un espacio al final de la
- *    única línea de una caja así se descarta por las reglas normales de
- *    espacio en blanco. Medido, el hueco entre palabras salía de 0px y el
- *    titular se leía "¿Porquéviajar". Fuera, el espacio es un nodo de texto
- *    del flujo de al lado y además vuelve a ser un punto donde cortar el
- *    renglón.
+ * ---
  *
- *  · El texto completo va en `aria-label` y las letras en `aria-hidden`.
- *    Sin eso, un lector de pantalla leería el titular letra a letra: "eme,
- *    a, ce, hache…". Es el fallo clásico de este efecto.
+ * POR QUÉ SE DISPARA AL ENTRAR EN PANTALLA Y NO CON EL SCROLL.
  *
- *  · El reparto se calcula al renderizar, no con reglas `nth-child`. Un
- *    titular tiene entre 15 y 50 letras según el idioma, y escribir a mano
- *    una regla por posición sería inmantenible además de incompleto.
+ * El resto de animaciones del sitio van atadas al scroll con
+ * `animation-timeline: view()`, y aquí no se puede. Estos titulares viven
+ * dentro de secciones CLAVADAS: en cuanto la sección se pega arriba, el
+ * titular deja de moverse respecto a la ventana, y una línea de tiempo que
+ * mide justo eso se queda parada. Medido: la animación en marcha y el
+ * progreso clavado en 0 a cinco alturas de scroll distintas, con el texto
+ * invisible. Prestarle la línea de tiempo de la pista tampoco salió: una
+ * pista de 180vh nunca cabe entera en la ventana, así que la fase `contain`
+ * no existe y el avance saltaba de 0 a 1 de golpe.
  *
- * Para Google no cambia nada: el texto sigue entero dentro del encabezado,
- * solo que repartido en spans. Y a diferencia de partir por líneas —que es
- * lo que hace la referencia— esto no se descuadra al cambiar de idioma,
- * porque no depende de dónde caiga cada renglón.
+ * Un observador de intersección no depende de nada de eso, y además es lo
+ * que hace la referencia. El coste es que este componente pasa a ser de
+ * cliente; a cambio, catorce líneas y ninguna librería. La referencia trae
+ * `motion` —unos 50 KB— para esto mismo.
+ *
+ * ---
+ *
+ * ANTES el texto se partía en un `<span>` por letra. Se cambia por tres
+ * razones, y ninguna es estética: a media animación las letras quedaban a
+ * distinta opacidad y el titular parecía desmoronarse en vez de escribirse;
+ * metía entre 15 y 50 elementos por titular; y cada letra tenía que ser
+ * `inline-block`, de donde salió el fallo de los espacios entre palabras
+ * —un espacio al final de una caja así se descarta y las palabras salían
+ * pegadas—. Aquí el texto es texto normal y eso no puede volver.
  */
 export function TextoLetras({
   texto,
   className,
-  /** Punto del recorrido donde empieza a entrar la primera letra. */
-  desde = 10,
-  /** Cuánto recorrido separa la primera letra de la última. */
-  reparto = 34,
-  /** Cuánto dura la entrada de cada letra. Corto a propósito: si se alarga,
-      varias letras están a medio aparecer a la vez y se pierde la sensación
-      de que se están escribiendo una tras otra. */
-  duracion = 3,
 }: {
   texto: string;
   className?: string;
-  desde?: number;
-  reparto?: number;
-  duracion?: number;
 }) {
-  const palabras = texto.split(" ");
-  const total = Math.max(texto.replace(/\s/g, "").length, 1);
-  let n = 0;
+  const ref = useRef<HTMLSpanElement>(null);
+  const [escrito, setEscrito] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    /* Quien pide menos movimiento se lo encuentra ya escrito. */
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setEscrito(true);
+      return;
+    }
+
+    const ob = new IntersectionObserver(
+      ([entrada]) => {
+        if (!entrada.isIntersecting) return;
+        setEscrito(true);
+        /* Una vez escrito no hace falta seguir mirando, y así tampoco se
+           reescribe cada vez que se pasa por delante. */
+        ob.disconnect();
+      },
+      { threshold: 0.25 }
+    );
+
+    ob.observe(el);
+    return () => ob.disconnect();
+  }, []);
 
   return (
-    <span aria-label={texto} className={cn("letras", className)}>
-      {palabras.map((palabra, p) => (
-        <Fragment key={`${palabra}-${p}`}>
-          <span className="palabra">
-            {[...palabra].map((letra, i) => {
-              const inicio = desde + (n++ / total) * reparto;
-              return (
-                <span
-                  key={i}
-                  aria-hidden
-                  className="letra"
-                  style={{ animationRange: `entry ${inicio}% cover ${inicio + duracion}%` }}
-                >
-                  {letra}
-                </span>
-              );
-            })}
-          </span>
-          {p < palabras.length - 1 ? " " : null}
-        </Fragment>
-      ))}
+    <span ref={ref} className={cn("escribe", escrito && "escribe--ya", className)}>
+      {texto}
     </span>
   );
 }

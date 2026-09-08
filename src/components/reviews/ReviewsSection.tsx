@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Review } from "@/data/reviews";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { pickLocalized } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** Cuántas se enseñan a la vez. */
 const POR_PAGINA = 3;
+/** Cada cuánto pasa sola. Más largo que en el carrusel de tours: aquí hay
+    que leer tres textos, no mirar tres fotos. */
+const INTERVALO = 7000;
 
 /*
  * Reseñas, con la maqueta de la referencia de ingamba.pro.
@@ -38,16 +42,30 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
   /* El texto estaba fijado a `.es`: en inglés y portugués las reseñas salían
      en español aunque estuvieran traducidas en la base de datos. */
   const locale = useLocale();
+  const reducido = useReducedMotion();
   const [pagina, setPagina] = useState(0);
+  const [quieto, setQuieto] = useState(false);
+
+  const paginas = Math.max(1, Math.ceil(reviews.length / POR_PAGINA));
+
+  /* El resto se mantiene positivo a mano: en JavaScript (-1 % 2) es -1. */
+  const ir = useCallback(
+    (salto: number) => setPagina((p) => (p + salto + paginas * 10) % paginas),
+    [paginas]
+  );
+
+  /* Pasa sola, y se para con el ratón encima: cambiar de página a media
+     frase es la forma más rápida de que nadie termine de leer una reseña. */
+  useEffect(() => {
+    if (quieto || reducido || paginas < 2) return;
+    const id = setInterval(() => ir(1), INTERVALO);
+    return () => clearInterval(id);
+  }, [quieto, reducido, paginas, ir]);
 
   if (reviews.length === 0) return null;
 
-  const paginas = Math.ceil(reviews.length / POR_PAGINA);
   const desde = pagina * POR_PAGINA;
   const visibles = reviews.slice(desde, desde + POR_PAGINA);
-
-  /* El resto se mantiene positivo a mano: en JavaScript (-1 % 2) es -1. */
-  const ir = (salto: number) => setPagina((p) => (p + salto + paginas * 10) % paginas);
 
   return (
     <section className="bg-white py-20 sm:py-24">
@@ -68,14 +86,22 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          onMouseEnter={() => setQuieto(true)}
+          onMouseLeave={() => setQuieto(false)}
+        >
           {visibles.map((review) => (
             <figure
-              key={review.id}
+              /* La `key` lleva la página: al cambiar, React remonta las tres
+                 fichas y su animación de entrada se vuelve a ver. Con la
+                 `key` solo en el id, cambiar de página mudaba el texto de
+                 golpe dentro de las mismas cajas. */
+              key={`${pagina}-${review.id}`}
               /* Sombra con las utilidades normales y no con un valor arbitrario:
                  `shadow-[0_2px_24px_rgba(...)]` no llegaba a generar regla y las
                  fichas salían planas —box-shadow vacío al medirlo—. */
-              className="flex flex-col bg-white p-8 shadow-xl shadow-slate-900/10"
+              className="resena flex flex-col bg-white p-8 shadow-xl shadow-slate-900/10"
             >
               <figcaption>
                 <p className="font-heading text-lg font-bold uppercase tracking-wide text-slate-900">
