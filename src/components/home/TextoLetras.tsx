@@ -52,9 +52,14 @@ import { cn } from "@/lib/utils";
 export function TextoLetras({
   texto,
   className,
+  /** Retraso en milisegundos. Sirve para encadenar dos mitades de un mismo
+      titular —cuando cada una va en un color— de modo que se lea como un
+      solo barrido y no como dos que arrancan a la vez. */
+  retraso,
 }: {
   texto: string;
   className?: string;
+  retraso?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [escrito, setEscrito] = useState(false);
@@ -85,7 +90,11 @@ export function TextoLetras({
   }, []);
 
   return (
-    <span ref={ref} className={cn("escribe", escrito && "escribe--ya", className)}>
+    <span
+      ref={ref}
+      className={cn("escribe", escrito && "escribe--ya", className)}
+      style={retraso ? { animationDelay: `${retraso}ms` } : undefined}
+    >
       {texto}
     </span>
   );

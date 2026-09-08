@@ -6,13 +6,16 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Review } from "@/data/reviews";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { pickLocalized } from "@/lib/format";
+import { TextoLetras } from "@/components/home/TextoLetras";
 import { cn } from "@/lib/utils";
 
 /** Cuántas se enseñan a la vez. */
 const POR_PAGINA = 3;
-/** Cada cuánto pasa sola. Más largo que en el carrusel de tours: aquí hay
-    que leer tres textos, no mirar tres fotos. */
-const INTERVALO = 7000;
+/** Cada cuánto pasa sola. Se pidió entre 3 y 4 segundos; se coge el extremo
+    largo porque aquí hay que LEER tres textos, no mirar tres fotos. Aun así
+    se para en cuanto el ratón entra en la fila, que es lo que hace que se
+    pueda terminar de leer una reseña. */
+const INTERVALO = 4000;
 
 /*
  * Reseñas, con la maqueta de la referencia de ingamba.pro.
@@ -79,7 +82,12 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
               palabras y en inglés en las dos primeras, así que partir por
               posición habría coloreado lo que no era en algún idioma. */}
           <h2 className="mt-4 font-heading text-[2.2rem] font-bold uppercase leading-[0.95] text-slate-900 sm:text-[3.4rem]">
-            {t("titlePlain")} <span className="text-teal-700">{t("titleAccent")}</span>
+            {/* Cada mitad se escribe por su lado porque van en colores
+                distintos, y el barrido se apoya en el color del propio
+                elemento. El retraso de la segunda es lo que hace que se lean
+                como un solo trazo continuo y no como dos a la vez. */}
+            <TextoLetras texto={t("titlePlain")} />{" "}
+            <TextoLetras texto={t("titleAccent")} className="text-teal-700" retraso={620} />
           </h2>
           <p className="mt-5 font-logo text-lg leading-relaxed text-slate-600 sm:text-xl">
             {t("subtitle")}

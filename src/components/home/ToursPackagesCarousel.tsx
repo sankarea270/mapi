@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { TextoLetras } from "@/components/home/TextoLetras";
 import { cn } from "@/lib/utils";
 
 /** Tour ya traducido: el componente es de cliente y no resuelve idiomas. */
@@ -195,8 +196,11 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
     <section className="trama-curvas tira-tours overflow-hidden bg-[#faf8f4] py-16 sm:py-20">
       <div className="tira-entra mx-auto max-w-7xl px-4 sm:px-6">
         <h2 className="font-heading text-3xl font-bold uppercase leading-none text-slate-900 sm:text-[3.2rem]">
-          <span className="text-teal-700">{primera}</span>
-          {resto}
+          {/* Dos mitades, dos colores, dos barridos encadenados: el del
+              acento arranca cuando el otro ya va por el final, así que el
+              titular se escribe de un trazo. */}
+          <TextoLetras texto={primera} className="text-teal-700" />{" "}
+          <TextoLetras texto={resto.trim()} retraso={420} />
         </h2>
         <p className="mt-4 max-w-2xl font-logo text-lg leading-relaxed text-slate-600 sm:text-xl">
           {t("historias.subtitle")}

@@ -1060,10 +1060,13 @@ html {
    propio elemento: `inset(100% 0 0 0)` lo oculta entero por abajo y, al
    abrirse, el texto asoma desde su borde inferior como si saliera de una
    caja. La inclinación y el desplazamiento son los mismos. */
+/* Sin `rotate`. El giro de 6 grados era lo que hacía que esto se leyera
+   como algo que se desploma en vez de algo que entra. Queda un
+   desplazamiento corto y el recorte, que bastan. */
 @keyframes aparece {
   from {
     opacity: 0;
-    transform: translateY(26px) rotate(6deg);
+    transform: translateY(18px);
     clip-path: inset(100% 0 0 0);
   }
   60% {
@@ -1179,11 +1182,20 @@ html {
    todo se ve. Es la única forma segura de ocultar algo con CSS a la espera
    de que un script lo devuelva. */
 @media (prefers-reduced-motion: no-preference) {
-  /* `:not(.sr-only)`: los avisos para lectores de pantalla no se esconden
+  /* Los TITULARES quedan fuera de esta entrada. Es la caída: `aparece`
+     arranca con `translateY(26px) rotate(6deg)`, o sea que el titular entra
+     desplazado y torcido y se endereza. Eso es justo lo que no se quería, y
+     seguía pasando aunque el texto de dentro ya se escribiera solo: se veía
+     la escritura sucediendo dentro de un bloque que caía.
+
+     Los titulares se revelan escribiéndose y nada más. Las fotos conservan
+     su entrada, que sí se pidió mantener.
+
+     `:not(.sr-only)`: los avisos para lectores de pantalla no se esconden
      ni se animan. Son invisibles de por sí, y la rueda rehace el suyo en
      cada giro. */
   .js-revelar .escena-foto,
-  .js-revelar .escena-texto > *:not(.sr-only) {
+  .js-revelar .escena-texto > *:not(.sr-only):not(:is(h1, h2, h3, h4, h5, h6)) {
     opacity: 0;
   }
 
@@ -1193,13 +1205,13 @@ html {
 
   /* Escalonadas: al entrar el bloque, sus líneas van apareciendo una tras
      otra en vez de todas de golpe. */
-  .js-revelar .escena-texto > *:not(.sr-only).revelado {
+  .js-revelar .escena-texto > *:not(.sr-only):not(:is(h1, h2, h3, h4, h5, h6)).revelado {
     animation: aparece 0.75s cubic-bezier(0.22, 0.68, 0.35, 1) both;
   }
-  .js-revelar .escena-texto > *:not(.sr-only):nth-child(2).revelado { animation-delay: 0.12s; }
-  .js-revelar .escena-texto > *:not(.sr-only):nth-child(3).revelado { animation-delay: 0.24s; }
-  .js-revelar .escena-texto > *:not(.sr-only):nth-child(4).revelado { animation-delay: 0.36s; }
-  .js-revelar .escena-texto > *:not(.sr-only):nth-child(n+5).revelado { animation-delay: 0.46s; }
+  .js-revelar .escena-texto > *:not(.sr-only):not(:is(h1, h2, h3, h4, h5, h6)):nth-child(2).revelado { animation-delay: 0.12s; }
+  .js-revelar .escena-texto > *:not(.sr-only):not(:is(h1, h2, h3, h4, h5, h6)):nth-child(3).revelado { animation-delay: 0.24s; }
+  .js-revelar .escena-texto > *:not(.sr-only):not(:is(h1, h2, h3, h4, h5, h6)):nth-child(4).revelado { animation-delay: 0.36s; }
+  .js-revelar .escena-texto > *:not(.sr-only):not(:is(h1, h2, h3, h4, h5, h6)):nth-child(n+5).revelado { animation-delay: 0.46s; }
 }
 
 /* ── El titular se escribe al aparecer ────────────────────────
