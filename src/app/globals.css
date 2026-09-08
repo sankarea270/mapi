@@ -1531,3 +1531,100 @@ html {
     filter: blur(0.5rem);
   }
 }
+
+/* ── Aro animado ──────────────────────────────────────────────
+   Un degradado cónico que gira detrás del elemento y solo asoma por el
+   borde: dos haces recorriendo el contorno.
+
+   El truco es el mismo de la referencia —una capa con `overflow: hidden`
+   que recorta un cuadrado giratorio mucho más grande que ella—, pero
+   reducido de cuatro capas a dos: el aro nítido y el resplandor. Las otras
+   dos de la referencia repetían el mismo gradiente con desenfoques
+   intermedios; sobre fondo oscuro suman profundidad, sobre el nuestro solo
+   sumaban pintura.
+
+   Y las medidas son relativas, no los 314x70 fijos del original: este aro
+   envuelve desde un botón de 40px hasta un buscador de 600, así que el
+   cuadrado giratorio se dimensiona con un `aspect-ratio` sobre el ancho de
+   su caja.
+
+   El contenido va sobre fondo propio y en `position: relative`: es lo que
+   tapa el centro del gradiente y deja ver solo el borde. Sin eso, el aro se
+   vería entero por debajo del texto. */
+@keyframes aro-gira {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.aro-animado {
+  position: relative;
+  isolation: isolate;
+}
+
+.aro-capa,
+.aro-resplandor {
+  position: absolute;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.aro-capa {
+  inset: -1.5px;
+}
+
+/* El resplandor sobresale y va desenfocado: es lo que da el halo de color
+   alrededor, no un segundo borde. */
+.aro-resplandor {
+  inset: -14px;
+  filter: blur(16px);
+  opacity: 0.55;
+}
+
+.aro-capa::before,
+.aro-resplandor::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 190%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background-image: conic-gradient(
+    transparent 0%,
+    var(--color-teal-600) 7%,
+    transparent 17%,
+    transparent 50%,
+    var(--color-amber-500) 57%,
+    transparent 67%
+  );
+  animation: aro-gira 6s linear infinite;
+}
+
+/* Al escribir dentro, el aro acelera y se aviva. En la referencia esto se
+   hace saltando a un ángulo concreto con una transición larga; con el giro
+   continuo basta con cambiarle la duración. */
+.aro-animado:hover .aro-capa::before,
+.aro-animado:hover .aro-resplandor::before {
+  animation-duration: 3s;
+}
+
+.aro-animado:focus-within .aro-capa::before,
+.aro-animado:focus-within .aro-resplandor::before {
+  animation-duration: 1.8s;
+}
+
+.aro-animado:focus-within .aro-resplandor {
+  opacity: 0.85;
+}
+
+/* Un aro girando sin parar es justo lo que molesta a quien pide menos
+   movimiento. Se queda quieto, con los dos haces puestos. */
+@media (prefers-reduced-motion: reduce) {
+  .aro-capa::before,
+  .aro-resplandor::before {
+    animation: none;
+  }
+}

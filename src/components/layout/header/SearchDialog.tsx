@@ -54,26 +54,38 @@ export function SearchDialog({ open, onOpenChange, catalog }: SearchDialogProps)
       >
         <DialogTitle className="sr-only">{t("search")}</DialogTitle>
 
-        <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
-          <Search className="size-5 shrink-0 text-slate-400" />
-          <input
-            type="search"
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            aria-describedby="search-status"
-            className="w-full border-0 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-400"
-          />
-          <DialogClose asChild>
-            <button
-              type="button"
-              aria-label={t("close")}
-              className="grid size-8 shrink-0 place-items-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            >
-              <X className="size-4" />
-            </button>
-          </DialogClose>
+        {/* El aro va en un envoltorio con margen: si ciñera el borde del
+            diálogo, el resplandor quedaría cortado por el recorte de la
+            tarjeta y solo se vería media luz. */}
+        <div className="p-3 pb-2">
+          <div className="aro-animado rounded-xl">
+            <span className="aro-resplandor" aria-hidden />
+            <span className="aro-capa" aria-hidden />
+
+            {/* Fondo propio y `relative`: es lo que tapa el centro del
+                degradado y deja ver el aro solo por el borde. */}
+            <div className="relative flex items-center gap-3 rounded-[inherit] bg-white px-5 py-4">
+              <Search className="size-5 shrink-0 text-slate-400" />
+              <input
+                type="search"
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("searchPlaceholder")}
+                aria-describedby="search-status"
+                className="w-full border-0 bg-transparent text-base font-medium text-slate-900 outline-none placeholder:text-slate-400"
+              />
+              <DialogClose asChild>
+                <button
+                  type="button"
+                  aria-label={t("close")}
+                  className="grid size-8 shrink-0 place-items-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <X className="size-4" />
+                </button>
+              </DialogClose>
+            </div>
+          </div>
         </div>
 
         <div className="max-h-[60dvh] overflow-y-auto p-2">

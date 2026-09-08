@@ -66,31 +66,47 @@ export function NavBar({ transparent, onOpenSearch, onOpenMobile }: NavBarProps)
         </div>
 
         <div className="flex items-center justify-self-end gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={onOpenSearch}
-            aria-label={t("nav.search")}
-            className={cn(
-              "grid size-10 place-items-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70",
-              light
-                ? "text-white [text-shadow:0_1px_3px_rgba(2,6,23,0.6)] hover:text-amber-300"
-                : "text-slate-700 hover:text-teal-700"
-            )}
-          >
-            <Search className="size-5" />
-          </button>
+          {/* El mismo aro del buscador, en pequeño: la lupa es lo que lo
+              abre, así que comparten señal. */}
+          <span className="aro-animado rounded-full">
+            <span className="aro-capa" aria-hidden />
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              aria-label={t("nav.search")}
+              className={cn(
+                "relative grid size-10 place-items-center rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70",
+                /* Fondo también sobre la portada, aunque ahí la cabecera
+                   sea transparente: es lo que tapa el centro del aro. Sin
+                   él, el degradado se vería por todo el botón en vez de
+                   solo por el borde. Translúcido y desenfocado para que la
+                   foto siga leyéndose por detrás. */
+                light
+                  ? "bg-slate-950/35 text-white backdrop-blur-sm hover:text-amber-300"
+                  : "bg-white text-slate-700 hover:text-teal-700"
+              )}
+            >
+              <Search className="size-5" />
+            </button>
+          </span>
 
-          <Link
-            href="/reservar"
-            className={cn(
-              "hidden border px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors lg:inline-flex",
-              light
-                ? "border-white/50 text-white hover:border-amber-300 hover:text-amber-300"
-                : "border-slate-300 text-slate-700 hover:border-teal-600 hover:text-teal-700"
-            )}
-          >
-            {t("nav.reserve")}
-          </Link>
+          {/* `Reservar` lleva el aro y `Planifica` no: uno es el botón
+              macizo de la marca y el otro el discreto. Ponérselo a los dos
+              dejaría dos cosas compitiendo por la misma atención. */}
+          <span className="aro-animado hidden lg:inline-flex">
+            <span className="aro-capa" aria-hidden />
+            <Link
+              href="/reservar"
+              className={cn(
+                "relative inline-flex px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors",
+                light
+                  ? "bg-slate-950/35 text-white backdrop-blur-sm hover:text-amber-300"
+                  : "bg-white text-slate-700 hover:text-teal-700"
+              )}
+            >
+              {t("nav.reserve")}
+            </Link>
+          </span>
 
           <Link
             href={whatsappLink()}
