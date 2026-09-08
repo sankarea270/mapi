@@ -8,6 +8,7 @@ import Header from "@/components/layout/header/Header";
 import Footer from "@/components/layout/Footer";
 import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
 import { Analytics } from "@/components/providers/Analytics";
+import { Revelados } from "@/components/home/Revelados";
 import { BASE_URL } from "@/lib/seo";
 import "../globals.css";
 
@@ -85,7 +86,8 @@ export default async function LocaleLayout({
             <main id="contenido">{children}</main>
             <Footer />
             <WhatsAppFloat />
-            <Analytics />
+            <Revelados />
+        <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>
