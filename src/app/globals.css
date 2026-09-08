@@ -1179,8 +1179,11 @@ html {
    todo se ve. Es la única forma segura de ocultar algo con CSS a la espera
    de que un script lo devuelva. */
 @media (prefers-reduced-motion: no-preference) {
+  /* `:not(.sr-only)`: los avisos para lectores de pantalla no se esconden
+     ni se animan. Son invisibles de por sí, y la rueda rehace el suyo en
+     cada giro. */
   .js-revelar .escena-foto,
-  .js-revelar .escena-texto > * {
+  .js-revelar .escena-texto > *:not(.sr-only) {
     opacity: 0;
   }
 
@@ -1190,13 +1193,13 @@ html {
 
   /* Escalonadas: al entrar el bloque, sus líneas van apareciendo una tras
      otra en vez de todas de golpe. */
-  .js-revelar .escena-texto > *.revelado {
+  .js-revelar .escena-texto > *:not(.sr-only).revelado {
     animation: aparece 0.75s cubic-bezier(0.22, 0.68, 0.35, 1) both;
   }
-  .js-revelar .escena-texto > *:nth-child(2).revelado { animation-delay: 0.12s; }
-  .js-revelar .escena-texto > *:nth-child(3).revelado { animation-delay: 0.24s; }
-  .js-revelar .escena-texto > *:nth-child(4).revelado { animation-delay: 0.36s; }
-  .js-revelar .escena-texto > *:nth-child(n+5).revelado { animation-delay: 0.46s; }
+  .js-revelar .escena-texto > *:not(.sr-only):nth-child(2).revelado { animation-delay: 0.12s; }
+  .js-revelar .escena-texto > *:not(.sr-only):nth-child(3).revelado { animation-delay: 0.24s; }
+  .js-revelar .escena-texto > *:not(.sr-only):nth-child(4).revelado { animation-delay: 0.36s; }
+  .js-revelar .escena-texto > *:not(.sr-only):nth-child(n+5).revelado { animation-delay: 0.46s; }
 }
 
 /* ── El titular se escribe al aparecer ────────────────────────

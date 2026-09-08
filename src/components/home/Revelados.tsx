@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 
 /** Lo que se revela al entrar en pantalla. */
-const SELECTOR = ".escena-texto > *, .escena-foto, .revela-marco";
+/* `:not(.sr-only)` deja fuera los avisos para lectores de pantalla. Son
+   invisibles por diseño, así que animarlos no se ve; y como la rueda rehace
+   el suyo en cada giro, sin esto se reobservaba y reanimaba cada pocos
+   segundos un elemento que nadie mira. */
+const SELECTOR = ".escena-texto > *:not(.sr-only), .escena-foto, .revela-marco";
 
 /**
  * Dispara las entradas de las secciones cuando aparecen en pantalla.
