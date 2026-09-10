@@ -65,6 +65,14 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
 
   const inicio = useRef<number | null>(null);
   const puntero = useRef(-1);
+  /* El último desplazamiento, en una referencia y no solo en el estado.
+     `alSoltar` no puede leer el estado: si el `pointerup` llega en el mismo
+     fotograma que el último `pointermove`, React todavía no ha vuelto a
+     dibujar y el manejador ve el valor ANTERIOR —cero—, así que el gesto se
+     pierde. Con un ratón real casi siempre hay un fotograma de por medio y
+     por eso costaba verlo; un gesto rápido lo pierde igual. El estado se
+     queda solo para mover la foto mientras se arrastra. */
+  const ultimoDx = useRef(0);
   const fotoRef = useRef<HTMLDivElement>(null);
 
   const total = destinos.length;
@@ -99,12 +107,14 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
   function alAgarrar(e: React.PointerEvent) {
     inicio.current = e.clientX;
     puntero.current = e.pointerId;
+    ultimoDx.current = 0;
     setQuieto(true);
   }
 
   function alMover(e: React.PointerEvent) {
     if (inicio.current === null) return;
     const dx = e.clientX - inicio.current;
+    ultimoDx.current = dx;
     if (Math.abs(dx) > 6 && puntero.current !== -1) {
       try {
         fotoRef.current?.setPointerCapture(puntero.current);
@@ -118,13 +128,14 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
 
   function alSoltar() {
     if (inicio.current === null) return;
-    const dx = arrastre;
+    const dx = ultimoDx.current;
 
     if (puntero.current !== -1 && fotoRef.current?.hasPointerCapture(puntero.current)) {
       fotoRef.current.releasePointerCapture(puntero.current);
     }
     puntero.current = -1;
     inicio.current = null;
+    ultimoDx.current = 0;
     setArrastre(0);
     setQuieto(false);
 
