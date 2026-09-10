@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, CalendarDays, MapPin, Star, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -22,6 +22,8 @@ export interface DestinoRueda {
 
 /** Cada cuánto pasa solo. */
 const INTERVALO = 6000;
+/** Cuánto hay que arrastrar para que cuente como cambio de destino. */
+const UMBRAL = 60;
 
 /**
  * "Dónde te llevamos".
@@ -59,6 +61,11 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
   const reducido = useReducedMotion();
   const [activo, setActivo] = useState(0);
   const [quieto, setQuieto] = useState(false);
+  const [arrastre, setArrastre] = useState(0);
+
+  const inicio = useRef<number | null>(null);
+  const puntero = useRef(-1);
+  const fotoRef = useRef<HTMLDivElement>(null);
 
   const total = destinos.length;
 
@@ -74,6 +81,55 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
     const id = setInterval(() => ir(1), INTERVALO);
     return () => clearInterval(id);
   }, [quieto, reducido, total, ir]);
+
+  /*
+   * Arrastrar la foto para cambiar de destino.
+   *
+   * El puntero NO se captura al pulsar, solo cuando el arrastre supera el
+   * umbral. Capturarlo antes hace que el navegador dispare el `click` sobre
+   * la caja que captura y no sobre lo que hay debajo, y entonces los enlaces
+   * y botones de dentro dejan de responder. Costó encontrarlo una vez ya en
+   * el carrusel de tours.
+   *
+   * El umbral es alto —60px, frente a los 8 del carrusel— a propósito: aquí
+   * el gesto cambia de destino entero, no desplaza una fila. Con un umbral
+   * corto, cualquier temblor al mover el ratón sobre la foto saltaba de
+   * destino.
+   */
+  function alAgarrar(e: React.PointerEvent) {
+    inicio.current = e.clientX;
+    puntero.current = e.pointerId;
+    setQuieto(true);
+  }
+
+  function alMover(e: React.PointerEvent) {
+    if (inicio.current === null) return;
+    const dx = e.clientX - inicio.current;
+    if (Math.abs(dx) > 6 && puntero.current !== -1) {
+      try {
+        fotoRef.current?.setPointerCapture(puntero.current);
+      } catch {
+        /* El puntero puede haberse ido ya; sin captura el arrastre sigue
+           valiendo mientras no se salga de la caja. */
+      }
+    }
+    setArrastre(dx);
+  }
+
+  function alSoltar() {
+    if (inicio.current === null) return;
+    const dx = arrastre;
+
+    if (puntero.current !== -1 && fotoRef.current?.hasPointerCapture(puntero.current)) {
+      fotoRef.current.releasePointerCapture(puntero.current);
+    }
+    puntero.current = -1;
+    inicio.current = null;
+    setArrastre(0);
+    setQuieto(false);
+
+    if (Math.abs(dx) > UMBRAL) ir(dx < 0 ? 1 : -1);
+  }
 
   if (total === 0) return null;
 
@@ -108,7 +164,7 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
         <path d="M62 190 A 100 100 0 0 1 190 78" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
       </svg>
 
-      <div className="mx-auto grid max-w-7xl items-center gap-y-14 px-4 sm:px-6 lg:grid-cols-2 lg:gap-x-10">
+      <div className="mx-auto grid max-w-7xl items-center gap-y-14 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-x-8">
         {/* ─── Izquierda: el destino escrito ─────────────────────────── */}
         <div className="escena-texto min-w-0">
           <p className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-[0.22em] text-amber-600">
@@ -284,18 +340,35 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
             </div>
 
             {/* La foto, recortada. `key` para que la entrada se repita en
-                cada cambio. */}
-            <div className="relative min-w-0 flex-1">
+                cada cambio.
+
+                `touch-pan-y`: en un móvil el dedo arrastra la foto a lo
+                ancho pero la página sigue bajando. Sin esto, tocar aquí
+                bloquea el scroll vertical y el visitante se queda encallado. */}
+            <div
+              ref={fotoRef}
+              className="relative min-w-0 flex-1 cursor-grab touch-pan-y select-none active:cursor-grabbing lg:-mr-8 xl:-mr-20"
+              onPointerDown={alAgarrar}
+              onPointerMove={alMover}
+              onPointerUp={alSoltar}
+              onPointerCancel={alSoltar}
+            >
               <div
                 key={`f-${activo}`}
-                className="destino-foto relative aspect-4/5 w-full sm:aspect-square"
-                style={{ clipPath: "url(#forma-destino)" }}
+                className="destino-foto relative aspect-4/5 w-full sm:aspect-4/3 lg:aspect-square"
+                style={{
+                  clipPath: "url(#forma-destino)",
+                  /* Solo un desplazamiento corto mientras se arrastra: la
+                     foto acompaña al gesto sin salirse de su recorte. */
+                  transform: arrastre ? `translateX(${arrastre * 0.25}px)` : undefined,
+                }}
               >
                 <Image
                   src={d.imagen}
                   alt={d.nombre}
                   fill
                   sizes="(max-width: 1024px) 100vw, 45vw"
+                  draggable={false}
                   className="object-cover"
                 />
               </div>
