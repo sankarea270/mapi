@@ -9,6 +9,7 @@ import { buildMetadata, LOGO_URL } from "@/lib/seo";
 import { pickLocalized } from "@/lib/format";
 import { getDestinations, getReviews, getHeroSlides } from "@/lib/content";
 import { getCategoriesWithTours } from "@/lib/tours";
+import { climateForCategory } from "@/data/climate";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
@@ -48,6 +49,9 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("hero");
+  /* Los nombres cortos de mes ya están traducidos para el panel de clima;
+     se reutilizan en vez de duplicarlos. */
+  const tSeason = await getTranslations("season");
   const resenas = await getReviews();
   const [categorias, destinos, slidesPortada] = await Promise.all([
     getCategoriesWithTours(),
@@ -80,17 +84,41 @@ export default async function HomePage({
 
   /* Solo los destinos que ya tienen tours: una rueda que gira hasta un
      destino sin nada que reservar frustra en vez de invitar. */
+  /* La clave es `months`, no `monthsShort`: esa no existe. Con la que no
+     existe, `raw()` devolvía la propia ruta de la clave y al indexarla se
+     sacaban LETRAS sueltas —"Mejor época: s – n"—, no meses. */
+  const mesesCortos = tSeason.raw("months") as string[];
+
   const paraRueda = destinos
     .map((x) => {
       const tours = categorias
         .filter((c) => x.categorySlugs?.includes(c.slug))
         .reduce((n, c) => n + c.tours.length, 0);
+
+      /* Los dos datos de clima salen de la ficha de la región, que ya existe
+         en el proyecto y se usa en cada tour. No se inventa ninguno: si
+         hiciera falta un dato que no está —los días recomendados, por
+         ejemplo— la casilla se quedaría fuera antes que rellenarse a ojo. */
+      const clima = climateForCategory(x.categorySlugs?.[0] ?? "");
+      const grados = Math.round(
+        clima.months.reduce((n, m) => n + m.tMax, 0) / clima.months.length
+      );
+      const mejores = [...clima.best].sort((a, b) => a - b);
+      const mejorEpoca =
+        mejores.length === 0
+          ? "—"
+          : mejores.length === 1
+            ? mesesCortos[mejores[0]]
+            : `${mesesCortos[mejores[0]]} – ${mesesCortos[mejores[mejores.length - 1]]}`;
+
       return {
         slug: x.slug,
         nombre: pickLocalized(x.name, locale),
         descripcion: pickLocalized(x.description, locale),
         imagen: x.image,
         tours,
+        grados,
+        mejorEpoca,
       };
     })
     .filter((x) => x.tours > 0 && x.imagen);

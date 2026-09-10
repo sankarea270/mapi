@@ -542,7 +542,12 @@
     "prev": "Destino anterior",
     "next": "Destino siguiente",
     "ver": "Ver los {count} tours",
-    "arrastra": "Arrastra la rueda"
+    "arrastra": "Arrastra la rueda",
+    "explorar": "Explorar destino",
+    "clima": "Clima promedio",
+    "mejorEpoca": "Mejor época",
+    "experiencias": "{count} experiencias",
+    "destacados": "Tours destacados"
   },
   "revela": {
     "badge": "Diseñado en Cusco",

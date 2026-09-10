@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import { ArrowLeft, ArrowRight, CalendarDays, MapPin, Star, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -13,326 +14,332 @@ export interface DestinoRueda {
   descripcion: string;
   imagen: string;
   tours: number;
+  /** Media anual de máximas, en grados. Sale de los datos de clima. */
+  grados: number;
+  /** Mejor época, ya formateada: "May – Sep". */
+  mejorEpoca: string;
 }
 
-const INTERVALO = 5200;
-
-/* Sentido de avance. +1 hace que las fotos BAJEN por el arco de la derecha,
-   que es lo que se lee como "gira hacia la derecha"; -1 las hace subir.
-   Está en una constante y no repartido por el código porque el sentido
-   depende de dos signos a la vez —el del giro del aro y el de la colocación
-   de cada foto— y cambiar solo uno desalinea el punto focal. */
-const SENTIDO = 1;
-/* Posición focal: 90° = las tres en punto, el punto más a la derecha del
-   aro. Es donde el eje —que queda fuera del encuadre, a la izquierda— sitúa
-   la foto en el centro vertical del marco. */
-const FOCO = 90;
+/** Cada cuánto pasa solo. */
+const INTERVALO = 6000;
 
 /**
- * Rueda de destinos.
+ * "Dónde te llevamos".
  *
- * Las fotos van montadas en el aro y giran con él: la rueda lleva cada
- * destino hasta la posición focal, arriba del todo, donde crece y se ve
- * nítido. Antes la foto cambiaba en su sitio con un fundido —el aro giraba
- * pero la imagen no viajaba—, que es lo que hacía que no pareciese una
- * rueda de verdad.
+ * Sustituye a la rueda giratoria por la maqueta de la referencia: a la
+ * izquierda el destino escrito en grande con sus tres datos y su botón, a la
+ * derecha la foto recortada en una forma orgánica, con una cadena de
+ * miniaturas al lado y una pincelada con el nombre del sitio.
  *
- * Cada foto lleva un contragiro exacto del giro del aro para no salir
- * cabeza abajo al pasar por la mitad inferior.
+ * Por qué se va la rueda. Era un círculo enorme con las fotos colgando del
+ * arco y el eje fuera de la pantalla; funcionaba, pero pedía entender el
+ * mecanismo antes de leer nada. Aquí el destino se lee de una vez —número,
+ * nombre, descripción, datos— y el movimiento acompaña en lugar de ser el
+ * protagonista.
  *
- * Tres decisiones sobre el movimiento:
+ * Tres decisiones que no se ven:
  *
- *  · El giro es ACUMULADO, no un ángulo módulo 360. Con el módulo, pasar del
- *    último destino al primero hace retroceder la rueda una vuelta entera de
- *    golpe. Guardando el ángulo total, el camino siempre es el corto.
+ *  · La forma orgánica es un `clipPath` en unidades de la propia caja
+ *    (`objectBoundingBox`), no un `border-radius` inventado ni una imagen
+ *    con la forma quemada dentro. Así el recorte se adapta a cualquier
+ *    tamaño y la foto se puede cambiar desde el panel sin rehacer nada.
  *
- *  · Se detiene al pasar el ratón o al enfocar con el teclado. Una rueda que
- *    sigue girando mientras alguien lee o intenta pulsar es una trampa.
+ *  · Las miniaturas muestran el anterior, el actual y el siguiente, no los
+ *    ocho. Con ocho, la columna medía más que la foto y había que
+ *    desplazarla; con tres se entiende de dónde vienes y a dónde vas, que
+ *    es lo que hace la referencia.
  *
- *  · Con `prefers-reduced-motion` no gira sola ni hay transiciones: quedan
- *    los botones. A quien le marea el movimiento, esto le marea.
+ *  · Todo lo que cambia lleva `key` con el índice del destino. Es lo que
+ *    hace que React remonte esos nodos y sus animaciones de entrada se
+ *    vuelvan a ver en cada cambio; sin eso, el texto se sustituiría de
+ *    golpe dentro de las mismas cajas.
  */
 export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
   const t = useTranslations("rueda");
   const reducido = useReducedMotion();
   const [activo, setActivo] = useState(0);
-  const [detenido, setDetenido] = useState(false);
+  const [quieto, setQuieto] = useState(false);
 
-  /* Ángulo total recorrido por el aro, en grados.
-     Es ESTADO y no una referencia: durante el arrastre se escribía el giro
-     directamente en el DOM para evitar repintados, y entonces React seguía
-     dibujando los contragiros de cada foto con el ángulo viejo. Resultado:
-     la foto marcada como activa no era la del punto focal y ninguna se
-     agrandaba. Con estado, cada fotograma es coherente. */
-  const [giro, setGiro] = useState(FOCO);
-  const indice = useRef(0);
-
-  /* Arrastre con el ratón o el dedo.
-     Se mide el ÁNGULO desde el eje del aro, no el desplazamiento del
-     puntero: el eje está fuera del encuadre, así que un mismo movimiento
-     de 100px hace girar mucho cerca del centro y poco lejos. Con el ángulo,
-     la rueda sigue al dedo exactamente donde se la agarró. */
-  const marcoRef = useRef<HTMLDivElement>(null);
-  const arrastre = useRef<{ anguloInicial: number; giroInicial: number; movido: boolean } | null>(
-    null
-  );
-  const [arrastrando, setArrastrando] = useState(false);
-
-  /** Ángulo del puntero respecto al eje del aro, en grados. */
-  const anguloDe = useCallback((e: React.PointerEvent) => {
-    const marco = marcoRef.current;
-    if (!marco) return 0;
-    const caja = marco.getBoundingClientRect();
-    const estilo = getComputedStyle(marco);
-    const radio = parseFloat(estilo.getPropertyValue("--r")) * 16;
-    const px = parseFloat(estilo.getPropertyValue("--px")) * 16;
-    /* El eje está en `--px - --r` desde el borde izquierdo del marco, a
-       media altura: es la misma cuenta con la que se coloca el aro. */
-    const ejeX = caja.left + px - radio;
-    const ejeY = caja.top + caja.height / 2;
-    return (Math.atan2(e.clientY - ejeY, e.clientX - ejeX) * 180) / Math.PI;
-  }, []);
-
-  const n = destinos.length;
-  const paso = n > 0 ? 360 / n : 0;
+  const total = destinos.length;
 
   const ir = useCallback(
-    (siguiente: number) => {
-      if (n === 0) return;
-      const destino = ((siguiente % n) + n) % n;
-      /* Diferencia con signo por el camino más corto: decide hacia qué lado
-         gira el aro en vez de dar la vuelta larga. */
-      let delta = destino - indice.current;
-      if (delta > n / 2) delta -= n;
-      if (delta < -n / 2) delta += n;
-      /* Suma en vez de resta: la rueda gira en sentido contrario. El signo
-         es lo único que cambia el sentido; las fotos siguen enderezándose
-         solas porque el contragiro se calcula del mismo `giro.current`. */
-      setGiro((g) => g + SENTIDO * delta * paso);
-      indice.current = destino;
-      setActivo(destino);
-    },
-    [n, paso]
+    /* El `+ total * 10` mantiene el resto positivo: en JavaScript (-1 % 8)
+       es -1, y el índice se saldría de la lista. */
+    (salto: number) => setActivo((i) => (i + salto + total * 10) % total),
+    [total]
   );
 
   useEffect(() => {
-    if (reducido || detenido || arrastrando || n <= 1) return;
-    const id = setInterval(() => ir(indice.current + 1), INTERVALO);
+    if (quieto || reducido || total < 2) return;
+    const id = setInterval(() => ir(1), INTERVALO);
     return () => clearInterval(id);
-  }, [reducido, detenido, arrastrando, n, ir]);
+  }, [quieto, reducido, total, ir]);
 
-  function alAgarrar(e: React.PointerEvent<HTMLDivElement>) {
-    if (reducido) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    arrastre.current = { anguloInicial: anguloDe(e), giroInicial: giro, movido: false };
-    setArrastrando(true);
-  }
+  if (total === 0) return null;
 
-  function alMover(e: React.PointerEvent<HTMLDivElement>) {
-    if (!arrastre.current) return;
-    /* Mientras se arrastra solo cambia el ángulo; el destino activo se
-       decide al soltar. Los eventos de puntero llegan como mucho una vez
-       por fotograma, así que actualizar el estado aquí no satura. */
-    const delta = anguloDe(e) - arrastre.current.anguloInicial;
-    /* Umbral de 3°: por debajo se considera un clic, no un arrastre. Sin
-       esto, el temblor natural del dedo al pulsar una foto contaría como
-       giro y la selección nunca llegaría a ocurrir. */
-    if (Math.abs(delta) > 3) arrastre.current.movido = true;
-    setGiro(arrastre.current.giroInicial + delta);
-  }
-
-  function alSoltar(e: React.PointerEvent<HTMLDivElement>) {
-    if (!arrastre.current) return;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    const huboArrastre = arrastre.current.movido;
-    arrastre.current = null;
-    setArrastrando(false);
-    /* Si no se movió, fue un clic sobre una foto: se deja que el botón haga
-       su trabajo y no se encaja nada. */
-    if (!huboArrastre) return;
-    /* Al soltar se encaja en el destino más cercano.
-       El ángulo se FIJA al valor exacto de ese destino, no se corrige con
-       `ir()`: esa función suma un múltiplo del paso al ángulo actual, y si
-       el actual venía torcido por el arrastre, el resultado seguía torcido
-       —medido: 442,2° cuando el paso es de 45°—. Aquí se redondea a pasos
-       enteros desde el foco y se recalcula el ángulo desde cero. */
-    const pasos = Math.round((giro - FOCO) / (SENTIDO * paso));
-    setGiro(FOCO + SENTIDO * pasos * paso);
-    indice.current = ((pasos % n) + n) % n;
-    setActivo(indice.current);
-  }
-
-  if (n === 0) return null;
   const d = destinos[activo];
-  const transicion =
-    reducido || arrastrando
-      ? undefined
-      : "transform 1000ms cubic-bezier(.34,.72,.24,1)";
+  const anterior = destinos[(activo - 1 + total) % total];
+  const siguiente = destinos[(activo + 1) % total];
 
   return (
     <section
-      /* Sin `overflow-hidden` aquí: un ancestro con overflow oculto se
-         convierte en contenedor de scroll, y entonces `animation-timeline:
-         view()` mide el avance contra ESA caja —que no se desplaza jamás—
-         en vez de contra la página. La animación se quedaba congelada al
-         99%. El recorte del arco lo hace el marco interior, que es donde
-         hace falta. */
-      /* El alto lo pone la `Escena` que la envuelve; aquí solo el aire. */
-      className="relative border-t border-slate-200 bg-white py-14 sm:py-16"
-      onMouseEnter={() => setDetenido(true)}
-      onMouseLeave={() => setDetenido(false)}
-      onFocusCapture={() => setDetenido(true)}
-      onBlurCapture={() => setDetenido(false)}
+      className="trama-curvas relative overflow-hidden bg-[#faf8f4] py-16 sm:py-20"
+      onMouseEnter={() => setQuieto(true)}
+      onMouseLeave={() => setQuieto(false)}
     >
-      <div className="mx-auto grid max-w-7xl items-center gap-y-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,30rem)] lg:gap-x-4">
-        <div className="escena-texto min-w-0 lg:pr-6">
-          <p className="eyebrow text-amber-600">{t("badge")}</p>
+      {/* El recorte orgánico. Va una sola vez en el documento y se referencia
+          desde el CSS; en unidades de la caja, así que sirva la foto que
+          sirva y mida lo que mida. */}
+      <svg aria-hidden className="absolute size-0">
+        <defs>
+          <clipPath id="forma-destino" clipPathUnits="objectBoundingBox">
+            <path d="M0.06,0.32 C0.10,0.10 0.30,0.01 0.52,0.02 C0.74,0.03 0.95,0.09 0.99,0.28 C1.03,0.47 0.97,0.70 0.88,0.84 C0.79,0.98 0.62,1.01 0.44,0.99 C0.26,0.97 0.09,0.90 0.04,0.74 C-0.01,0.58 0.02,0.44 0.06,0.32 Z" />
+          </clipPath>
+        </defs>
+      </svg>
 
-          <div className="mt-6 flex items-start gap-6 sm:gap-9">
-            <span
-              key={`n-${activo}`}
-              className="rueda-entra font-heading text-6xl font-bold leading-none tabular-nums text-amber-500 sm:text-7xl"
-              aria-hidden
-            >
+      {/* Arcos sueltos arriba a la derecha, como en la referencia. */}
+      <svg
+        aria-hidden
+        viewBox="0 0 200 200"
+        className="pointer-events-none absolute -right-10 top-6 hidden w-56 text-amber-400/60 lg:block"
+      >
+        <path d="M20 180 A 120 120 0 0 1 180 30" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+        <path d="M62 190 A 100 100 0 0 1 190 78" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
+      </svg>
+
+      <div className="mx-auto grid max-w-7xl items-center gap-y-14 px-4 sm:px-6 lg:grid-cols-2 lg:gap-x-10">
+        {/* ─── Izquierda: el destino escrito ─────────────────────────── */}
+        <div className="escena-texto min-w-0">
+          <p className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-[0.22em] text-amber-600">
+            {t("badge")}
+            <span aria-hidden className="h-px w-10 bg-amber-500/50" />
+          </p>
+
+          {/* Dos niveles a propósito. El de fuera es hijo directo de
+              `.escena-texto`, así que se lo queda la revelación general de
+              la sección; el de dentro lleva la `key` y la animación de
+              CAMBIO de destino. Con ambas cosas en el mismo elemento, la
+              regla de revelación —mucho más específica— le ganaba a la de
+              cambio y el destino nuevo entraba con la animación equivocada. */}
+          <div className="mt-7">
+            <div key={`t-${activo}`} className="destino-entra flex items-start gap-6">
+            <span className="font-heading text-6xl font-bold leading-none tabular-nums text-amber-500 sm:text-[5.5rem]">
               {String(activo + 1).padStart(2, "0")}
             </span>
-
+            <span aria-hidden className="mt-1 h-16 w-px shrink-0 bg-slate-300 sm:h-20" />
             <div className="min-w-0 pt-1">
-              <h2
-                key={`h-${activo}`}
-                className="rueda-entra font-heading text-3xl font-bold leading-tight text-slate-900 sm:text-[2.5rem]"
-              >
+              {/* En romana, como la referencia: es la misma familia del
+                  logotipo, así que el nombre del destino se lee con la voz
+                  de la marca y no con la de los titulares. */}
+              <h2 className="font-logo text-4xl font-medium leading-none text-teal-800 sm:text-6xl">
                 {d.nombre}
               </h2>
-              <p
-                key={`p-${activo}`}
-                className="rueda-entra mt-4 max-w-md text-[15px] leading-relaxed text-slate-600"
-                style={{ animationDelay: "70ms" }}
-              >
+              <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-teal-900/70 sm:text-base">
                 {d.descripcion}
               </p>
+              </div>
             </div>
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-            {/* Sin botones: la rueda se gira arrastrándola. Quien navegue
-                con teclado no se queda fuera, porque cada foto del aro es un
-                botón enfocable que lleva a su destino. */}
-            <span className="eyebrow text-slate-400">{t("arrastra")}</span>
-
-            <Link
-              href={`/destinos/${d.slug}`}
-              className="group inline-flex items-center gap-2 text-sm font-bold text-teal-700 transition-colors hover:text-teal-600"
+          {/* Los tres datos. Todos salen de información que ya existe en el
+              proyecto: la media anual de máximas y la mejor época, de la
+              ficha de clima de la región; las experiencias, del catálogo.
+              No hay ninguno inventado. */}
+          <div className="mt-10">
+            <dl
+              key={`d-${activo}`}
+              className="destino-entra flex flex-wrap gap-x-10 gap-y-6"
+              style={{ animationDelay: "80ms" }}
             >
-              {t("ver", { count: d.tours })}
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </Link>
+            {[
+              { icono: Sun, valor: `${d.grados}°C`, rotulo: t("clima") },
+              { icono: CalendarDays, valor: d.mejorEpoca, rotulo: t("mejorEpoca") },
+              {
+                icono: Star,
+                valor: t("experiencias", { count: d.tours }),
+                rotulo: t("destacados"),
+              },
+            ].map(({ icono: Icono, valor, rotulo }) => (
+              <div key={rotulo}>
+                <dd className="flex items-center gap-2.5 font-heading text-lg font-bold text-teal-900">
+                  <Icono className="size-5 shrink-0 text-teal-600" strokeWidth={1.7} />
+                  {valor}
+                </dd>
+                <dt className="mt-1.5 pl-[1.95rem] text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                  {rotulo}
+                </dt>
+              </div>
+              ))}
+            </dl>
           </div>
 
-          <p className="sr-only" aria-live="polite">
-            {d.nombre}
-          </p>
+          <Link
+            href={`/destinos/${d.slug}`}
+            className="mt-10 inline-flex items-center gap-3 rounded-full bg-teal-800 px-8 py-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-teal-900"
+          >
+            {t("explorar")}
+            <ArrowRight className="size-4" />
+          </Link>
+
+          {/* Los números y la barra. La referencia los pone abajo del todo y
+              son, a la vez, el índice y un selector: pulsando un número se
+              salta a ese destino. */}
+          <div className="mt-14 max-w-lg">
+            <div className="flex justify-between">
+              {destinos.map((x, i) => (
+                <button
+                  key={x.slug}
+                  type="button"
+                  onClick={() => setActivo(i)}
+                  aria-label={x.nombre}
+                  aria-current={i === activo}
+                  className={cn(
+                    "px-1 font-heading text-[13px] font-bold tabular-nums transition-colors",
+                    i === activo ? "text-amber-500" : "text-slate-300 hover:text-slate-500"
+                  )}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </button>
+              ))}
+            </div>
+            <div className="relative mt-3 h-px w-full bg-slate-300">
+              <span
+                aria-hidden
+                className="absolute -top-[3px] size-[7px] rounded-full bg-amber-500 transition-[left] duration-500 ease-out"
+                style={{ left: `calc(${(activo / Math.max(total - 1, 1)) * 100}% - 3px)` }}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Geometría del aro, y por qué así.
-            El eje queda FUERA del encuadre, a la izquierda, y el aro es más
-            del doble de ancho que su marco: por eso solo se ve un arco, no
-            la circunferencia entera. La foto activa se apoya en el punto más
-            a la derecha de esa curva, y las vecinas asoman por el borde
-            superior e inferior —entrando y saliendo— que es lo que deja ver
-            que la rueda gira y no que la imagen cambia en su sitio.
+        {/* ─── Derecha: la foto y la cadena ──────────────────────────── */}
+        <div className="relative">
+          <div className="flex items-center gap-6 sm:gap-8">
+            {/* Cadena de miniaturas: anterior, actual y siguiente, unidos
+                por un trazo discontinuo. */}
+            <div className="relative hidden shrink-0 flex-col items-center gap-7 sm:flex">
+              <svg
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-0 h-full w-16 -translate-x-1/2 text-teal-600/40"
+                viewBox="0 0 64 400"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M32 60 C 10 110, 54 140, 32 190"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeDasharray="5 7"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M32 214 C 54 262, 10 292, 32 342"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeDasharray="5 7"
+                  strokeLinecap="round"
+                />
+              </svg>
 
-            `--r` es el radio y `--px` la distancia del borde izquierdo del
-            marco a la foto activa. El aro se coloca a partir de ahí: su
-            borde izquierdo cae en `--px - 2r`, así que su centro queda en
-            `--px - r` y el punto de las tres, justo en `--px`.
-
-            Cada destino va en un envoltorio que ocupa el aro entero. Al
-            rotarlo gira sobre el centro por construcción, sin depender de
-            `transform-origin`: encadenar rotaciones y traslaciones en un
-            mismo `transform` colocaba las fotos 88px fuera de sitio. */}
-        <div
-          ref={marcoRef}
-          onPointerDown={alAgarrar}
-          onPointerMove={alMover}
-          onPointerUp={alSoltar}
-          onPointerCancel={alSoltar}
-          /* Seguro: si el navegador retira la captura del puntero —cambio de
-             pestaña, gesto del sistema— el evento de soltar no llega y la
-             rueda se quedaría agarrada, sin girar sola nunca más. */
-          onLostPointerCapture={alSoltar}
-          className="escena-foto relative h-[30rem] w-full touch-pan-y select-none overflow-hidden [--px:13rem] [--r:19rem] sm:h-[38rem] sm:[--px:17rem] sm:[--r:24rem] lg:h-[44rem] lg:[--px:20rem] lg:[--r:28rem]"
-          style={{ cursor: arrastrando ? "grabbing" : "grab" }}
-        >
-          <div
-            className="absolute top-1/2"
-            style={{
-              width: "calc(2 * var(--r))",
-              height: "calc(2 * var(--r))",
-              left: "calc(var(--px) - 2 * var(--r))",
-              transform: `translateY(-50%) rotate(${giro}deg)`,
-              transition: transicion,
-            }}
-          >
-            <span
-              aria-hidden
-              className="absolute inset-0 rounded-full border border-dashed border-slate-300"
-            />
-
-            {destinos.map((x, i) => {
-              const esActivo = i === activo;
-              return (
-                <div
-                  key={x.slug}
-                  className="absolute inset-0"
-                  /* Ángulo negativo: al invertir el sentido de giro hay que
-                     invertir también la colocación. Cambiar solo el signo de
-                     `giro` desalineaba el punto focal —la foto activa acababa
-                     abajo del aro y sin agrandar— porque la condición de foco
-                     es `giro + angulo_i = FOCO`, y ahí hay dos signos, no uno. */
-                  style={{ transform: `rotate(${-SENTIDO * i * paso}deg)` }}
-                >
+              {[anterior, d, siguiente].map((x, i) => {
+                const esActual = i === 1;
+                const indice = (activo - 1 + i + total) % total;
+                return (
                   <button
+                    key={`${x.slug}-${i}`}
                     type="button"
-                    onClick={() => ir(i)}
+                    onClick={() => setActivo(indice)}
                     aria-label={x.nombre}
-                    aria-current={esActivo ? "true" : undefined}
-                    className="absolute left-1/2 top-0 focus-visible:outline-none"
-                    /* Contragiro exacto: deshace el del aro y el propio, para
-                       que la foto no salga cabeza abajo al recorrer la mitad
-                       inferior de la curva. */
-                    style={{
-                      transform: `translate(-50%,-50%) rotate(${-giro + SENTIDO * i * paso}deg)`,
-                      transition: transicion,
-                    }}
+                    className="group relative z-10 flex items-center gap-3.5"
                   >
                     <span
                       className={cn(
-                        "block overflow-hidden rounded-full bg-slate-100 ring-1 transition-all duration-700",
-                        esActivo
-                          ? "size-56 opacity-100 ring-4 ring-amber-500 sm:size-72 lg:size-80"
-                          : "size-14 opacity-50 ring-slate-200 hover:opacity-90 sm:size-16"
+                        "relative block shrink-0 overflow-hidden rounded-full transition-all duration-500",
+                        esActual
+                          ? "size-24 ring-2 ring-amber-500 ring-offset-4 ring-offset-[#faf8f4]"
+                          : "size-16 opacity-70 group-hover:opacity-100"
                       )}
                     >
-                      <span className="relative block size-full">
-                        <Image
-                          src={x.imagen}
-                          alt=""
-                          fill
-                          sizes={esActivo ? "20rem" : "4rem"}
-                          className="object-cover"
-                        />
-                      </span>
+                      <Image
+                        src={x.imagen}
+                        alt=""
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
+                    </span>
+                    <span
+                      className={cn(
+                        "whitespace-nowrap font-heading text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+                        esActual ? "text-teal-800" : "text-slate-400 group-hover:text-slate-600"
+                      )}
+                    >
+                      {x.nombre}
                     </span>
                   </button>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+
+            {/* La foto, recortada. `key` para que la entrada se repita en
+                cada cambio. */}
+            <div className="relative min-w-0 flex-1">
+              <div
+                key={`f-${activo}`}
+                className="destino-foto relative aspect-4/5 w-full sm:aspect-square"
+                style={{ clipPath: "url(#forma-destino)" }}
+              >
+                <Image
+                  src={d.imagen}
+                  alt={d.nombre}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 45vw"
+                  className="object-cover"
+                />
+              </div>
+
+              {/* La pincelada con el nombre del sitio. El trazo es un
+                  `path` y no una imagen, así que se recolorea con la marca y
+                  no pesa nada. El texto va en romana cursiva: es la letra
+                  más cercana a la manuscrita de la referencia entre las que
+                  el sitio ya carga, y traer una quinta familia para dos
+                  palabras no compensa. */}
+              <div className="pointer-events-none absolute bottom-4 right-0 w-56 sm:bottom-8 sm:right-2">
+                <svg viewBox="0 0 224 84" className="w-full text-teal-800" aria-hidden>
+                  <path
+                    d="M6,34 C40,14 92,8 148,12 C186,15 216,22 220,34 C224,48 208,66 170,72 C126,79 66,78 30,68 C8,62 -2,46 6,34 Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                <p className="absolute inset-0 flex items-center justify-center gap-2 pb-1 font-logo text-lg italic leading-tight text-white">
+                  <MapPin className="size-4 shrink-0" strokeWidth={2} />
+                  {d.nombre}, Perú
+                </p>
+              </div>
+            </div>
           </div>
 
-          <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-slate-900 px-3 py-1.5 font-heading text-xs font-bold tabular-nums text-white">
-            {activo + 1} / {n}
-          </span>
+          {/* Las dos flechas. */}
+          <div className="mt-8 flex justify-center gap-4 sm:absolute sm:-bottom-4 sm:right-2 sm:mt-0">
+            <button
+              type="button"
+              onClick={() => ir(-1)}
+              aria-label={t("prev")}
+              className="grid size-12 place-items-center rounded-full bg-white text-teal-800 shadow-lg shadow-slate-900/10 transition-colors hover:bg-slate-100"
+            >
+              <ArrowLeft className="size-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => ir(1)}
+              aria-label={t("next")}
+              className="grid size-12 place-items-center rounded-full bg-teal-800 text-white transition-colors hover:bg-teal-900"
+            >
+              <ArrowRight className="size-5" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
