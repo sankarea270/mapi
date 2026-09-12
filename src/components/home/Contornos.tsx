@@ -24,9 +24,19 @@ import { cn } from "@/lib/utils";
  * la siguiente.
  */
 
-/** Ancho del dibujo en sus propias unidades; la escala sale de dividir por
-    el ancho real en píxeles. */
-const ANCHO = 1200;
+/*
+ * El dibujo se mide en PÍXELES, no en unidades propias escaladas al ancho.
+ *
+ * La primera versión usaba un lienzo fijo de 1200 unidades y dividía por el
+ * ancho real, con lo que la escala colgaba del tamaño de la ventana: medido
+ * en el móvil, las curvas caían a 16px de separación frente a los 55px del
+ * escritorio, y a esa distancia dejan de leerse como curvas de nivel y
+ * parecen un rayado. En píxeles la separación es la misma en todas partes.
+ *
+ * Lo único que sigue siendo relativo es la ONDA: la altura se calcula sobre
+ * `t` de 0 a 1, así que el mismo número de ondulaciones cruza la pantalla
+ * sea ancha o estrecha, en vez de quedar un solo lomo enorme en el móvil.
+ */
 const SEPARACION = 52;
 const TAU = Math.PI * 2;
 /** Desborde lateral de las curvas, para que la deriva no descubra los
@@ -34,8 +44,8 @@ const TAU = Math.PI * 2;
 const MARGEN = 140;
 const MUESTRAS = 13;
 
-/** Altura del relieve en `t` (0–1) para la línea `i`. Sin azar: el mismo
-    dibujo en cada carga, y el mismo en todas las secciones. */
+/** Altura del relieve en `t` (0–1) para la línea `i`, en píxeles. Sin azar:
+    el mismo dibujo en cada carga, y el mismo en todas las secciones. */
 function altura(t: number, i: number): number {
   const fase = i * 0.37;
   return (
@@ -66,18 +76,24 @@ function suavizar(puntos: [number, number][]): string {
 /* Se calculan a medida que hacen falta y se guardan: el alto de la página
    no se sabe de antemano, así que no hay un número fijo de líneas que
    generar por adelantado. Cada una se traza una sola vez aunque la pidan
-   varias secciones. */
-const trazadas = new Map<number, string>();
-function lineaD(i: number): string {
-  const guardada = trazadas.get(i);
+   varias secciones.
+
+   La clave lleva el ancho porque ahora el trazo depende de él. Se redondea
+   a múltiplos de 20px para que arrastrar el borde de la ventana no genere
+   un juego de curvas nuevo en cada píxel. */
+const trazadas = new Map<string, string>();
+function lineaD(ancho: number, i: number): string {
+  const clave = `${ancho}:${i}`;
+  const guardada = trazadas.get(clave);
   if (guardada !== undefined) return guardada;
+  const total = ancho + MARGEN * 2;
   const d = suavizar(
     Array.from({ length: MUESTRAS }, (_, k) => {
-      const x = Math.round(-MARGEN + (k / (MUESTRAS - 1)) * (ANCHO + MARGEN * 2));
-      return [x, altura((x + MARGEN) / (ANCHO + MARGEN * 2), i)] as [number, number];
+      const x = Math.round(-MARGEN + (k / (MUESTRAS - 1)) * total);
+      return [x, altura((x + MARGEN) / total, i)] as [number, number];
     })
   );
-  trazadas.set(i, d);
+  trazadas.set(clave, d);
   return d;
 }
 
@@ -107,7 +123,11 @@ export function Contornos({
   /* Nada hasta medir. Son decoración, y de todas formas el trazado depende
      de JavaScript; enseñar un dibujo con la escala equivocada durante un
      instante se notaría más que no enseñar nada. */
-  const [ventana, setVentana] = useState<{ desde: number; alto: number } | null>(null);
+  const [ventana, setVentana] = useState<{
+    desde: number;
+    alto: number;
+    ancho: number;
+  } | null>(null);
   /*
    * El trazado lo lleva ESTE componente, y no el observador general de
    * `Revelados`, aunque sea el mismo gesto. Aquel añade la clase al nodo
@@ -123,13 +143,14 @@ export function Contornos({
     if (!el) return;
 
     const medir = () => {
-      const ancho = el.offsetWidth;
-      if (ancho === 0) return;
-      /* Unidades del dibujo por píxel. Al aplicarla igual al alto, la
-         escala vertical y la horizontal coinciden: las curvas guardan su
-         forma y su separación en todas las secciones. */
-      const k = ANCHO / ancho;
-      setVentana({ desde: desdeArriba(el) * k, alto: el.offsetHeight * k });
+      const real = el.offsetWidth;
+      if (real === 0) return;
+      /* Todo en píxeles y redondeado a 20: la escala es 1:1 en los dos ejes
+         —ni las curvas se achatan ni se estiran— y el trozo que enseña cada
+         sección es literalmente el que le corresponde por su sitio en el
+         documento. */
+      const ancho = Math.max(20, Math.round(real / 20) * 20);
+      setVentana({ desde: desdeArriba(el), alto: el.offsetHeight, ancho });
     };
 
     medir();
@@ -192,7 +213,7 @@ export function Contornos({
       {ventana && (
         <svg
           className="h-full w-full"
-          viewBox={`0 ${ventana.desde.toFixed(1)} ${ANCHO} ${ventana.alto.toFixed(1)}`}
+          viewBox={`0 ${ventana.desde.toFixed(1)} ${ventana.ancho} ${ventana.alto.toFixed(1)}`}
           preserveAspectRatio="none"
           fill="none"
         >
@@ -205,7 +226,7 @@ export function Contornos({
               return (
                 <path
                   key={i}
-                  d={lineaD(i)}
+                  d={lineaD(ventana.ancho, i)}
                   stroke={esAcento ? "#d97706" : trazo}
                   strokeWidth={esAcento ? 1.6 : 1.1}
                   opacity={esAcento ? (tono === "oscuro" ? 0.5 : 0.42) : opacidad}
