@@ -4,16 +4,18 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { getExperiences } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
-import { EXPERIENCES } from "@/data/experiences";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
 
-export function generateStaticParams() {
+/* Asíncrona: la lista sale de Supabase al compilar, no de un archivo. */
+export async function generateStaticParams() {
+  const lista = await getExperiences();
   return routing.locales.flatMap((locale) =>
-    EXPERIENCES.map((experience) => ({ locale, slug: experience.slug }))
+    lista.map((experience) => ({ locale, slug: experience.slug }))
   );
 }
 
@@ -23,7 +25,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const experience = EXPERIENCES.find((e) => e.slug === slug);
+  const lista = await getExperiences();
+  const experience = lista.find((e) => e.slug === slug);
   if (!experience) return {};
   return buildMetadata({
     locale,
@@ -40,9 +43,10 @@ export default async function ExperiencePage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  const lista = await getExperiences();
   setRequestLocale(locale);
 
-  const experience = EXPERIENCES.find((e) => e.slug === slug);
+  const experience = lista.find((e) => e.slug === slug);
   if (!experience) notFound();
 
   const categories = await getCategoriesWithTours();

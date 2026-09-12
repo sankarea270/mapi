@@ -5,6 +5,34 @@ import { PACKAGES, type TourPackage } from "@/data/packages";
 import { REVIEWS, type Review } from "@/data/reviews";
 import { HERO_SLIDES, type HeroSlide } from "@/data/portada";
 import { EQUIPO, type MiembroEquipo } from "@/data/equipo";
+import { EXPERIENCES, type Experience } from "@/data/experiences";
+import { GUIDES, type Guide } from "@/data/guides";
+
+/* Filas tal y como llegan de Postgres. Van aquí y no en `types/db` porque
+   solo las usan estos dos lectores. */
+interface FilaExperiencia {
+  slug: string;
+  name_es: string | null;
+  name_en: string | null;
+  name_pt: string | null;
+  description_es: string | null;
+  description_en: string | null;
+  description_pt: string | null;
+  image_url: string | null;
+  tour_slugs: unknown;
+}
+
+interface FilaGuia {
+  slug: string;
+  title_es: string | null;
+  title_en: string | null;
+  title_pt: string | null;
+  excerpt_es: string | null;
+  excerpt_en: string | null;
+  excerpt_pt: string | null;
+  image_url: string | null;
+  category: string | null;
+}
 import type { LocalizedText } from "@/types/tour";
 import type { FilaDestino, FilaPaquete, FilaResena } from "@/types/db";
 
@@ -172,5 +200,68 @@ export async function getTeam(locale: string): Promise<MiembroEquipo[]> {
       telefono: (f.phone as string) ?? "",
       idiomas: (f.languages as string) ?? "",
     }));
+  });
+}
+
+/**
+ * Experiencias.
+ *
+ * Solo las publicadas y en el orden fijado en el panel.
+ */
+export async function getExperiences(): Promise<Experience[]> {
+  return conRespaldo("experiencias", EXPERIENCES, async () => {
+    const { data, error } = await supabase!
+      .from("experiences")
+      .select(
+        "slug, name_es, name_en, name_pt, description_es, description_en, description_pt, " +
+          "image_url, tour_slugs"
+      )
+      .eq("status", "published")
+      .order("sort_order");
+    if (error) throw error;
+    /* El mismo casteo que el resto de lectores de este archivo: sin tipos
+       generados, el cliente de Supabase devuelve una unión que incluye su
+       tipo de error y TypeScript no deja leer las columnas. */
+    return ((data ?? []) as unknown as FilaExperiencia[]).map((e) => ({
+      slug: e.slug,
+      name: loc(e.name_es, e.name_en, e.name_pt),
+      description: loc(e.description_es, e.description_en, e.description_pt),
+      image: e.image_url ?? "",
+      tourSlugs: slugList(e.tour_slugs),
+    }));
+  });
+}
+
+/**
+ * Guías.
+ *
+ * Del panel sale la portada: título, entradilla, foto y grupo. El CUERPO
+ * —las secciones con encabezado y párrafos— sigue viniendo del repositorio y
+ * se empareja por dirección, porque el editor genérico del panel no sabe
+ * manejar una lista anidada de secciones. Una guía creada desde el panel sale
+ * publicada con su portada y sin cuerpo, que es mejor que no poder crearla.
+ */
+export async function getGuides(): Promise<Guide[]> {
+  return conRespaldo("guías", GUIDES, async () => {
+    const { data, error } = await supabase!
+      .from("guides")
+      .select(
+        "slug, title_es, title_en, title_pt, excerpt_es, excerpt_en, excerpt_pt, " +
+          "image_url, category"
+      )
+      .eq("status", "published")
+      .order("sort_order");
+    if (error) throw error;
+    return ((data ?? []) as unknown as FilaGuia[]).map((g) => {
+      const delRepo = GUIDES.find((x) => x.slug === g.slug);
+      return {
+        slug: g.slug,
+        title: loc(g.title_es, g.title_en, g.title_pt),
+        excerpt: loc(g.excerpt_es, g.excerpt_en, g.excerpt_pt),
+        image: g.image_url ?? "",
+        category: (g.category ?? "faq") as Guide["category"],
+        sections: delRepo?.sections ?? [],
+      };
+    });
   });
 }

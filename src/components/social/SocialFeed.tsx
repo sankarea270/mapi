@@ -6,14 +6,16 @@ import { useTranslations } from "next-intl";
 import { SOCIAL_POSTS } from "@/data/socialFeed";
 import { siteConfig, socials } from "@/config/site";
 import { TextoLetras } from "@/components/home/TextoLetras";
+import { Contornos } from "@/components/home/Contornos";
 
 export function SocialFeed() {
   const t = useTranslations("social");
   const instagram = socials.instagram;
 
   return (
-    <section className="bg-slate-950 py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section className="relative overflow-hidden bg-slate-950 py-20">
+      <Contornos tono="oscuro" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="escena-texto flex flex-col items-center justify-between gap-6 sm:flex-row">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-amber-400">

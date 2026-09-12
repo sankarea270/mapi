@@ -8,6 +8,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { pickLocalized } from "@/lib/format";
 import { TextoLetras } from "@/components/home/TextoLetras";
 import { cn } from "@/lib/utils";
+import { Contornos } from "@/components/home/Contornos";
 
 /** Cada cuánto pasa sola. */
 const INTERVALO = 5500;
@@ -137,7 +138,8 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
 
   return (
     <section className="relative overflow-hidden bg-[#faf8f4] py-20 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <Contornos />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="escena-texto mx-auto max-w-3xl text-center">
           <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-amber-600">
             {t("badge")}
@@ -190,16 +192,23 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
                    un baile. */
                 key={desplazamiento}
                 aria-hidden={!centro || undefined}
+                /* Las tres son la MISMA caja: mismo ancho, mismo alto y el
+                   mismo cuerpo de letra. Antes la del medio era una caja
+                   distinta —599px contra 289, y la cita a otro tamaño—, y
+                   eso no se leía como un carrusel sino como tres piezas
+                   descoordinadas. La del medio se distingue por escala,
+                   sombra y opacidad: lo mismo que hace el carrusel de
+                   tours, y así el relevo entre columnas es continuo. */
                 className={cn(
-                  "resena flex flex-col rounded-[1.75rem] bg-white transition-[transform,box-shadow,opacity] duration-500",
+                  "resena flex w-full flex-col rounded-[1.75rem] bg-white px-8 py-11 transition-[transform,box-shadow,opacity] duration-500 lg:w-[22rem] lg:shrink-0",
                   centro
-                    ? "w-full max-w-xl px-7 py-11 shadow-xl shadow-slate-900/[0.09] sm:px-12 sm:py-14 lg:scale-[1.04]"
-                    : "hidden w-[19rem] shrink-0 px-8 py-11 opacity-70 shadow-lg shadow-slate-900/[0.05] hover:opacity-100 lg:flex lg:scale-[0.95]"
+                    ? "shadow-xl shadow-slate-900/[0.1] lg:scale-[1.06]"
+                    : "hidden opacity-60 shadow-lg shadow-slate-900/[0.05] hover:opacity-100 lg:flex lg:scale-[0.94]"
                 )}
               >
                 <div
                   className={cn(
-                    "flex flex-1 flex-col items-center justify-center text-center",
+                    "flex min-h-[15rem] flex-1 flex-col items-center justify-center text-center",
                     centro && fase === "sale" && "resena-sale",
                     centro && fase === "entra" && "resena-entraviene"
                   )}
@@ -208,21 +217,14 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
                   {/* El recorte a seis líneas iguala las tres columnas sin
                       fijarles un alto: una cita larga y otra corta dejarían
                       las cajas descuadradas. */}
-                  <blockquote
-                    className={cn(
-                      "resena-cita line-clamp-6 max-w-2xl font-logo leading-relaxed text-slate-700 transition-colors duration-300",
-                      centro
-                        ? "text-xl sm:text-[1.5rem] sm:leading-[1.55]"
-                        : "text-[15px]"
-                    )}
-                  >
+                  <blockquote className="resena-cita line-clamp-6 font-logo text-[17px] leading-relaxed text-slate-700 transition-colors duration-300">
                     &ldquo;{pickLocalized(r.text, locale)}&rdquo;
                   </blockquote>
 
                   {/* Estrellas pequeñas y discretas. Cambian de color con la
                       ficha, como todo lo demás. */}
                   <div
-                    className={cn("flex gap-1", centro ? "mt-8" : "mt-6")}
+                    className="mt-7 flex gap-1"
                     role="img"
                     aria-label={`${r.rating} / 5`}
                   >
@@ -240,12 +242,7 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
                   </div>
 
                   <figcaption className="mt-5">
-                    <p
-                      className={cn(
-                        "resena-nombre font-heading font-bold uppercase tracking-[0.1em] text-slate-900 transition-colors duration-300",
-                        centro ? "text-base" : "text-sm"
-                      )}
-                    >
+                    <p className="resena-nombre font-heading text-[15px] font-bold uppercase tracking-[0.1em] text-slate-900 transition-colors duration-300">
                       {r.name}
                     </p>
                     <p className="resena-pais mt-1 font-logo text-[15px] text-teal-700 transition-colors duration-300">

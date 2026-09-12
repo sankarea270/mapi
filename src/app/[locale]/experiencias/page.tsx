@@ -3,8 +3,8 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { getExperiences } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
-import { EXPERIENCES } from "@/data/experiences";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 
@@ -33,6 +33,7 @@ export default async function ExperiencesPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const lista = await getExperiences();
   setRequestLocale(locale);
   const t = await getTranslations("experiencias");
 
@@ -41,7 +42,7 @@ export default async function ExperiencesPage({
       <div className="border-b border-slate-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
-            {t("count", { count: EXPERIENCES.length })}
+            {t("count", { count: lista.length })}
           </p>
           <h1 className="mt-2 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
             {t("title")}
@@ -52,7 +53,7 @@ export default async function ExperiencesPage({
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {EXPERIENCES.map((experience) => (
+          {(await getExperiences()).map((experience) => (
             <Link
               key={experience.slug}
               href={`/experiencias/${experience.slug}`}

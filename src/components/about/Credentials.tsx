@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { Contornos } from "@/components/home/Contornos";
 import { CREDENTIALS } from "@/data/credentials";
 import { pickLocalized } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -41,8 +42,9 @@ export async function Credentials({
    */
   if (variant === "banda") {
     return (
-      <section className="border-b border-slate-200/80 bg-[#f4f3f0]">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
+      <section className="relative overflow-hidden border-b border-slate-200/80 bg-[#f4f3f0]">
+        <Contornos />
+        <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14">
           <p className="text-center text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
             {t("badge")} · {t("title")}
           </p>

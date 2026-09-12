@@ -27,6 +27,8 @@ const VISTAS = [
   { id: "reservas", etiqueta: "Reservas" },
   { id: "paquetes", etiqueta: "Paquetes" },
   { id: "destinos", etiqueta: "Destinos" },
+  { id: "experiencias", etiqueta: "Experiencias" },
+  { id: "guias", etiqueta: "Guías" },
   { id: "resenas", etiqueta: "Reseñas" },
   { id: "equipo", etiqueta: "Equipo" },
 ] as const;
@@ -181,6 +183,12 @@ export function AdminApp() {
           )}
           {vista === "destinos" && (
             <PanelContenido tipo="destinos" revision={revision} onCambio={cambiado} />
+          )}
+          {vista === "experiencias" && (
+            <PanelContenido tipo="experiencias" revision={revision} onCambio={cambiado} />
+          )}
+          {vista === "guias" && (
+            <PanelContenido tipo="guias" revision={revision} onCambio={cambiado} />
           )}
           {vista === "resenas" && (
             <PanelContenido tipo="resenas" revision={revision} onCambio={cambiado} />

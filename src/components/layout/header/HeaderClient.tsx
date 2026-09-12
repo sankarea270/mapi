@@ -10,7 +10,14 @@ import type { CategoryBrief } from "@/lib/catalog";
 
 const SCROLL_THRESHOLD = 16;
 
-export function HeaderClient({ catalog }: { catalog: CategoryBrief[] }) {
+export function HeaderClient({
+  catalog,
+  fotos,
+}: {
+  catalog: CategoryBrief[];
+  /** Una foto por dirección de enlace, para la previsualización del menú. */
+  fotos: Record<string, string>;
+}) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [overHero, setOverHero] = useState(false);
@@ -50,7 +57,12 @@ export function HeaderClient({ catalog }: { catalog: CategoryBrief[] }) {
       {/* Un solo menú para todos los tamaños: el de tres columnas se
           reduce a una en móvil, así que mantener dos implementaciones
           distintas solo garantizaba que se separaran con el tiempo. */}
-      <MenuCompleto open={mobileOpen} onOpenChange={setMobileOpen} catalog={catalog} />
+      <MenuCompleto
+        open={mobileOpen}
+        onOpenChange={setMobileOpen}
+        catalog={catalog}
+        fotos={fotos}
+      />
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} catalog={catalog} />
     </header>
   );

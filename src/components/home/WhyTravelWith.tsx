@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { Contornos } from "@/components/home/Contornos";
 import { TextoLetras } from "@/components/home/TextoLetras";
 
 const FEATURES = [
@@ -55,8 +56,9 @@ export function WhyTravelWith({ foto }: { foto?: string | null }) {
   );
 
   return (
-    <section className="border-t border-slate-200 bg-white py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section className="relative overflow-hidden border-t border-slate-200 bg-white py-20 sm:py-24">
+      <Contornos />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Encabezado alineado a la izquierda: el centrado de todo es otra
             señal de plantilla, y aquí compite con las cuatro columnas. */}
         {/* `aparece-hijos` en vez de `rise-in`: aquella es una animación de

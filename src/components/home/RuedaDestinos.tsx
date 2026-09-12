@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
+import { Contornos } from "@/components/home/Contornos";
 
 export interface DestinoRueda {
   slug: string;
@@ -150,10 +151,11 @@ export function RuedaDestinos({ destinos }: { destinos: DestinoRueda[] }) {
 
   return (
     <section
-      className="trama-curvas relative overflow-hidden bg-[#faf8f4] py-16 sm:py-20"
+      className="relative overflow-hidden bg-[#faf8f4] py-16 sm:py-20"
       onMouseEnter={() => setQuieto(true)}
       onMouseLeave={() => setQuieto(false)}
     >
+      <Contornos />
       {/* El recorte orgánico. Va una sola vez en el documento y se referencia
           desde el CSS; en unidades de la caja, así que sirva la foto que
           sirva y mida lo que mida. */}

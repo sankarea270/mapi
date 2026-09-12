@@ -1320,8 +1320,68 @@ html {
 }
 
 /*
- * Trama de curvas de nivel. La usan la segunda columna del menú y la
- * sección del carrusel de tours.
+ * Curvas de nivel del inicio: se trazan solas al entrar la sección.
+ *
+ * `pathLength="1"` es lo que permite animar el trazado sin medir nada en
+ * JavaScript: normaliza el largo real de cada curva a 1, así que el mismo
+ * `stroke-dasharray: 1` vale para todas por distintas que sean.
+ *
+ * Aquí no hace falta el guardado de `js-revelar` que llevan las demás
+ * entradas. Ese `dashoffset` inicial deja las curvas invisibles, pero el
+ * propio dibujo solo existe si el componente llegó a medirse: sin
+ * JavaScript no hay trazos que esconder, y la página se ve igual sin ellos.
+ */
+.contornos path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.contornos.revelado path {
+  animation: contorno-traza 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes contorno-traza {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/*
+ * Deriva lateral muy lenta. Va sobre el grupo y en unidades del dibujo, no
+ * sobre el svg y en porcentaje: mover el svg entero cambiaría la escala
+ * respecto a las demás secciones, y la escala común es justo lo que hace
+ * que el relieve se lea como uno solo.
+ *
+ * Las curvas se trazan desbordando 140 unidades por cada lado —`MARGEN` en
+ * el componente— precisamente para que estas 22 no descubran sus extremos.
+ */
+.contornos-deriva {
+  animation: contorno-deriva 46s ease-in-out infinite alternate;
+}
+
+@keyframes contorno-deriva {
+  from {
+    transform: translateX(-22px);
+  }
+  to {
+    transform: translateX(22px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contornos-deriva {
+    animation: none;
+  }
+
+  .contornos path,
+  .contornos.revelado path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/*
+ * Trama de curvas de nivel. La usa la segunda columna del menú.
  *
  * La referencia lleva un dibujo topográfico muy tenue detrás de la lista.
  * Va como SVG en línea y no como archivo: son 400 bytes, y una imagen

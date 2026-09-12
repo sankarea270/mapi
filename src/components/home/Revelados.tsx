@@ -8,6 +8,9 @@ import { useEffect } from "react";
    invisibles por diseño; además la rueda rehace el suyo en cada giro, así
    que sin esto se reobservaba y reanimaba cada pocos segundos un elemento
    que nadie mira. */
+/* Las curvas de nivel NO entran aquí: se observan solas. Este observador
+   pone la clase por fuera de React, y ese componente vuelve a dibujarse en
+   cuanto termina de medirse, así que al reconciliar se la quitaba. */
 const SELECTOR =
   ".escena-texto > *:not(.sr-only):not(:is(h1,h2,h3,h4,h5,h6)), .escena-foto, .revela-marco";
 

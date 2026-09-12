@@ -7,13 +7,19 @@ import { Area, Boton, Campo, Etiqueta, SelectorIdioma, type Idioma } from "./cam
 import { CampoImagen } from "./CampoImagen";
 
 /*
- * Paquetes, destinos y reseñas comparten formulario.
+ * Paquetes, destinos, experiencias, guías y reseñas comparten formulario.
  *
- * Los tres son lo mismo: unos textos en tres idiomas, una foto y un estado.
- * Escribir tres editores casi idénticos garantizaba que se separasen con el
+ * Los cinco son lo mismo: unos textos en tres idiomas, una foto y un estado.
+ * Escribir cinco editores casi idénticos garantizaba que se separasen con el
  * tiempo, así que se describen como datos y hay un único editor que los
  * interpreta. Los tours no entran aquí porque sí son distintos: itinerario,
  * incluidos, galería y categoría.
+ *
+ * De las guías se edita la portada —título, entradilla, foto y grupo—, no el
+ * cuerpo. El cuerpo son secciones con encabezado y párrafos, y meterlas en
+ * este editor pediría un repetidor anidado que no existe; de momento siguen
+ * viniendo del repositorio y se emparejan por dirección. Lo que se pedía
+ * —poder cambiarles la imagen— sí está.
  */
 
 type TipoCampo = "texto" | "area" | "numero" | "lista" | "imagen";
@@ -87,6 +93,46 @@ const ESQUEMAS: Record<string, Esquema> = {
         ayuda: "Direcciones de categorías, una por línea.",
       },
       { col: "tour_slugs", etiqueta: "Tours asociados", tipo: "lista" },
+    ],
+  },
+  experiencias: {
+    tabla: "experiences",
+    singular: "experiencia",
+    plural: "experiencias",
+    carpeta: "experiencias",
+    titulo: "name_es",
+    conSlug: true,
+    campos: [
+      { col: "name", etiqueta: "Nombre", tipo: "texto", ml: true },
+      { col: "description", etiqueta: "Descripción", tipo: "area", ml: true },
+      { col: "image_url", etiqueta: "Imagen", tipo: "imagen" },
+      {
+        col: "tour_slugs",
+        etiqueta: "Tours que la componen",
+        tipo: "lista",
+        ayuda: "Las direcciones de los tours, una por línea.",
+      },
+    ],
+  },
+  guias: {
+    tabla: "guides",
+    singular: "guía",
+    plural: "guías",
+    carpeta: "guias",
+    titulo: "title_es",
+    conSlug: true,
+    campos: [
+      { col: "title", etiqueta: "Título", tipo: "texto", ml: true },
+      { col: "excerpt", etiqueta: "Entradilla", tipo: "area", ml: true },
+      { col: "image_url", etiqueta: "Imagen", tipo: "imagen" },
+      {
+        col: "category",
+        etiqueta: "Grupo",
+        tipo: "texto",
+        placeholder: "como-llegar",
+        ayuda:
+          "como-llegar · clima · equipaje · seguridad · visas · faq. Agrupa la guía en el índice.",
+      },
     ],
   },
   resenas: {

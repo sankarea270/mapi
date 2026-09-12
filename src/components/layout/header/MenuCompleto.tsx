@@ -68,10 +68,15 @@ export function MenuCompleto({
   open,
   onOpenChange,
   catalog,
+  fotos,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   catalog: CategoryBrief[];
+  /** Una foto por dirección de enlace. Sin esto, las secciones de enlaces
+      enseñaban una sola imagen para todas sus entradas —la de `featured`—,
+      así que recorrerlas no previsualizaba nada. */
+  fotos: Record<string, string>;
 }) {
   const t = useTranslations();
   const [seccion, setSeccion] = useState(0);
@@ -119,7 +124,9 @@ export function MenuCompleto({
           s.links.map((l) => ({
             etiqueta: t(l.labelKey),
             href: l.href,
-            imagen: item.featured?.image,
+            /* La suya si existe; la de la sección como reserva, para los
+               enlaces que no apuntan a una ficha con foto propia. */
+            imagen: fotos[l.href] ?? item.featured?.image,
           }))
         ),
       };
@@ -132,7 +139,7 @@ export function MenuCompleto({
       { etiqueta: t("nav.about"), href: "/nosotros", entradas: [] as Entrada[] },
       { etiqueta: t("nav.contact"), href: "/contacto", entradas: [] as Entrada[] },
     ];
-  }, [catalog, t]);
+  }, [catalog, fotos, t]);
 
   useEffect(() => {
     if (!open) return;

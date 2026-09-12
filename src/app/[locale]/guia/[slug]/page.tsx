@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { getGuides } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
-import { GUIDES } from "@/data/guides";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import {
@@ -15,9 +15,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-export function generateStaticParams() {
+/* Asíncrona: la lista sale de Supabase al compilar, no de un archivo. */
+export async function generateStaticParams() {
+  const lista = await getGuides();
   return routing.locales.flatMap((locale) =>
-    GUIDES.map((guide) => ({ locale, slug: guide.slug }))
+    lista.map((guide) => ({ locale, slug: guide.slug }))
   );
 }
 
@@ -27,7 +29,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const guide = GUIDES.find((g) => g.slug === slug);
+  const lista = await getGuides();
+  const guide = lista.find((g) => g.slug === slug);
   if (!guide) return {};
   return buildMetadata({
     locale,
@@ -44,9 +47,10 @@ export default async function GuideArticlePage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  const lista = await getGuides();
   setRequestLocale(locale);
 
-  const guide = GUIDES.find((g) => g.slug === slug);
+  const guide = lista.find((g) => g.slug === slug);
   if (!guide) notFound();
 
   const t = await getTranslations("guia");

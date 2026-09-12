@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { TextoLetras } from "@/components/home/TextoLetras";
 import { cn } from "@/lib/utils";
+import { Contornos } from "@/components/home/Contornos";
 
 /** Tour ya traducido: el componente es de cliente y no resuelve idiomas. */
 export interface TarjetaTour {
@@ -193,7 +194,8 @@ export function ToursPackagesCarousel({ tours }: { tours: TarjetaTour[] }) {
   const resto = corte === -1 ? "" : titulo.slice(corte);
 
   return (
-    <section className="trama-curvas tira-tours overflow-hidden bg-[#faf8f4] py-16 sm:py-20">
+    <section className="tira-tours relative overflow-hidden bg-[#faf8f4] py-16 sm:py-20">
+      <Contornos />
       <div className="tira-entra mx-auto max-w-7xl px-4 sm:px-6">
         <h2 className="font-heading text-3xl font-bold uppercase leading-none text-slate-900 sm:text-[3.2rem]">
           {/* Dos mitades, dos colores, dos barridos encadenados: el del

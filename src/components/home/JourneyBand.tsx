@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { Contornos } from "@/components/home/Contornos";
 
 /**
  * Banda de cierre antes del pie.
@@ -34,8 +35,9 @@ export async function JourneyBand() {
   if (!photo) return null;
 
   return (
-    <section className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+    <section className="relative overflow-hidden bg-white">
+      <Contornos />
+      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="journey-plate mx-auto w-full max-w-xl">
           <Image
             src={photo}
