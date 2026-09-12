@@ -294,14 +294,13 @@
     "error": "Ocorreu um problema. Tente novamente."
   },
   "reviews": {
-    "badge": "Avaliações reais",
+    "badge": "Opiniões reais",
     "title": "O que nossos viajantes dizem",
-    "subtitle": "Milhares de viajantes já descobriram o Peru conosco. Estas são algumas de suas experiências.",
-    "titlePlain": "O que nossos",
-    "titleAccent": "viajantes dizem",
-    "count": "{from}–{to} de {total} avaliações",
-    "prev": "Avaliações anteriores",
-    "next": "Próximas avaliações"
+    "subtitle": "Mais que uma viagem: uma experiência que nossos viajantes lembram.",
+    "titlePlain": "Histórias que ficam",
+    "titleAccent": "para sempre",
+    "prev": "Avaliação anterior",
+    "next": "Próxima avaliação"
   },
   "social": {
     "badge": "Siga-nos",

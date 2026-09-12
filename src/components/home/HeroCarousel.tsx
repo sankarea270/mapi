@@ -55,7 +55,14 @@ export function HeroCarousel({ slides }: { slides?: HeroSlide[] }) {
             priority={i === 0}
             quality={i === 0 ? 90 : 75}
             sizes="100vw"
-            placeholder="blur"
+            /* La miniatura de carga solo si la hay. Las cinco fotos de
+               respaldo la traen escrita; las que se suben desde el panel,
+               no. Pedir `placeholder="blur"` sin `blurDataURL` hace que
+               Next lance una excepción y tumbe la página entera en
+               desarrollo. En producción no se comprueba, así que el fallo
+               estuvo publicado sin dar la cara: es de los peores, porque
+               solo aparece al volver a tocar el proyecto. */
+            placeholder={slide.blur ? "blur" : "empty"}
             blurDataURL={slide.blur}
             className={cn(
               "object-cover",
