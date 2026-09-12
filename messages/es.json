@@ -300,7 +300,8 @@
     "titlePlain": "Historias que se llevan",
     "titleAccent": "para siempre",
     "prev": "Opinión anterior",
-    "next": "Opinión siguiente"
+    "next": "Opinión siguiente",
+    "count": "{count, plural, one {# opinión publicada} other {# opiniones publicadas}}"
   },
   "social": {
     "badge": "Síguenos",

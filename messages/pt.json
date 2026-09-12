@@ -300,7 +300,8 @@
     "titlePlain": "Histórias que ficam",
     "titleAccent": "para sempre",
     "prev": "Avaliação anterior",
-    "next": "Próxima avaliação"
+    "next": "Próxima avaliação",
+    "count": "{count, plural, one {# opinião publicada} other {# opiniões publicadas}}"
   },
   "social": {
     "badge": "Siga-nos",

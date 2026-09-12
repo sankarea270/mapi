@@ -1653,6 +1653,20 @@ html {
   color: rgb(255 255 255 / 0.3);
 }
 
+/* La pastilla del viaje también. Es el añadido más reciente de la ficha y
+   el que más se notaría si se quedara fuera: con el petróleo cubriéndolo
+   todo, una cápsula gris claro con borde gris claro se leería como un
+   recorte sin pintar justo en el pie de la tarjeta. */
+.resena:hover .resena-ficha {
+  border-color: rgb(255 255 255 / 0.3);
+  background-color: rgb(255 255 255 / 0.12);
+}
+
+.resena:hover .resena-ficha-txt,
+.resena:hover .resena-ficha:hover .resena-ficha-txt {
+  color: #fff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .resena::before,
   .resena:hover::before {

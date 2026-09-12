@@ -7,6 +7,12 @@ export type Review = {
   tourSlug?: string;
 };
 
+/*
+ * `tourSlug` apunta a la ficha del catálogo —tour o paquete— de la que habla
+ * la reseña. Cinco de las seis señalaban a slugs que no existen, así que el
+ * dato estaba ahí sin que nada lo usara. Quien lo pinta comprueba antes que
+ * resuelva: si no, la opinión sale sin enlace en vez de con uno roto.
+ */
 export const REVIEWS: Review[] = [
   {
     id: "r1",
@@ -30,7 +36,7 @@ export const REVIEWS: Review[] = [
       en: "We took the Southern Peru circuit and everything was perfect: hotels, transfers and flawless organization. We will come back with them.",
       pt: "Fizemos o circuito do Sul do Peru e tudo foi perfeito: hotéis, traslados e organização impecável. Voltaremos com eles.",
     },
-    tourSlug: "sur-del-peru-clasico",
+    tourSlug: "sur-del-peru",
   },
   {
     id: "r3",
@@ -42,6 +48,11 @@ export const REVIEWS: Review[] = [
       en: "The Sacred Valley tour with the gastronomy experience exceeded my expectations. Personal attention from start to finish.",
       pt: "O tour pelo Vale Sagrado com a experiência gastronômica superou minhas expectativas. Atenção personalizada do início ao fim.",
     },
+    /* Sin resolver a propósito: el texto habla del «Valle Sagrado con la
+       experiencia gastronómica» y en el catálogo eso encaja con más de un
+       tour. Elegir uno a ojo sería atribuirle a alguien un viaje que no se
+       sabe si hizo, así que la ficha sale sin enlace hasta que se decida
+       desde el panel. */
     tourSlug: "valle-sagrado-gastronomico",
   },
   {
@@ -54,7 +65,7 @@ export const REVIEWS: Review[] = [
       en: "Impeccable Portuguese-speaking support. The Iquitos jungle tour was an amazing adventure with very knowledgeable local guides.",
       pt: "Atendimento em português impecável. O tour pela selva de Iquitos foi uma aventura incrível com guias locais muito experientes.",
     },
-    tourSlug: "amazonia-iquitos-clasico",
+    tourSlug: "iquitos-amazon",
   },
   {
     id: "r5",
@@ -66,7 +77,7 @@ export const REVIEWS: Review[] = [
       en: "Easy online booking, immediate WhatsApp response and a luxury experience at Colca Canyon. Excellent service.",
       pt: "Reserva on-line fácil, resposta imediata pelo WhatsApp e uma experiência de luxo no Cânion do Colca. Excelente serviço.",
     },
-    tourSlug: "colca-full-day",
+    tourSlug: "colca-canyon",
   },
   {
     id: "r6",
@@ -78,6 +89,6 @@ export const REVIEWS: Review[] = [
       en: "The team answered all my questions before the trip and the Cusco itinerary was perfect. You can tell they love their job.",
       pt: "A equipe respondeu todas as minhas dúvidas antes da viagem e o roteiro de Cusco foi perfeito. Dá para ver que amam o que fazem.",
     },
-    tourSlug: "cusco-city-tour",
+    tourSlug: "city-tour-cusco",
   },
 ];

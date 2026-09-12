@@ -300,7 +300,8 @@
     "titlePlain": "Stories they keep",
     "titleAccent": "forever",
     "prev": "Previous review",
-    "next": "Next review"
+    "next": "Next review",
+    "count": "{count, plural, one {# published review} other {# published reviews}}"
   },
   "social": {
     "badge": "Follow us",

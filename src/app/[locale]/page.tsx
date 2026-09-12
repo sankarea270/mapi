@@ -7,7 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
 import { buildMetadata, LOGO_URL } from "@/lib/seo";
 import { pickLocalized } from "@/lib/format";
-import { getDestinations, getReviews, getHeroSlides } from "@/lib/content";
+import { getDestinations, getReviews, getHeroSlides, getPackages } from "@/lib/content";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { climateForCategory } from "@/data/climate";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
@@ -53,10 +53,11 @@ export default async function HomePage({
      se reutilizan en vez de duplicarlos. */
   const tSeason = await getTranslations("season");
   const resenas = await getReviews();
-  const [categorias, destinos, slidesPortada] = await Promise.all([
+  const [categorias, destinos, slidesPortada, paquetes] = await Promise.all([
     getCategoriesWithTours(),
     getDestinations(),
     getHeroSlides(),
+    getPackages(),
   ]);
 
   /* Destacados para la tira de debajo de la portada.
@@ -124,6 +125,39 @@ export default async function HomePage({
     .filter((x) => x.tours > 0 && x.imagen);
 
   const fotoRevela = paraRueda[0]?.imagen ?? null;
+
+  /*
+   * La ficha del catálogo de la que habla cada reseña.
+   *
+   * Las reseñas ya traían `tourSlug` y el panel ya pedía ese dato —«tour al
+   * que se refiere»—, pero no se pintaba en ninguna parte: la opinión salía
+   * flotando, sin decir de qué viaje hablaba. Y cinco de las seis apuntaban
+   * a slugs inexistentes, cosa que nadie notó porque nada los seguía.
+   *
+   * Se resuelve AQUÍ, al compilar, y contra el catálogo de verdad: si el
+   * slug no existe la reseña sale sin enlace. Un enlace roto en una sección
+   * que se titula «opiniones reales» es peor que ninguno.
+   *
+   * Se miran tours y paquetes porque hay reseñas que hablan de un circuito
+   * —«hicimos el circuito del Sur del Perú»—, y un circuito es un paquete.
+   */
+  const fichas: Record<string, { nombre: string; imagen: string; href: string }> = {};
+  for (const c of categorias) {
+    for (const tour of c.tours) {
+      fichas[tour.slug] = {
+        nombre: pickLocalized(tour.name, locale),
+        imagen: tour.image,
+        href: `/tours/${tour.slug}`,
+      };
+    }
+  }
+  for (const x of paquetes) {
+    fichas[x.slug] = {
+      nombre: pickLocalized(x.name, locale),
+      imagen: x.image,
+      href: `/paquetes/${x.slug}`,
+    };
+  }
 
   /* Foto del bloque "por qué viajar con nosotros". Se busca en public/ y, si
      no está, el bloque se dibuja sin ella. Así se puede subir la foto por
@@ -307,7 +341,7 @@ export default async function HomePage({
       <SocialFeed />
     </Escena>
     <Escena>
-      <ReviewsSection reviews={resenas} />
+      <ReviewsSection reviews={resenas} fichas={fichas} />
     </Escena>
     <JourneyBand />
     </>

@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Review } from "@/data/reviews";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { pickLocalized } from "@/lib/format";
 import { TextoLetras } from "@/components/home/TextoLetras";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { Contornos } from "@/components/home/Contornos";
 
@@ -43,11 +45,25 @@ const UMBRAL = 50;
  * Sin foto, a propósito. No hay retratos reales de viajeros, y ponerlos de
  * banco de imágenes sería fingir que sí.
  *
- * Las reseñas llegan como propiedad: este componente es de cliente y no
- * puede consultar Supabase; quien lo usa es un componente de servidor que
- * lee al compilar.
+ * Cada opinión dice de QUÉ viaje habla, y lleva a él. Antes la cita salía
+ * flotando: se leía bien, pero no se sabía si quien escribía había hecho un
+ * día en el Valle Sagrado o un circuito de diez. Ese dato ya estaba en la
+ * reseña y el panel ya lo pedía; simplemente no se pintaba. Con la ficha
+ * delante la opinión deja de ser un elogio suelto y pasa a ser la prueba de
+ * algo concreto que además se puede ir a mirar.
+ *
+ * Las reseñas y las fichas llegan como propiedad: este componente es de
+ * cliente y no puede consultar Supabase; quien lo usa es un componente de
+ * servidor que lee al compilar y que ya ha comprobado que cada ficha existe.
  */
-export function ReviewsSection({ reviews }: { reviews: Review[] }) {
+export function ReviewsSection({
+  reviews,
+  fichas,
+}: {
+  reviews: Review[];
+  /** Ficha del catálogo por slug. Solo trae las que existen de verdad. */
+  fichas: Record<string, { nombre: string; imagen: string; href: string }>;
+}) {
   const t = useTranslations("reviews");
   /* El texto estaba fijado a `.es`: en inglés y portugués las reseñas salían
      en español aunque estuvieran traducidas en la base de datos. */
@@ -134,6 +150,12 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
     if (Math.abs(dx) > UMBRAL) ir(dx < 0 ? 1 : -1);
   }
 
+  /* La media y el recuento salen de las reseñas que hay, no de un número
+     escrito a mano en las traducciones: si mañana se borra una desde el
+     panel, la cifra baja sola. Un "4,9 de 5" fijo en el texto se queda
+     mintiendo en cuanto cambian los datos. */
+  const media = total > 0 ? reviews.reduce((n, r) => n + r.rating, 0) / total : 0;
+
   if (total === 0) return null;
 
   return (
@@ -154,6 +176,18 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
           </h2>
           <p className="mx-auto mt-5 max-w-xl font-logo text-lg leading-relaxed text-slate-600 sm:text-xl">
             {t("subtitle")}
+          </p>
+
+          {/* El dato en crudo, medido sobre las reseñas publicadas. En una
+              sección que se llama "opiniones reales" la cifra tiene que
+              poder comprobarse contando las fichas de abajo. */}
+          <p className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-heading text-[13px] font-bold uppercase tracking-[0.14em] text-slate-500">
+            <span className="flex items-center gap-1.5 text-amber-600">
+              <Star className="size-3.5 fill-current" aria-hidden />
+              <span className="tabular-nums">{media.toFixed(1).replace(".", ",")}</span>
+            </span>
+            <span aria-hidden className="h-3 w-px bg-slate-300" />
+            <span className="tabular-nums">{t("count", { count: total })}</span>
           </p>
         </div>
 
@@ -182,6 +216,11 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
             const i = (activa + desplazamiento + total * 10) % total;
             const r = reviews[i];
             const centro = desplazamiento === 0;
+            /* Solo si el slug resuelve contra el catálogo de verdad. Cinco
+               de las seis reseñas apuntaban a tours inexistentes; enlazarlas
+               a ciegas habría llevado a un 404 desde la sección que más
+               confianza tiene que dar. */
+            const ficha = r.tourSlug ? fichas[r.tourSlug] : undefined;
 
             return (
               <article
@@ -192,6 +231,21 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
                    un baile. */
                 key={desplazamiento}
                 aria-hidden={!centro || undefined}
+                /* Las laterales pasan a ser el mando del carrusel. Estaban
+                   ahí para que se viera que hay más opiniones, pero no se
+                   podía hacer nada con ellas: se veía la de al lado y había
+                   que buscar la flecha de abajo para llegar a ella.
+
+                   Solo con ratón, y a propósito. Son copias de la opinión
+                   anterior y la siguiente, marcadas `aria-hidden`: meterlas
+                   en el orden de tabulación obligaría a quien navega con
+                   teclado a pasar por el mismo texto tres veces. Para eso
+                   están las flechas del pie, que sí son botones con nombre
+                   —y por eso el enlace de dentro sale del tabulador con
+                   `tabIndex={-1}` cuando la ficha no es la del medio. */
+                onClick={() => {
+                  if (desplazamiento !== 0) ir(desplazamiento as 1 | -1);
+                }}
                 /* Las tres son la MISMA caja: mismo ancho, mismo alto y el
                    mismo cuerpo de letra. Antes la del medio era una caja
                    distinta —599px contra 289, y la cita a otro tamaño—, y
@@ -203,7 +257,7 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
                   "resena flex w-full flex-col rounded-[1.75rem] bg-white px-8 py-11 transition-[transform,box-shadow,opacity] duration-500 lg:w-[22rem] lg:shrink-0",
                   centro
                     ? "shadow-xl shadow-slate-900/[0.1] lg:scale-[1.06]"
-                    : "hidden opacity-60 shadow-lg shadow-slate-900/[0.05] hover:opacity-100 lg:flex lg:scale-[0.94]"
+                    : "hidden cursor-pointer opacity-60 shadow-lg shadow-slate-900/[0.05] hover:opacity-100 lg:flex lg:scale-[0.94]"
                 )}
               >
                 <div
@@ -249,6 +303,45 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
                       {r.country}
                     </p>
                   </figcaption>
+
+                  {/* El viaje del que habla. Va al final y en pequeño: es el
+                      pie de la opinión, no su titular.
+
+                      Reserva el sitio aunque no haya ficha —las reseñas
+                      generales de la agencia no la tienen— porque si no, las
+                      tres cajas dejarían de medir lo mismo en cuanto una
+                      reseña se quedara sin enlace, que es justo lo que se
+                      pidió evitar. */}
+                  {/* `w-full` y `min-w-0`: sin ellos el recorte del nombre
+                      no llega a activarse. Un elemento flexible no baja de
+                      su contenido por defecto, así que con un tour de nombre
+                      largo la pastilla crecía por encima de la tarjeta en
+                      vez de cortar el texto. Medido en el móvil: 386px de
+                      pastilla dentro de una tarjeta de 343. */}
+                  <div className="mt-6 flex h-9 w-full items-center justify-center">
+                    {ficha && (
+                      <Link
+                        href={ficha.href}
+                        /* La lateral entera cambia de reseña al pulsarla; sin
+                           esto, pulsar su enlace haría las dos cosas. */
+                        onClick={(e) => e.stopPropagation()}
+                        tabIndex={centro ? undefined : -1}
+                        className="resena-ficha group/f flex min-w-0 max-w-full items-center gap-2.5 rounded-full border border-slate-200 bg-slate-50/80 py-1 pl-1 pr-3.5 transition-colors duration-300"
+                      >
+                        <Image
+                          src={ficha.imagen}
+                          alt=""
+                          width={56}
+                          height={56}
+                          sizes="28px"
+                          className="size-7 shrink-0 rounded-full object-cover"
+                        />
+                        <span className="resena-ficha-txt min-w-0 truncate font-heading text-[11px] font-bold uppercase tracking-[0.1em] text-slate-600 transition-colors duration-300 group-hover/f:text-teal-700">
+                          {ficha.nombre}
+                        </span>
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </article>
             );
