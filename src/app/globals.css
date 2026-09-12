@@ -1573,16 +1573,24 @@ html {
   transform: scale(46);
 }
 
-/* El texto se invierte al llenarse la tarjeta. Las estrellas se quedan en
-   ámbar: siguen leyéndose sobre el petróleo y son la única pieza cuyo color
-   significa algo. */
+/* Al llenarse la tarjeta se invierte TODO lo que hay dentro, estrellas
+   incluidas. Antes se quedaban en ámbar con el argumento de que una estrella
+   dorada se reconoce sin leer nada; pero sobre el petróleo eran lo único que
+   no acompañaba, y la ficha parecía a medio pintar. Las llenas pasan a
+   blanco y las vacías a blanco muy rebajado, que mantiene la proporción
+   "tres de cinco" legible de un vistazo. */
 .resena:hover .resena-nombre,
-.resena:hover .resena-cita {
+.resena:hover .resena-cita,
+.resena:hover .resena-estrella {
   color: #fff;
 }
 
 .resena:hover .resena-pais {
-  color: rgb(255 255 255 / 0.75);
+  color: rgb(255 255 255 / 0.78);
+}
+
+.resena:hover .resena-estrella-vacia {
+  color: rgb(255 255 255 / 0.3);
 }
 
 @media (prefers-reduced-motion: reduce) {

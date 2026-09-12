@@ -19,14 +19,13 @@ const ENTRADA = 480;
 const UMBRAL = 50;
 
 /**
- * Reseñas: una sola, en el centro, rotando.
+ * Reseñas: tres a la vez, con la del medio destacada, rotando.
  *
- * Deja atrás la rejilla de tres fichas. Tres testimonios a la vez se leen
- * como un listado de producto; uno solo, grande y con aire alrededor, se lee
- * como lo que es: alguien contando su viaje. Es lo que se pidió —una pieza
- * de agencia boutique, no un panel— y de paso resuelve algo práctico: con
- * seis reseñas, la rejilla obligaba a paginar de tres en tres y nadie
- * terminaba de leer ninguna.
+ * Ni la rejilla de tres iguales de antes ni el testimonio único que la
+ * sustituyó. La rejilla se leía como un listado de producto y obligaba a
+ * paginar de tres en tres; el testimonio único enseñaba una sola opinión,
+ * y con seis había que esperar medio minuto para intuir que hay más. Con
+ * tres y una que manda se ve que hay muchas sin perder el protagonista.
  *
  * La transición es de dos tiempos y no un simple cambio de texto: la actual
  * se va hacia un lado perdiendo opacidad y la siguiente entra desde el lado
@@ -136,12 +135,10 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
 
   if (total === 0) return null;
 
-  const r = reviews[activa];
-
   return (
     <section className="relative overflow-hidden bg-[#faf8f4] py-20 sm:py-28">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="escena-texto text-center">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="escena-texto mx-auto max-w-3xl text-center">
           <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-amber-600">
             {t("badge")}
           </p>
@@ -158,11 +155,17 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
           </p>
         </div>
 
-        {/* La ficha. `resena` le da el llenado de color al pasar el ratón: un
-            círculo escondido en la esquina que crece hasta cubrirla. */}
+        {/* Tres a la vez, con la del medio destacada.
+            El testimonio protagonista funcionaba, pero enseñaba una sola
+            opinión: con seis, había que esperar medio minuto para ver que
+            hay más de una. Con tres se ve que hay muchas y aun así una
+            manda, que es lo que se pidió.
+
+            Las laterales se ocultan por debajo de `lg`: tres columnas en un
+            móvil dejan cada cita en una tira ilegible. */}
         <div
           ref={pistaRef}
-          className="resena mt-14 rounded-[1.75rem] bg-white px-7 py-12 shadow-xl shadow-slate-900/[0.07] sm:mt-16 sm:px-16 sm:py-16"
+          className="mt-14 flex items-stretch justify-center gap-5 sm:mt-16"
           onMouseEnter={() => setQuieto(true)}
           onMouseLeave={() => {
             if (inicio.current === null) setQuieto(false);
@@ -173,51 +176,86 @@ export function ReviewsSection({ reviews }: { reviews: Review[] }) {
           onPointerCancel={alSoltar}
           style={{ touchAction: "pan-y" }}
         >
-          {/* El alto mínimo evita que la caja dé un salto al pasar de una
-              reseña corta a una larga, que es lo que rompe la sensación de
-              que el texto se cambia solo. */}
-          <div
-            className={cn(
-              "flex min-h-[13rem] flex-col items-center justify-center text-center sm:min-h-[11rem]",
-              fase === "sale" && "resena-sale",
-              fase === "entra" && "resena-entraviene"
-            )}
-            style={{ ["--sentido" as string]: sentido }}
-          >
-            <blockquote className="resena-cita max-w-2xl font-logo text-xl leading-relaxed text-slate-700 transition-colors duration-300 sm:text-[1.6rem] sm:leading-[1.55]">
-              &ldquo;{pickLocalized(r.text, locale)}&rdquo;
-            </blockquote>
+          {[-1, 0, 1].map((desplazamiento) => {
+            const i = (activa + desplazamiento + total * 10) % total;
+            const r = reviews[i];
+            const centro = desplazamiento === 0;
 
-            {/* Estrellas pequeñas y discretas, como se pidió. Se quedan en
-                ámbar: una estrella dorada se reconoce como valoración sin
-                leer nada. */}
-            <div
-              className="mt-8 flex gap-1"
-              role="img"
-              aria-label={`${r.rating} / 5`}
-            >
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
+            return (
+              <article
+                /* La `key` lleva la posición y no el índice de la reseña: es
+                   lo que hace que las tres cajas se queden en su sitio y solo
+                   cambie su contenido. Con la `key` en el índice, React las
+                   movería de columna y la animación de cambio se vería como
+                   un baile. */
+                key={desplazamiento}
+                aria-hidden={!centro || undefined}
+                className={cn(
+                  "resena flex flex-col rounded-[1.75rem] bg-white transition-[transform,box-shadow,opacity] duration-500",
+                  centro
+                    ? "w-full max-w-xl px-7 py-11 shadow-xl shadow-slate-900/[0.09] sm:px-12 sm:py-14 lg:scale-[1.04]"
+                    : "hidden w-[19rem] shrink-0 px-8 py-11 opacity-70 shadow-lg shadow-slate-900/[0.05] hover:opacity-100 lg:flex lg:scale-[0.95]"
+                )}
+              >
+                <div
                   className={cn(
-                    "size-3.5",
-                    i < Math.round(r.rating)
-                      ? "fill-current text-amber-500"
-                      : "text-slate-200"
+                    "flex flex-1 flex-col items-center justify-center text-center",
+                    centro && fase === "sale" && "resena-sale",
+                    centro && fase === "entra" && "resena-entraviene"
                   )}
-                />
-              ))}
-            </div>
+                  style={{ ["--sentido" as string]: sentido }}
+                >
+                  {/* El recorte a seis líneas iguala las tres columnas sin
+                      fijarles un alto: una cita larga y otra corta dejarían
+                      las cajas descuadradas. */}
+                  <blockquote
+                    className={cn(
+                      "resena-cita line-clamp-6 max-w-2xl font-logo leading-relaxed text-slate-700 transition-colors duration-300",
+                      centro
+                        ? "text-xl sm:text-[1.5rem] sm:leading-[1.55]"
+                        : "text-[15px]"
+                    )}
+                  >
+                    &ldquo;{pickLocalized(r.text, locale)}&rdquo;
+                  </blockquote>
 
-            <figcaption className="mt-5">
-              <p className="resena-nombre font-heading text-base font-bold uppercase tracking-[0.1em] text-slate-900 transition-colors duration-300">
-                {r.name}
-              </p>
-              <p className="resena-pais mt-1 font-logo text-[15px] text-teal-700 transition-colors duration-300">
-                {r.country}
-              </p>
-            </figcaption>
-          </div>
+                  {/* Estrellas pequeñas y discretas. Cambian de color con la
+                      ficha, como todo lo demás. */}
+                  <div
+                    className={cn("flex gap-1", centro ? "mt-8" : "mt-6")}
+                    role="img"
+                    aria-label={`${r.rating} / 5`}
+                  >
+                    {Array.from({ length: 5 }).map((_, e) => (
+                      <Star
+                        key={e}
+                        className={cn(
+                          "size-3.5 transition-colors duration-300",
+                          e < Math.round(r.rating)
+                            ? "resena-estrella fill-current text-amber-500"
+                            : "resena-estrella-vacia text-slate-200"
+                        )}
+                      />
+                    ))}
+                  </div>
+
+                  <figcaption className="mt-5">
+                    <p
+                      className={cn(
+                        "resena-nombre font-heading font-bold uppercase tracking-[0.1em] text-slate-900 transition-colors duration-300",
+                        centro ? "text-base" : "text-sm"
+                      )}
+                    >
+                      {r.name}
+                    </p>
+                    <p className="resena-pais mt-1 font-logo text-[15px] text-teal-700 transition-colors duration-300">
+                      {r.country}
+                    </p>
+                  </figcaption>
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         {/* Pie: flechas discretas, el contador y la barra de avance. */}
