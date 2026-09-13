@@ -299,9 +299,11 @@
     "subtitle": "Más que un viaje, una experiencia que nuestros viajeros recuerdan.",
     "titlePlain": "Historias que se llevan",
     "titleAccent": "para siempre",
-    "prev": "Opinión anterior",
-    "next": "Opinión siguiente",
-    "count": "{count, plural, one {# opinión publicada} other {# opiniones publicadas}}"
+    "count": "{count, plural, one {# opinión publicada} other {# opiniones publicadas}}",
+    "readMore": "Leer reseña completa",
+    "readLess": "Mostrar menos",
+    "pause": "Pausar opiniones",
+    "play": "Reanudar opiniones"
   },
   "social": {
     "badge": "Síguenos",
