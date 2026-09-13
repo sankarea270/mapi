@@ -19,11 +19,24 @@ export interface DatoFicha {
  * Se separan con filete y no con tarjetas para que la franja se lea como una
  * sola pieza, igual que la ficha técnica de una revista.
  */
+/* Columnas según los datos que haya. Las casillas salen de la ficha y la
+   que no tiene dato no se pinta, así que puede haber dos, tres o cuatro; con
+   las columnas fijas a cuatro sobraba un hueco gris al final. Clases
+   escritas enteras para que Tailwind las encuentre. */
+const COLUMNAS: Record<number, string> = {
+  1: "sm:grid-cols-1",
+  2: "sm:grid-cols-2",
+  3: "sm:grid-cols-3",
+  4: "sm:grid-cols-4",
+};
+
 export function FranjaDatos({ datos, className }: { datos: DatoFicha[]; className?: string }) {
   return (
     <dl
       className={cn(
-        "grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-200 sm:grid-cols-4",
+        "grid gap-px overflow-hidden rounded-lg bg-slate-200 ring-1 ring-slate-200",
+        datos.length === 3 ? "grid-cols-1" : "grid-cols-2",
+        COLUMNAS[Math.min(4, datos.length)],
         className
       )}
     >

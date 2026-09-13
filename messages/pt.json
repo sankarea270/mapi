@@ -94,7 +94,10 @@
     "view": "Ver roteiro",
     "back": "Voltar para pacotes",
     "book": "Reservar pelo WhatsApp",
-    "includedTours": "Tours incluídos"
+    "includedTours": "Tours incluídos",
+    "regions": "Regiões",
+    "toursValue": "{count, plural, one {# tour} other {# tours}}",
+    "reviewsFromTours": "O que contam viajantes dos tours que formam este pacote."
   },
   "experiencias": {
     "culture": "Cultura viva",
@@ -196,10 +199,7 @@
     "bookNow": "Reservar este tour",
     "bookNowHint": "Preencha o formulário e confirmaremos a disponibilidade pelo WhatsApp em até 24 horas.",
     "breadcrumb": "Viagem",
-    "tabInfo": "Informações",
-    "tabPlan": "Plano da viagem",
     "tabLocation": "Localização",
-    "tabGallery": "Galeria",
     "tabSeason": "Clima e temporada",
     "tabReviews": "Avaliações",
     "specialOffer": "Oferta especial",
@@ -212,18 +212,15 @@
     "planSubtitle": "O detalhe de cada dia da sua aventura",
     "reviewsSubtitle": "O que dizem os viajantes que já viveram esta experiência",
     "tabsAria": "Detalhes do tour",
-    "highlightConfirmacion": "Confirmação imediata",
-    "highlightExperiencia": "Experiência única",
-    "highlightGrupo": "Grupos pequenos",
-    "highlightGuia": "Guia local especializado",
-    "smallGroups": "Máx. 12 pessoas",
     "seeAllPhotos": "Ver as {count} fotos",
-    "tourType": "Tipo",
-    "tourTypeDaily": "Saída diária",
-    "languages": "Idiomas",
-    "languagesValue": "Espanhol · Inglês · Português",
-    "groupSize": "Grupo",
-    "seoTitle": "{name} · Tour de {duration}"
+    "seoTitle": "{name} · Tour de {duration}",
+    "region": "Região",
+    "includes": "Inclui",
+    "stages": "{count, plural, one {# etapa} other {# etapas}}",
+    "services": "{count, plural, one {# serviço} other {# serviços}}",
+    "navSummary": "Resumo",
+    "navFaq": "Perguntas",
+    "noOwnReviews": "Este tour ainda não tem avaliações próprias. Enquanto isso, veja o que contam viajantes de outras viagens conosco."
   },
   "reserva": {
     "title": "Reserve sua viagem",
@@ -517,7 +514,7 @@
     "aGroup": "Trabalhamos em grupos pequenos, de no máximo 12 pessoas, para que o guia possa cuidar de todos. Se preferir um serviço privado, avise ao reservar e cotamos à parte.",
     "qBooking": "Como confirmo a reserva e quando pago?",
     "qDuration": "Quanto dura e como se divide?",
-    "aDuration": "A experiência dura {duration}. Na aba «Plano do passeio» você tem o detalhe do que se faz em cada trecho."
+    "aDuration": "A experiência dura {duration}. Na seção «Itinerário», logo acima, você tem o detalhe do que se faz em cada trecho."
   },
   "journey": {
     "badge": "Seu caminho começa aqui",

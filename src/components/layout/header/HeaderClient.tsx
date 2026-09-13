@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { TopBar } from "./TopBar";
 import { NavBar } from "./NavBar";
@@ -44,10 +44,40 @@ export function HeaderClient({
     return () => observer.disconnect();
   }, [pathname]);
 
+  /*
+   * El alto real de la cabecera, publicado como `--alto-cabecera` en el
+   * <html> para todo lo que se clava debajo de ella.
+   *
+   * Antes cada pieza clavada adivinaba su propio desplazamiento: la barra
+   * de pestañas de la ficha iba a `top-16` (64px) y el panel de reserva a
+   * `top-24` (96px). La cabecera mide 116px en el móvil y 132 en escritorio
+   * —barra de contacto más barra de navegación—, así que al bajar las dos
+   * quedaban metidas por debajo: las pestañas, enteras; el panel, con su
+   * cabecera tapada. Se mide aquí, que es quien sabe lo que mide.
+   */
+  const cabeceraRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = cabeceraRef.current;
+    if (!el) return;
+    /* `scrollHeight` y no solo `offsetHeight`: en el móvil el logotipo
+       sobresale 10px por debajo de la caja de la cabecera —la caja acaba en
+       116 y la línea «Agencia de viajes» en 125—, y con la medida de la caja
+       ese texto se montaba encima de lo que se clava debajo. */
+    const publicar = () =>
+      document.documentElement.style.setProperty(
+        "--alto-cabecera",
+        `${Math.max(el.offsetHeight, el.scrollHeight)}px`
+      );
+    publicar();
+    const ro = new ResizeObserver(publicar);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const transparent = overHero && !scrolled;
 
   return (
-    <header className="sticky top-0 z-50">
+    <header ref={cabeceraRef} className="sticky top-0 z-50">
       <TopBar />
       <NavBar
         transparent={transparent}

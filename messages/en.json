@@ -94,7 +94,10 @@
     "view": "View itinerary",
     "back": "Back to packages",
     "book": "Book via WhatsApp",
-    "includedTours": "Included tours"
+    "includedTours": "Included tours",
+    "regions": "Regions",
+    "toursValue": "{count, plural, one {# tour} other {# tours}}",
+    "reviewsFromTours": "What travellers say about the tours that make up this package."
   },
   "experiencias": {
     "culture": "Living culture",
@@ -196,10 +199,7 @@
     "bookNow": "Book this tour",
     "bookNowHint": "Fill out the form and we'll confirm availability via WhatsApp within 24 hours.",
     "breadcrumb": "Trip",
-    "tabInfo": "Information",
-    "tabPlan": "Tour plan",
     "tabLocation": "Location",
-    "tabGallery": "Gallery",
     "tabSeason": "Weather & season",
     "tabReviews": "Reviews",
     "specialOffer": "Special offer",
@@ -212,18 +212,15 @@
     "planSubtitle": "The details of each day of your adventure",
     "reviewsSubtitle": "What travelers who already lived this experience say",
     "tabsAria": "Tour details",
-    "highlightGrupo": "Small groups",
-    "highlightConfirmacion": "Instant confirmation",
-    "highlightGuia": "Expert local guide",
-    "smallGroups": "Max. 12 people",
-    "highlightExperiencia": "Unique experience",
     "seeAllPhotos": "See all {count} photos",
-    "tourType": "Type",
-    "tourTypeDaily": "Daily departure",
-    "languages": "Languages",
-    "languagesValue": "Spanish · English · Portuguese",
-    "groupSize": "Group",
-    "seoTitle": "{name} · {duration} tour"
+    "seoTitle": "{name} · {duration} tour",
+    "region": "Region",
+    "includes": "Includes",
+    "stages": "{count, plural, one {# stage} other {# stages}}",
+    "services": "{count, plural, one {# service} other {# services}}",
+    "navSummary": "Overview",
+    "navFaq": "Questions",
+    "noOwnReviews": "This tour doesn't have its own reviews yet. Meanwhile, here is what travellers on our other trips say."
   },
   "reserva": {
     "title": "Book your trip",
@@ -517,7 +514,7 @@
     "aGroup": "We work in small groups of up to 12 people so the guide can look after everyone. If you would rather have a private service, tell us when booking and we will quote it separately.",
     "qBooking": "How do I confirm the booking and when do I pay?",
     "qDuration": "How long is it and how is it structured?",
-    "aDuration": "The experience lasts {duration}. The «Tour plan» tab breaks down what happens in each stage."
+    "aDuration": "The experience lasts {duration}. The «Itinerary» section, just above, breaks down what happens in each stage."
   },
   "journey": {
     "badge": "Your path starts here",

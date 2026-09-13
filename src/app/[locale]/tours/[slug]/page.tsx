@@ -3,18 +3,18 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   Check,
   Clock,
   MapPin,
   MessageCircle,
   Star,
-  Users,
   Calendar,
   Compass,
-  Camera,
-  Map,
+  Map as MapIcon,
   MessageSquare,
-  Languages,
+  Route,
+  Sun,
 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -23,16 +23,17 @@ import { getCategoriesWithTours } from "@/lib/tours";
 import { whatsappLink, siteConfig } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
-import { getDestinations } from "@/lib/content";
+import { getDestinations, getPackages, getReviews } from "@/lib/content";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
 import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
 import { FranjaDatos } from "@/components/tours/FranjaDatos";
 import { TourFaq } from "@/components/tours/TourFaq";
-import { getReviews } from "@/lib/content";
 import { TourCard } from "@/components/tours/TourCard";
-import { TourTabs } from "@/components/tours/TourTabs";
+import { FichaSecciones } from "@/components/tours/FichaSecciones";
+import { RutaItinerario } from "@/components/tours/RutaItinerario";
+import { TarjetaResena, type FichaResena } from "@/components/reviews/TarjetaResena";
+import { cn } from "@/lib/utils";
 import { TourSidebar } from "@/components/tours/TourSidebar";
-import { TourDetailClient } from "@/components/tours/TourDetailClient";
 
 export async function generateStaticParams() {
   const categories = await getCategoriesWithTours();
@@ -93,7 +94,11 @@ export default async function TourDetailPage({
   if (!tour) notFound();
 
   const category = categories.find((c) => c.slug === tour.categorySlug);
-  const [destinos, resenas] = await Promise.all([getDestinations(), getReviews()]);
+  const [destinos, resenas, paquetes] = await Promise.all([
+    getDestinations(),
+    getReviews(),
+    getPackages(),
+  ]);
   const destination = destinos.find((d) =>
     d.categorySlugs?.includes(tour.categorySlug)
   );
@@ -105,7 +110,6 @@ export default async function TourDetailPage({
     : [];
 
   const tourReviews = resenas.filter((r) => r.tourSlug === tour.slug);
-  const allReviews = tourReviews.length > 0 ? tourReviews : resenas;
 
   const t = await getTranslations("tourDetail");
   const tReserva = await getTranslations("reserva");
@@ -203,14 +207,57 @@ export default async function TourDetailPage({
     },
   };
 
-  /* Sin iconos: cuatro promesas cortas, numeradas. Shield/Users/Zap/Heart
-     no añadían nada que el propio texto no dijera ya. */
-  const highlights = [
-    t("highlightGuia"),
-    t("highlightGrupo"),
-    t("highlightConfirmacion"),
-    t("highlightExperiencia"),
+  /*
+   * La ficha técnica sale de los datos de ESTE tour.
+   *
+   * Antes llevaba cuatro casillas y tres eran frases fijas de las
+   * traducciones: «Salida diaria», «Máx. 12 personas» y «Español · Inglés ·
+   * Portugués», iguales en los 73 tours. El tour privado decía que el grupo
+   * era de doce y el trek de cuatro días que la salida era diaria. Ahora cada
+   * casilla se calcula de la ficha, y la que no tiene dato no sale.
+   */
+  const paradas = tour.itinerary?.length ?? 0;
+  const servicios = tour.included?.length ?? 0;
+  /* Solo el destino. Sin él se caía a la categoría, y el rafting salía con
+     «Región: Aventura», que es un tipo de tour, no un sitio. */
+  const region = destination ? pickLocalized(destination.name, l) : "";
+  const datos = [
+    { icono: <Clock />, rotulo: t("duration"), valor: duration },
+    ...(region ? [{ icono: <MapPin />, rotulo: t("region"), valor: region }] : []),
+    ...(paradas > 0
+      ? [{ icono: <Route />, rotulo: t("itinerary"), valor: t("stages", { count: paradas }) }]
+      : []),
+    ...(servicios > 0
+      ? [{ icono: <Check />, rotulo: t("includes"), valor: t("services", { count: servicios }) }]
+      : []),
   ];
+
+  /* De qué viaje habla cada reseña, para cuando se enseñan las de otros
+     tours: sin esto parecerían escritas sobre este. */
+  const fichas: Record<string, FichaResena> = {};
+  for (const c of categories) {
+    for (const x of c.tours) {
+      fichas[x.slug] = { nombre: pickLocalized(x.name, l), imagen: x.image, href: `/tours/${x.slug}` };
+    }
+  }
+  for (const x of paquetes) {
+    fichas[x.slug] = { nombre: pickLocalized(x.name, l), imagen: x.image, href: `/paquetes/${x.slug}` };
+  }
+
+  const propias = tourReviews.length > 0;
+  const resenasVisibles = propias ? tourReviews : resenas.slice(0, 4);
+
+  const secciones = [
+    { id: "resumen", label: t("navSummary"), icon: <Compass /> },
+    { id: "itinerario", label: paradas > 0 ? t("itinerary") : t("navFaq"), icon: <Calendar /> },
+    { id: "temporada", label: t("tabSeason"), icon: <Sun /> },
+    { id: "ubicacion", label: t("tabLocation"), icon: <MapIcon /> },
+    { id: "resenas", label: t("tabReviews"), icon: <MessageSquare /> },
+  ];
+
+  /* Cada sección se clava justo por debajo de la cabecera y del índice. */
+  const seccion =
+    "ficha-seccion scroll-mt-[calc(var(--alto-cabecera,8.25rem)+5.5rem)] border-t border-slate-200 py-12 sm:py-14";
 
   return (
     <div className="min-h-dvh bg-slate-50">
@@ -300,293 +347,175 @@ export default async function TourDetailPage({
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="min-w-0">
             {/* Ficha técnica, justo bajo las fotos: lo primero que se
-                pregunta quien mira un tour —cuánto dura, con quién voy, en
-                qué idioma— sin tener que entrar en ninguna pestaña. */}
-            <FranjaDatos
-              className="mb-10"
-              datos={[
-                { icono: <Clock />, rotulo: t("duration"), valor: duration },
-                { icono: <Compass />, rotulo: t("tourType"), valor: t("tourTypeDaily") },
-                { icono: <Users />, rotulo: t("groupSize"), valor: t("smallGroups") },
-                { icono: <Languages />, rotulo: t("languages"), valor: t("languagesValue") },
-              ]}
-            />
+                pregunta quien mira un tour, sin tener que buscarlo. */}
+            <FranjaDatos className="mb-8" datos={datos} />
 
-            {/* Entradilla: texto grande con filete turquesa, como el sumario
-                de un reportaje. La píldora con degradado que había antes
-                encajonaba el texto y competía con la ficha de datos. */}
-            {tour.excerpt && (
-              <p className="mb-10 border-l-2 border-teal-500 pl-6 text-lg leading-relaxed text-slate-700 sm:text-xl sm:leading-relaxed">
-                {pickLocalized(tour.excerpt, l)}
-              </p>
-            )}
+            <FichaSecciones ariaLabel={t("tabsAria")} secciones={secciones} />
 
-            {/* Banda de compromisos. El turquesa de marca pasa aquí a primer
-                plano y ancla el bloque; las promesas van numeradas y
-                separadas por filete, sin iconos. */}
-            <div className="promise-band mb-12 overflow-hidden rounded-lg bg-teal-700">
-              <div className="grid divide-y divide-white/15 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
-                {highlights.map((label, i) => (
-                  <div
-                    key={label}
-                    style={{ ["--i" as string]: i }}
-                    className="promise rise-in group relative px-6 py-5 sm:[&:nth-child(-n+2)]:border-b sm:[&:nth-child(-n+2)]:border-white/15 sm:[&:nth-child(2n)]:border-l sm:[&:nth-child(2n)]:border-white/15 lg:border-b-0! lg:[&:nth-child(2n)]:border-l-0"
-                  >
-                    <span className="eyebrow tabular-nums text-teal-300">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <p className="mt-2 font-heading text-[15px] font-bold leading-snug text-white">
-                      {label}
-                    </p>
-                    <span className="absolute inset-x-6 bottom-3 h-px origin-left scale-x-0 bg-amber-400 transition-transform duration-500 group-hover:scale-x-100" />
+            {/* Sin pestañas: todo seguido y a la vista. La banda de «01 02 03
+                04» que había aquí se quita. Eran cuatro promesas iguales en
+                todos los tours, numeradas sin que hubiera orden que contar, y
+                una de ellas —«Confirmación inmediata»— contradecía al panel
+                de reserva, que dice que la confirmación llega en menos de 24
+                horas. */}
+            <section id="resumen" className={cn(seccion, "border-t-0 pt-10")}>
+              {tour.excerpt && (
+                <p className="border-l-2 border-teal-500 pl-6 font-logo text-xl leading-relaxed text-slate-700 sm:text-[1.4rem] sm:leading-relaxed">
+                  {pickLocalized(tour.excerpt, l)}
+                </p>
+              )}
+
+              {tour.included && tour.included.length > 0 && (
+                <div className={tour.excerpt ? "mt-12" : undefined}>
+                  <div className="escena-texto">
+                    <h2 className="font-heading text-2xl font-bold text-slate-900">
+                      {t("included")}
+                    </h2>
                   </div>
+                  <ul className="mt-6 grid gap-x-10 sm:grid-cols-2">
+                    {tour.included.map((item, index) => (
+                      <li
+                        key={index}
+                        className="flex items-baseline gap-3 border-b border-slate-200/80 py-3.5"
+                      >
+                        <Check className="size-3.5 shrink-0 translate-y-0.5 text-teal-600" />
+                        <span className="text-[15px] leading-relaxed text-slate-700">
+                          {pickLocalized(item, l)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+
+            <section id="itinerario" className={seccion}>
+              {paradas > 0 && (
+                <>
+                  <div className="escena-texto">
+                    <h2 className="font-heading text-2xl font-bold text-slate-900">
+                      {t("itinerary")}
+                    </h2>
+                    <p className="mt-2 text-[15px] text-slate-500">{t("planSubtitle")}</p>
+                  </div>
+
+                  <div className="mt-8">
+                    <RutaItinerario>
+                      <ol>
+                        {tour.itinerary!.map((item, index) => (
+                          <li
+                            key={index}
+                            data-parada
+                            className="group relative flex gap-6 pb-9 last:pb-0"
+                          >
+                            {/* Hoja de calendario: se enciende en petróleo
+                                cuando la línea de ruta llega a ella.
+                                `self-start`, o la fila flexible la estira
+                                hasta el alto del texto del día y la hoja
+                                se convierte en una caja vacía de 200px. */}
+                            <span
+                              aria-hidden="true"
+                              className="day-leaf relative z-10 w-14 shrink-0 self-start overflow-hidden rounded-md bg-white text-center ring-1 ring-slate-200"
+                            >
+                              <span className="day-leaf-cab block py-1 text-[9px] font-bold uppercase tracking-[0.14em]">
+                                {t("day")}
+                              </span>
+                              <span className="block py-1.5 font-heading text-xl font-bold tabular-nums text-slate-900">
+                                {index + 1}
+                              </span>
+                            </span>
+                            <div className="flex-1 pt-1">
+                              <h3 className="font-heading text-lg font-bold text-slate-900">
+                                {pickLocalized(item.title, l)}
+                              </h3>
+                              <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600">
+                                {pickLocalized(item.description, l)}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    </RutaItinerario>
+                  </div>
+                </>
+              )}
+
+              <div className={paradas > 0 ? "mt-14" : undefined}>
+                <TourFaq tour={tour} locale={locale} bookingPolicy={tReserva("noPayment")} />
+              </div>
+            </section>
+
+            <section id="temporada" className={seccion}>
+              <SeasonPanel categorySlug={tour.categorySlug} locale={locale} />
+            </section>
+
+            <section id="ubicacion" className={seccion}>
+              <div className="escena-texto">
+                <h2 className="font-heading text-2xl font-bold text-slate-900">
+                  {t("tabLocation")}
+                </h2>
+                <p className="mt-2 text-[15px] text-slate-500">{t("locationSubtitle")}</p>
+              </div>
+
+              <div className="escena-foto mt-8 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
+                <div className="group relative aspect-[21/9] overflow-hidden bg-slate-100">
+                  <Image
+                    src={destination?.image ?? tour.image}
+                    alt={destination ? pickLocalized(destination.name, l) : name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-[1.04]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-slate-950/10 to-transparent" />
+                  <p className="absolute bottom-4 left-6 flex items-center gap-2 font-heading text-2xl font-bold text-white">
+                    <MapPin className="size-5 text-amber-400" />
+                    {region || name}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-end justify-between gap-4 p-6">
+                  <p className="max-w-xl text-[15px] leading-relaxed text-slate-600">
+                    {destination ? pickLocalized(destination.description, l) : `${name} · ${duration}`}
+                  </p>
+                  {destination && (
+                    <Link
+                      href={`/destinos/${destination.slug}`}
+                      className="group/v inline-flex shrink-0 items-center gap-2 font-heading text-[13px] font-bold uppercase tracking-[0.1em] text-teal-700"
+                    >
+                      {t("locationVisit")}
+                      <ArrowRight className="size-4 transition-transform duration-300 group-hover/v:translate-x-1" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section id="resenas" className={seccion}>
+              <div className="escena-texto">
+                <h2 className="font-heading text-2xl font-bold text-slate-900">
+                  {t("tabReviews")}
+                </h2>
+                {/* Si el tour no tiene reseñas propias se dice. Antes se
+                    colgaban las de otros tours bajo «lo que dicen los
+                    viajeros que ya vivieron esta experiencia»: una opinión
+                    sobre Machu Picchu aparecía en la ficha del rafting como
+                    si fuera de ahí. Ahora van presentadas como lo que son, y
+                    cada una lleva el viaje del que habla. */}
+                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500">
+                  {propias ? t("reviewsSubtitle") : t("noOwnReviews")}
+                </p>
+              </div>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {resenasVisibles.map((review) => (
+                  <TarjetaResena
+                    key={review.id}
+                    review={review}
+                    locale={locale}
+                    ficha={!propias && review.tourSlug ? fichas[review.tourSlug] : undefined}
+                  />
                 ))}
               </div>
-            </div>
-
-            <TourTabs
-              ariaLabel={t("tabsAria")}
-              tabs={[
-                {
-                  id: "info",
-                  label: t("tabInfo"),
-                  icon: <Compass className="size-4" />,
-                  content: (
-                    <div>
-                      {/* La ficha de datos que había aquí se subió bajo las
-                          fotos: repetirla dentro de la pestaña era enseñar
-                          dos veces lo mismo en la misma pantalla. */}
-                      {tour.included && tour.included.length > 0 && (
-                        <div>
-                          <h2 className="font-heading text-2xl font-bold text-slate-900">
-                            {t("included")}
-                          </h2>
-                          {/* Lista a dos columnas separada por filetes, en
-                              lugar de tarjetas con degradado: se lee como una
-                              ficha impresa y deja respirar el contenido. */}
-                          <ul className="mt-6 grid gap-x-10 sm:grid-cols-2">
-                            {tour.included.map((item, index) => (
-                              <li
-                                key={index}
-                                style={{ ["--i" as string]: index }}
-                                className="rise-in flex items-baseline gap-3 border-b border-slate-100 py-3.5"
-                              >
-                                <Check className="size-3.5 shrink-0 translate-y-0.5 text-teal-600" />
-                                <span className="text-[15px] leading-relaxed text-slate-700">
-                                  {pickLocalized(item, l)}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="mt-12">
-                        <SeasonPanel
-                          categorySlug={tour.categorySlug}
-                          locale={locale}
-                        />
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  id: "plan",
-                  label: t("tabPlan"),
-                  icon: <Calendar className="size-4" />,
-                  content: (
-                    <div>
-                      <p className="mb-6 text-sm font-medium text-slate-500">
-                        {t("planSubtitle")}
-                      </p>
-                      {/* Itinerario como línea de ruta: un trazo continuo con
-                          una parada por día. La metáfora es un mapa de ruta,
-                          no una pila de tarjetas. */}
-                      <div className="relative">
-                        <div className="route-line absolute bottom-4 left-[27px] top-6 w-px" />
-                        <ol>
-                          {tour.itinerary && tour.itinerary.length > 0 ? (
-                            tour.itinerary.map((item, index) => (
-                              <li
-                                key={index}
-                                style={{ ["--i" as string]: index }}
-                                className="rise-in group relative flex gap-6 pb-9 last:pb-0"
-                              >
-                                {/* Hoja de calendario: cabecera con el rótulo
-                                    del día y cifra grande debajo. Da la
-                                    referencia temporal de un vistazo, cosa
-                                    que un punto en la línea no hacía. */}
-                                <span
-                                  aria-hidden="true"
-                                  className="day-leaf relative z-10 w-14 shrink-0 overflow-hidden rounded-md bg-white text-center ring-1 ring-slate-200"
-                                >
-                                  <span className="block bg-slate-900 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
-                                    {t("day")}
-                                  </span>
-                                  <span className="block py-1.5 font-heading text-xl font-bold tabular-nums text-slate-900">
-                                    {index + 1}
-                                  </span>
-                                </span>
-                                <div className="flex-1 pt-1">
-                                  <h3 className="font-heading text-lg font-bold text-slate-900">
-                                    {pickLocalized(item.title, l)}
-                                  </h3>
-                                  <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600">
-                                    {pickLocalized(item.description, l)}
-                                  </p>
-                                </div>
-                              </li>
-                            ))
-                          ) : (
-                            <li className="text-sm text-slate-500">
-                              {t("planSubtitle")}
-                            </li>
-                          )}
-                        </ol>
-                      </div>
-
-                      <TourFaq
-                        tour={tour}
-                        locale={locale}
-                        bookingPolicy={tReserva("noPayment")}
-                      />
-                    </div>
-                  ),
-                },
-                {
-                  id: "location",
-                  label: t("tabLocation"),
-                  icon: <Map className="size-4" />,
-                  content: (
-                    <div>
-                      <p className="mb-6 text-sm font-medium text-slate-500">
-                        {t("locationSubtitle")}
-                      </p>
-                      {destination ? (
-                        <div className="overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-slate-100">
-                          <div className="relative aspect-[21/9] bg-slate-100">
-                            <Image
-                              src={destination.image}
-                              alt={pickLocalized(destination.name, l)}
-                              fill
-                              sizes="(max-width: 1024px) 100vw, 60vw"
-                              className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                            <div className="absolute bottom-4 left-6">
-                              <h2 className="flex items-center gap-2 font-heading text-2xl font-bold text-white">
-                                <MapPin className="size-5 text-amber-400" />
-                                {pickLocalized(destination.name, l)}
-                              </h2>
-                            </div>
-                          </div>
-                          <div className="p-6">
-                            <p className="text-sm leading-relaxed text-slate-600">
-                              {pickLocalized(destination.description, l)}
-                            </p>
-                            <Link
-                              href={`/destinos/${destination.slug}`}
-                              className="mt-5 inline-flex items-center gap-2 rounded-full bg-amber-400 px-5 py-2.5 text-sm font-bold text-slate-900 shadow-md shadow-amber-400/20 transition-all hover:scale-105 hover:shadow-lg"
-                            >
-                              {t("locationVisit")}
-                              <ArrowLeft className="size-4 -scale-x-100" />
-                            </Link>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-slate-100">
-                          <div className="relative aspect-[21/9] bg-slate-100">
-                            <Image
-                              src={tour.image}
-                              alt={name}
-                              fill
-                              sizes="(max-width: 1024px) 100vw, 60vw"
-                              className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                            <div className="absolute bottom-4 left-6">
-                              <h2 className="flex items-center gap-2 font-heading text-2xl font-bold text-white">
-                                <MapPin className="size-5 text-amber-400" />
-                                {categoryName || name}
-                              </h2>
-                            </div>
-                          </div>
-                          <div className="p-6">
-                            <p className="text-sm text-slate-600">
-                              {name} · {duration}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ),
-                },
-                {
-                  id: "gallery",
-                  label: t("tabGallery"),
-                  icon: <Camera className="size-4" />,
-                  content: (
-                    <TourDetailClient
-                      gallery={gallery}
-                      name={name}
-                    />
-                  ),
-                },
-                {
-                  id: "reviews",
-                  label: t("tabReviews"),
-                  icon: <MessageSquare className="size-4" />,
-                  content: (
-                    <div>
-                      <p className="mb-6 text-sm font-medium text-slate-500">
-                        {t("reviewsSubtitle")}
-                      </p>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {allReviews.map((review) => (
-                          <figure
-                            key={review.id}
-                            className="flex flex-col rounded-3xl bg-gradient-to-br from-slate-50 to-white p-6 ring-1 ring-slate-100 transition-all hover:shadow-lg hover:ring-amber-100"
-                          >
-                            <div
-                              className="flex gap-1"
-                              role="img"
-                              aria-label={`${review.rating} / 5`}
-                            >
-                              {Array.from({ length: 5 }).map((_, index) => (
-                                <Star
-                                  key={index}
-                                  className={`size-4 ${
-                                    index < Math.round(review.rating)
-                                      ? "fill-current text-amber-400"
-                                      : "text-slate-200"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-slate-600">
-                              &ldquo;{review.text[l]}&rdquo;
-                            </blockquote>
-                            <figcaption className="mt-5 flex items-center gap-3">
-                              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-400 text-sm font-bold text-white shadow-md shadow-amber-400/20">
-                                {review.name.charAt(0)}
-                              </span>
-                              <div>
-                                <p className="text-sm font-bold text-slate-900">
-                                  {review.name}
-                                </p>
-                                <p className="text-xs text-slate-500">
-                                  {review.country}
-                                </p>
-                              </div>
-                            </figcaption>
-                          </figure>
-                        ))}
-                      </div>
-                    </div>
-                  ),
-                },
-              ]}
-            />
+            </section>
 
             {related.length > 0 && (
               <section className="mt-16 border-t border-slate-200 pt-12">

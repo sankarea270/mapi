@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-/* `Map` se importa con alias: el nombre ya lo ocupa el Map de JavaScript,
-   que se usa unas líneas más abajo para indexar los tours por slug. */
 import {
   ArrowLeft,
   CalendarRange,
-  Compass,
-  Languages,
-  Map as MapaIcono,
+  MapPin,
+  MessageSquare,
   Route,
   Sun,
-  Users,
 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { getPackages } from "@/lib/content";
+import { getDestinations, getPackages, getReviews } from "@/lib/content";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { whatsappLink } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
@@ -23,8 +19,10 @@ import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
 import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
 import { FranjaDatos } from "@/components/tours/FranjaDatos";
-import { TourTabs } from "@/components/tours/TourTabs";
+import { FichaSecciones } from "@/components/tours/FichaSecciones";
+import { TarjetaResena } from "@/components/reviews/TarjetaResena";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
+import { cn } from "@/lib/utils";
 
 /* Asíncrona: los paquetes salen de Supabase al compilar. */
 export async function generateStaticParams() {
@@ -78,6 +76,59 @@ export default async function PackagePage({
      una sola imagen repetida. Se quitan duplicados por si la del paquete
      coincide con la de alguno de sus tours. */
   const fotos = [...new Set([pkg.image, ...tours.map((x) => x!.image)])].filter(Boolean);
+
+  const [destinos, resenas] = await Promise.all([getDestinations(), getReviews()]);
+
+  /*
+   * Las regiones que recorre, sacadas de sus tours: cada tour pertenece a una
+   * categoría y cada destino declara qué categorías cubre. Es el dato que
+   * de verdad distingue un paquete de otro —«Cusco · Puno · Arequipa»—, y
+   * sustituye a dos casillas que eran frases fijas: «Máx. 12 personas» y
+   * «Español · Inglés · Portugués», iguales en todos los paquetes.
+   */
+  const regiones = [
+    ...new Set(
+      tours.map((x) => {
+        const d = destinos.find((dd) => dd.categorySlugs?.includes(x!.categorySlug));
+        if (d) return pickLocalized(d.name, locale);
+        const c = categories.find((cc) => cc.slug === x!.categorySlug);
+        return c ? pickLocalized(c.name, locale) : "";
+      })
+    ),
+  ].filter(Boolean);
+
+  const datos = [
+    {
+      icono: <CalendarRange />,
+      rotulo: tt("duration"),
+      valor: pickLocalized(pkg.duration, locale),
+    },
+    ...(tours.length > 0
+      ? [{ icono: <Route />, rotulo: t("includedTours"), valor: t("toursValue", { count: tours.length }) }]
+      : []),
+    ...(regiones.length > 0
+      ? [{ icono: <MapPin />, rotulo: t("regions"), valor: regiones.join(" · ") }]
+      : []),
+  ];
+
+  /* Reseñas de los tours que forman el paquete, presentadas como eso. No se
+     atribuyen al paquete: quien las escribió compró un tour suelto. */
+  const slugsTours = new Set(tours.map((x) => x!.slug));
+  const resenasTours = resenas.filter((r) => r.tourSlug && slugsTours.has(r.tourSlug));
+  const nombrePorSlug = new Map(tours.map((x) => [x!.slug, x!]));
+
+  const secciones = [
+    ...(tours.length > 0
+      ? [{ id: "tours", label: t("includedTours"), icon: <Route /> }]
+      : []),
+    ...(tours.length > 0 ? [{ id: "temporada", label: tt("tabSeason"), icon: <Sun /> }] : []),
+    ...(resenasTours.length > 0
+      ? [{ id: "resenas", label: tt("tabReviews"), icon: <MessageSquare /> }]
+      : []),
+  ];
+
+  const seccion =
+    "scroll-mt-[calc(var(--alto-cabecera,8.25rem)+5.5rem)] border-t border-slate-200 py-12 sm:py-14";
 
   return (
     <div className="min-h-dvh bg-slate-50">
@@ -140,98 +191,80 @@ export default async function PackagePage({
             <MosaicoFotos fotos={fotos} nombre={name} />
           </div>
 
-          <FranjaDatos
-            className="mt-8"
-            datos={[
-              {
-                icono: <CalendarRange />,
-                rotulo: tt("duration"),
-                valor: pickLocalized(pkg.duration, locale),
-              },
-              {
-                icono: <MapaIcono />,
-                rotulo: t("includedTours"),
-                valor: String(tours.length),
-              },
-              { icono: <Users />, rotulo: tt("groupSize"), valor: tt("smallGroups") },
-              { icono: <Languages />, rotulo: tt("languages"), valor: tt("languagesValue") },
-            ]}
-          />
+          <FranjaDatos className="mt-8" datos={datos} />
         </div>
       </section>
 
-      {/* Mismas pestañas que la ficha de tour. Un paquete tiene tanto que
-          contar como un tour —qué incluye, qué tours lleva dentro, cuándo
-          conviene ir— y antes todo eso iba en una sola columna larga que
-          había que recorrer entera.
+      {/* Sin pestañas, como la ficha de tour: todo seguido y a la vista.
+          La pestaña «Información» repetía palabra por palabra la
+          descripción que ya va bajo el título, así que se quita. */}
+      {secciones.length > 0 && (
+        <div className="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
+          <FichaSecciones ariaLabel={tt("tabsAria")} secciones={secciones} />
 
-          Son tres y no cinco: aquí no hay galería propia, porque las fotos
-          del paquete ya están en el mosaico de arriba, ni reseñas, porque
-          las que hay están escritas sobre tours concretos y colgarlas de un
-          paquete sería atribuirlas a algo que esa persona no compró. */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6">
-        <TourTabs
-          ariaLabel={tt("tabsAria")}
-          tabs={[
-            {
-              id: "info",
-              label: tt("tabInfo"),
-              icon: <Compass className="size-4" />,
-              content: (
-                <div className="max-w-3xl">
-                  <h2 className="font-heading text-2xl font-bold text-slate-900">
-                    {tt("overview")}
-                  </h2>
-                  <p className="mt-5 text-[15px] leading-relaxed text-slate-600 sm:text-base">
-                    {pickLocalized(pkg.description, locale)}
-                  </p>
-                </div>
-              ),
-            },
-            {
-              id: "tours",
-              label: t("includedTours"),
-              icon: <Route className="size-4" />,
-              content: (
-                <div>
-                  <h2 className="font-heading text-2xl font-bold text-slate-900">
-                    {t("includedTours")}
-                  </h2>
-                  <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {tours.map((tour) => {
-                      const category = categories.find((c) => c.slug === tour!.categorySlug);
-                      return (
-                        <TourCard
-                          key={tour!.slug}
-                          tour={tour!}
-                          categoryName={category ? pickLocalized(category.name, locale) : ""}
-                          locale={locale}
-                          fromLabel={tn("from")}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              ),
-            },
-            /* El clima solo si el paquete lleva tours: la ficha se arma con
-               la categoría del primero, así que sin tours no hay de dónde
-               sacar la región y saldría el clima de otro sitio. */
-            ...(tours.length > 0
-              ? [
-                  {
-                    id: "clima",
-                    label: tt("tabSeason"),
-                    icon: <Sun className="size-4" />,
-                    content: (
-                      <SeasonPanel categorySlug={tours[0]!.categorySlug} locale={locale} />
-                    ),
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </section>
+          {tours.length > 0 && (
+            <section id="tours" className={cn(seccion, "border-t-0 pt-10")}>
+              <div className="escena-texto">
+                <h2 className="font-heading text-2xl font-bold text-slate-900">
+                  {t("includedTours")}
+                </h2>
+              </div>
+              <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {tours.map((tour) => {
+                  const category = categories.find((c) => c.slug === tour!.categorySlug);
+                  return (
+                    <TourCard
+                      key={tour!.slug}
+                      tour={tour!}
+                      categoryName={category ? pickLocalized(category.name, locale) : ""}
+                      locale={locale}
+                      fromLabel={tn("from")}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* El clima sale de la región del primer tour: sin tours no hay
+              de dónde sacarla. */}
+          {tours.length > 0 && (
+            <section id="temporada" className={seccion}>
+              <SeasonPanel categorySlug={tours[0]!.categorySlug} locale={locale} />
+            </section>
+          )}
+
+          {resenasTours.length > 0 && (
+            <section id="resenas" className={seccion}>
+              <div className="escena-texto">
+                <h2 className="font-heading text-2xl font-bold text-slate-900">
+                  {tt("tabReviews")}
+                </h2>
+                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500">
+                  {t("reviewsFromTours")}
+                </p>
+              </div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {resenasTours.map((review) => {
+                  const x = nombrePorSlug.get(review.tourSlug!)!;
+                  return (
+                    <TarjetaResena
+                      key={review.id}
+                      review={review}
+                      locale={locale}
+                      ficha={{
+                        nombre: pickLocalized(x.name, locale),
+                        imagen: x.image,
+                        href: `/tours/${x.slug}`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }
