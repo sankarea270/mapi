@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "node scripts/limpiar-cache-datos.mjs",
     "build": "next build",
     "build:turbo": "next build --turbopack",
     "deploy": "npm run build",
@@ -13,7 +14,9 @@
     "verificar:supabase": "tsx --env-file-if-exists=.env.local scripts/verificar-supabase.ts",
     "auditar:seo": "node scripts/auditar-seo.mjs",
     "verificar:busqueda": "tsx scripts/verificar-busqueda.ts",
-    "postbuild": "node scripts/generar-raiz.mjs"
+    "postbuild": "node scripts/generar-raiz.mjs",
+    "verificar:migraciones": "node scripts/estado-migraciones.mjs",
+    "diagnostico:resenas": "tsx --env-file-if-exists=.env.local scripts/diagnostico-resenas.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

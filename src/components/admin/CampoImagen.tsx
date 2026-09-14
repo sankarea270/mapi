@@ -19,6 +19,7 @@ export function CampoImagen({
   onChange,
   carpeta,
   ayuda,
+  nitido = false,
 }: {
   etiqueta: string;
   valor: string;
@@ -26,6 +27,8 @@ export function CampoImagen({
   /** Subcarpeta dentro del almacén: "tours", "paquetes", "destinos". */
   carpeta: string;
   ayuda?: string;
+  /** Para mapas y planos: se guardan más grandes y con menos compresión. */
+  nitido?: boolean;
 }) {
   const entrada = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
@@ -43,7 +46,7 @@ export function CampoImagen({
     setNota("");
     setSubiendo(true);
     try {
-      const r = await subirImagen(archivo, carpeta);
+      const r = await subirImagen(archivo, carpeta, { nitido });
       onChange(r.url);
       /* Se dice cuánto se ahorró: es la forma de que se entienda por qué la
          foto de 5 MB acabó pesando 300 KB, en vez de parecer un fallo. */

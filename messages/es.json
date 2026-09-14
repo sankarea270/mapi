@@ -115,7 +115,9 @@
     "count": "{count} experiencias para vivir",
     "explore": "Explorar",
     "back": "Volver a experiencias",
-    "empty": "Pronto tendremos tours disponibles en esta experiencia."
+    "empty": "Pronto tendremos tours disponibles en esta experiencia.",
+    "reviewsFromTours": "Lo que cuentan viajeros de los tours que forman esta experiencia.",
+    "empty2": "Pronto publicaremos nuevas experiencias. Mientras tanto, echa un vistazo a nuestros tours."
   },
   "guia": {
     "before": "Antes de viajar",
@@ -220,7 +222,8 @@
     "services": "{count, plural, one {# servicio} other {# servicios}}",
     "navSummary": "Resumen",
     "navFaq": "Preguntas",
-    "noOwnReviews": "Este tour todavía no tiene reseñas propias. Mientras tanto, esto cuentan viajeros de otros viajes con nosotros."
+    "noOwnReviews": "Este tour todavía no tiene reseñas propias. Mientras tanto, esto cuentan viajeros de otros viajes con nosotros.",
+    "mapZoom": "Ampliar mapa"
   },
   "reserva": {
     "title": "Reserva tu viaje",

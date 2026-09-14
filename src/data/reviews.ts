@@ -5,6 +5,9 @@ export type Review = {
   rating: number;
   text: { es: string; en: string; pt: string };
   tourSlug?: string;
+  /** A qué tipo de ficha apunta `tourSlug`. Sin él se deduce buscando la
+      dirección entre tours, paquetes y experiencias. */
+  targetType?: "tour" | "paquete" | "experiencia" | "agencia";
 };
 
 /*
@@ -37,6 +40,7 @@ export const REVIEWS: Review[] = [
       pt: "Fizemos o circuito do Sul do Peru e tudo foi perfeito: hotéis, traslados e organização impecável. Voltaremos com eles.",
     },
     tourSlug: "sur-del-peru",
+    targetType: "paquete",
   },
   {
     id: "r3",

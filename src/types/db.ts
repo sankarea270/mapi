@@ -47,6 +47,11 @@ export interface FilaTour {
     title: { es: string; en: string; pt: string };
     description: { es: string; en: string; pt: string };
   }> | null;
+  /* Desde la migración 008. Opcionales: antes de ejecutarla no llegan. */
+  location_image_url?: string | null;
+  location_es?: string | null;
+  location_en?: string | null;
+  location_pt?: string | null;
   updated_at: string | null;
 }
 
@@ -65,6 +70,10 @@ export interface FilaPaquete {
   price: number | string;
   image_url: string | null;
   tour_slugs: string[] | null;
+  location_image_url?: string | null;
+  location_es?: string | null;
+  location_en?: string | null;
+  location_pt?: string | null;
   status: Estado;
   sort_order: number | null;
 }
@@ -95,6 +104,7 @@ export interface FilaResena {
   text_en: string | null;
   text_pt: string | null;
   tour_slug: string | null;
+  target_type?: "tour" | "paquete" | "experiencia" | "agencia" | null;
   status: Estado;
   sort_order: number | null;
 }

@@ -28,13 +28,20 @@ export interface ResultadoSubida {
  * Se convierte a WebP, que pesa alrededor de un tercio que el JPEG a igual
  * calidad y lo entienden todos los navegadores desde 2020.
  */
-async function reducir(archivo: File): Promise<Blob> {
+/* Los mapas llevan texto pequeño —nombres de pueblos, de la ruta, la
+   escala— y con el ancho y la calidad de las fotos se volvía ilegible al
+   ampliar. Se guardan más grandes y con menos compresión: pesan más, pero un
+   mapa que no se lee no sirve de nada. */
+const ANCHO_MAX_MAPA = 2400;
+const CALIDAD_MAPA = 0.92;
+
+async function reducir(archivo: File, nitido = false): Promise<Blob> {
   /* Los animados se dejan intactos: pasarlos por el lienzo los congelaría
      en el primer fotograma. */
   if (archivo.type === "image/gif") return archivo;
 
   const bitmap = await createImageBitmap(archivo);
-  const escala = Math.min(1, ANCHO_MAX / bitmap.width);
+  const escala = Math.min(1, (nitido ? ANCHO_MAX_MAPA : ANCHO_MAX) / bitmap.width);
   const ancho = Math.round(bitmap.width * escala);
   const alto = Math.round(bitmap.height * escala);
 
@@ -47,7 +54,7 @@ async function reducir(archivo: File): Promise<Blob> {
   bitmap.close();
 
   const blob = await new Promise<Blob | null>((r) =>
-    lienzo.toBlob(r, "image/webp", CALIDAD)
+    lienzo.toBlob(r, "image/webp", nitido ? CALIDAD_MAPA : CALIDAD)
   );
   /* Si el navegador no sabe generar WebP devuelve null: se sube el original
      antes que dejar al usuario sin poder subir nada. */
@@ -74,11 +81,12 @@ function nombreLimpio(nombre: string): string {
  */
 export async function subirImagen(
   archivo: File,
-  carpeta: string
+  carpeta: string,
+  { nitido = false }: { nitido?: boolean } = {}
 ): Promise<ResultadoSubida> {
   if (!supabase) throw new Error("Supabase no está configurado.");
 
-  const blob = await reducir(archivo);
+  const blob = await reducir(archivo, nitido);
   const extension = blob.type === "image/webp" ? "webp" : archivo.name.split(".").pop() || "jpg";
   const ruta = `${carpeta}/${Date.now()}-${nombreLimpio(archivo.name)}.${extension}`;
 

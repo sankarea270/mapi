@@ -2,6 +2,7 @@ import { getLocale } from "next-intl/server";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { toBriefCatalog } from "@/lib/catalog";
 import { getDestinations, getExperiences, getGuides, getPackages } from "@/lib/content";
+import { pickLocalized } from "@/lib/format";
 import { HeaderClient } from "./HeaderClient";
 
 export default async function Header() {
@@ -42,5 +43,21 @@ export default async function Header() {
    * completo —tres idiomas, itinerarios y listas de "qué incluye"— a la
    * cabecera, que se monta en todas las páginas del sitio.
    */
-  return <HeaderClient catalog={toBriefCatalog(categories, locale)} fotos={fotos} />;
+  /* Las experiencias del menú salen de la tabla, no de la lista escrita en
+     la configuración de navegación: aquella apuntaba a siete direcciones
+     fijas, y al borrar las experiencias de relleno el menú habría seguido
+     llevando a siete páginas que ya no existen. */
+  const menuExperiencias = experiencias.map((e) => ({
+    etiqueta: pickLocalized(e.name, locale),
+    href: `/experiencias/${e.slug}`,
+    imagen: e.image,
+  }));
+
+  return (
+    <HeaderClient
+      catalog={toBriefCatalog(categories, locale)}
+      fotos={fotos}
+      experiencias={menuExperiencias}
+    />
+  );
 }

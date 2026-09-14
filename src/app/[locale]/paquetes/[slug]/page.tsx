@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   CalendarRange,
+  Map as MapIcon,
   MapPin,
   MessageSquare,
   Route,
@@ -21,6 +22,8 @@ import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
 import { FranjaDatos } from "@/components/tours/FranjaDatos";
 import { FichaSecciones } from "@/components/tours/FichaSecciones";
 import { TarjetaResena } from "@/components/reviews/TarjetaResena";
+import { BloqueUbicacion } from "@/components/tours/BloqueUbicacion";
+import { construirFichas, esDe, fichaDe } from "@/lib/resenas";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
 import { cn } from "@/lib/utils";
 
@@ -111,18 +114,26 @@ export default async function PackagePage({
       : []),
   ];
 
-  /* Reseñas de los tours que forman el paquete, presentadas como eso. No se
-     atribuyen al paquete: quien las escribió compró un tour suelto. */
-  const slugsTours = new Set(tours.map((x) => x!.slug));
-  const resenasTours = resenas.filter((r) => r.tourSlug && slugsTours.has(r.tourSlug));
-  const nombrePorSlug = new Map(tours.map((x) => [x!.slug, x!]));
+  /* Primero las reseñas del PAQUETE —las que se asignaron a él en el
+     panel—, y detrás las de los tours que lo forman, que llevan el nombre
+     del tour del que hablan: no se atribuyen al paquete, porque quien las
+     escribió compró un tour suelto. */
+  const fichas = construirFichas(locale, { categorias: categories });
+  const propias = resenas.filter((r) => esDe(r, "paquete", pkg.slug));
+  const deSusTours = resenas.filter((r) =>
+    tours.some((x) => esDe(r, "tour", x!.slug))
+  );
+  const resenasPaquete = [...propias, ...deSusTours];
+
+  const conUbicacion = Boolean(pkg.locationImage || pkg.location);
 
   const secciones = [
     ...(tours.length > 0
       ? [{ id: "tours", label: t("includedTours"), icon: <Route /> }]
       : []),
     ...(tours.length > 0 ? [{ id: "temporada", label: tt("tabSeason"), icon: <Sun /> }] : []),
-    ...(resenasTours.length > 0
+    ...(conUbicacion ? [{ id: "ubicacion", label: tt("tabLocation"), icon: <MapIcon /> }] : []),
+    ...(resenasPaquete.length > 0
       ? [{ id: "resenas", label: tt("tabReviews"), icon: <MessageSquare /> }]
       : []),
   ];
@@ -234,32 +245,43 @@ export default async function PackagePage({
             </section>
           )}
 
-          {resenasTours.length > 0 && (
+          {conUbicacion && (
+            <section id="ubicacion" className={seccion}>
+              <div className="escena-texto">
+                <h2 className="font-heading text-2xl font-bold text-slate-900">
+                  {tt("tabLocation")}
+                </h2>
+              </div>
+              <BloqueUbicacion
+                mapa={pkg.locationImage}
+                foto={pkg.image}
+                titulo={regiones.join(" · ") || name}
+                texto={pkg.location ? pickLocalized(pkg.location, locale) : ""}
+                rotuloAmpliar={tt("mapZoom")}
+              />
+            </section>
+          )}
+
+          {resenasPaquete.length > 0 && (
             <section id="resenas" className={seccion}>
               <div className="escena-texto">
                 <h2 className="font-heading text-2xl font-bold text-slate-900">
                   {tt("tabReviews")}
                 </h2>
                 <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500">
-                  {t("reviewsFromTours")}
+                  {propias.length > 0 ? tt("reviewsSubtitle") : t("reviewsFromTours")}
                 </p>
               </div>
               <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {resenasTours.map((review) => {
-                  const x = nombrePorSlug.get(review.tourSlug!)!;
-                  return (
-                    <TarjetaResena
-                      key={review.id}
-                      review={review}
-                      locale={locale}
-                      ficha={{
-                        nombre: pickLocalized(x.name, locale),
-                        imagen: x.image,
-                        href: `/tours/${x.slug}`,
-                      }}
-                    />
-                  );
-                })}
+                {resenasPaquete.map((review) => (
+                  <TarjetaResena
+                    key={review.id}
+                    review={review}
+                    locale={locale}
+                    /* Las del paquete no llevan pastilla: ya estás en él. */
+                    ficha={propias.includes(review) ? undefined : fichaDe(review, fichas)}
+                  />
+                ))}
               </div>
             </section>
           )}

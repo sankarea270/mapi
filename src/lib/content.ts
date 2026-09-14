@@ -68,6 +68,20 @@ function slugList(value: unknown): string[] {
  * Envuelve una consulta para que nunca tumbe la compilación: ante cualquier
  * problema devuelve el contenido del repositorio y deja constancia en el log.
  */
+
+/**
+ * ¿El error es "esa columna no existe"?
+ *
+ * Las columnas nuevas llegan con una migración que se ejecuta a mano en
+ * Supabase, y el código se publica antes. Si un lector pide una columna que
+ * todavía no está, la consulta entera falla y la web cae al contenido del
+ * repositorio: nueve tours de ejemplo en lugar de los setenta de verdad. Con
+ * esto se repite la consulta sin las columnas nuevas y lo único que falta
+ * es lo nuevo.
+ */
+export function faltaColumna(error: unknown): boolean {
+  return (error as { code?: string } | null)?.code === "42703";
+}
 async function conRespaldo<T>(
   etiqueta: string,
   respaldo: T[],
@@ -86,13 +100,16 @@ async function conRespaldo<T>(
 
 export async function getPackages(): Promise<TourPackage[]> {
   return conRespaldo("paquetes", PACKAGES, async () => {
-    const { data, error } = await supabase!
-      .from("packages")
-      .select(
-        "slug, name_es, name_en, name_pt, description_es, description_en, description_pt, " +
-          "duration_es, duration_en, duration_pt, price, image_url, tour_slugs"
-      )
-      .order("sort_order");
+    const base =
+      "slug, name_es, name_en, name_pt, description_es, description_en, description_pt, " +
+      "duration_es, duration_en, duration_pt, price, image_url, tour_slugs";
+    const pedir = (columnas: string) =>
+      supabase!.from("packages").select(columnas).order("sort_order");
+
+    let { data, error } = await pedir(
+      `${base}, location_image_url, location_es, location_en, location_pt`
+    );
+    if (faltaColumna(error)) ({ data, error } = await pedir(base));
     if (error) throw error;
 
     return ((data ?? []) as unknown as FilaPaquete[]).map((p) => ({
@@ -103,6 +120,8 @@ export async function getPackages(): Promise<TourPackage[]> {
       price: num(p.price),
       image: p.image_url ?? "",
       tourSlugs: slugList(p.tour_slugs),
+      ...(p.location_image_url ? { locationImage: p.location_image_url } : {}),
+      ...(p.location_es ? { location: loc(p.location_es, p.location_en ?? null, p.location_pt ?? null) } : {}),
     }));
   });
 }
@@ -131,10 +150,12 @@ export async function getDestinations(): Promise<Destination[]> {
 
 export async function getReviews(): Promise<Review[]> {
   return conRespaldo("reseñas", REVIEWS, async () => {
-    const { data, error } = await supabase!
-      .from("reviews")
-      .select("id, author, country, rating, text_es, text_en, text_pt, tour_slug")
-      .order("sort_order");
+    const base = "id, author, country, rating, text_es, text_en, text_pt, tour_slug";
+    const pedir = (columnas: string) =>
+      supabase!.from("reviews").select(columnas).order("sort_order");
+
+    let { data, error } = await pedir(`${base}, target_type`);
+    if (faltaColumna(error)) ({ data, error } = await pedir(base));
     if (error) throw error;
 
     return ((data ?? []) as unknown as FilaResena[]).map((r) => ({
@@ -144,6 +165,7 @@ export async function getReviews(): Promise<Review[]> {
       rating: num(r.rating, 5),
       text: loc(r.text_es, r.text_en, r.text_pt),
       ...(r.tour_slug ? { tourSlug: r.tour_slug } : {}),
+      ...(r.target_type ? { targetType: r.target_type } : {}),
     }));
   });
 }
@@ -208,28 +230,60 @@ export async function getTeam(locale: string): Promise<MiembroEquipo[]> {
  *
  * Solo las publicadas y en el orden fijado en el panel.
  */
-export async function getExperiences(): Promise<Experience[]> {
-  return conRespaldo("experiencias", EXPERIENCES, async () => {
-    const { data, error } = await supabase!
-      .from("experiences")
-      .select(
-        "slug, name_es, name_en, name_pt, description_es, description_en, description_pt, " +
-          "image_url, tour_slugs"
-      )
-      .eq("status", "published")
-      .order("sort_order");
-    if (error) throw error;
-    /* El mismo casteo que el resto de lectores de este archivo: sin tipos
-       generados, el cliente de Supabase devuelve una unión que incluye su
-       tipo de error y TypeScript no deja leer las columnas. */
-    return ((data ?? []) as unknown as FilaExperiencia[]).map((e) => ({
-      slug: e.slug,
-      name: loc(e.name_es, e.name_en, e.name_pt),
-      description: loc(e.description_es, e.description_en, e.description_pt),
-      image: e.image_url ?? "",
-      tourSlugs: slugList(e.tour_slugs),
-    }));
-  });
+let experienciasEnCurso: Promise<Experience[]> | null = null;
+
+export function getExperiences(): Promise<Experience[]> {
+  /*
+   * Las experiencias NO caen al contenido del repositorio.
+   *
+   * El resto de lectores, si la tabla está vacía, enseñan lo del código. Aquí
+   * eso no sirve: las siete experiencias del código son de relleno y se
+   * pidió que no salieran. La tabla es la única fuente; vacía, no hay
+   * experiencias.
+   *
+   * Y por lo mismo, si Supabase falla no se cae a ellas: se reintenta y, si
+   * sigue fallando, se deja fallar la compilación. Un despliegue fallido deja
+   * publicada la versión anterior; caer al relleno en silencio publicaría
+   * otra vez justo lo que se borró. La API ya ha dado algún "Gateway
+   * Timeout" suelto, así que los reintentos no son teóricos.
+   *
+   * Se consulta una sola vez por compilación: la cabecera la pide en cada una
+   * de las 350 páginas, y 350 consultas son 350 ocasiones de pillar uno de
+   * esos cortes.
+   */
+  if (!supabase) return Promise.resolve(EXPERIENCES);
+  if (experienciasEnCurso) return experienciasEnCurso;
+  const consulta = (async () => {
+    let ultimo: unknown;
+    for (let intento = 0; intento < 4; intento++) {
+      const { data, error } = await supabase!
+        .from("experiences")
+        .select(
+          "slug, name_es, name_en, name_pt, description_es, description_en, description_pt, " +
+            "image_url, tour_slugs"
+        )
+        .eq("status", "published")
+        .order("sort_order");
+      if (!error) {
+        /* El mismo casteo que el resto de lectores de este archivo: sin tipos
+           generados, el cliente de Supabase devuelve una unión que incluye su
+           tipo de error y TypeScript no deja leer las columnas. */
+        return ((data ?? []) as unknown as FilaExperiencia[]).map((e) => ({
+          slug: e.slug,
+          name: loc(e.name_es, e.name_en, e.name_pt),
+          description: loc(e.description_es, e.description_en, e.description_pt),
+          image: e.image_url ?? "",
+          tourSlugs: slugList(e.tour_slugs),
+        }));
+      }
+      ultimo = error;
+      await new Promise((r) => setTimeout(r, 1500 * (intento + 1)));
+    }
+    experienciasEnCurso = null;
+    throw new Error(`[experiencias] Supabase no respondió tras 4 intentos: ${JSON.stringify(ultimo)}`);
+  })();
+  experienciasEnCurso = consulta;
+  return consulta;
 }
 
 /**

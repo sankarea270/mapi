@@ -2,8 +2,7 @@ import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/seo";
 import { getCategoriesWithTours } from "@/lib/tours";
-import { getDestinations, getPackages } from "@/lib/content";
-import { EXPERIENCES } from "@/data/experiences";
+import { getDestinations, getExperiences, getPackages } from "@/lib/content";
 import { GUIDES } from "@/data/guides";
 
 export const dynamic = 'force-static'
@@ -30,10 +29,11 @@ function url(path: string): string {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [categories, destinations, packages] = await Promise.all([
+  const [categories, destinations, packages, experiences] = await Promise.all([
     getCategoriesWithTours(),
     getDestinations(),
     getPackages(),
+    getExperiences(),
   ]);
   const tourSlugs = categories.flatMap((c) => c.tours.map((t) => t.slug));
 
@@ -93,7 +93,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    for (const experience of EXPERIENCES) {
+    /* Las de la tabla: las del código eran de relleno y se borraron. */
+    for (const experience of experiences) {
       entries.push({
         url: url(`${p}/experiencias/${experience.slug}`),
         changeFrequency: "monthly",

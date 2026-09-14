@@ -11,8 +11,8 @@ import { TextoLetras } from "@/components/home/TextoLetras";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { Contornos } from "@/components/home/Contornos";
+import { fichaDe, type Ficha } from "@/lib/resenas";
 
-type Ficha = { nombre: string; imagen: string; href: string };
 
 /** Velocidad de crucero de la cinta, en px por segundo. */
 const VELOCIDAD = 34;
@@ -66,7 +66,7 @@ export function ReviewsSection({
   fichas,
 }: {
   reviews: Review[];
-  /** Ficha del catálogo por slug. Solo trae las que existen de verdad. */
+  /** Fichas del catálogo por tipo y dirección. Solo trae las que existen. */
   fichas: Record<string, Ficha>;
 }) {
   const t = useTranslations("reviews");
@@ -356,7 +356,7 @@ export function ReviewsSection({
                    repeticiones y la copia existen para que la cinta no se
                    acabe, y un lector de pantalla las leería todas. */
                 const oculta = copia > 0 || k >= total;
-                const ficha = r.tourSlug ? fichas[r.tourSlug] : undefined;
+                const ficha = fichaDe(r, fichas);
                 /* 4,5 se pinta como cuatro estrellas y el número al lado. Con
                    redondeo normal salían cinco, y la tarjeta prometía más
                    de lo que decía la reseña. */

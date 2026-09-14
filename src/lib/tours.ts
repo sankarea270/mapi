@@ -24,6 +24,10 @@ type RawRow = {
     excerpt_en: string | null;
     excerpt_pt: string | null;
     included: Array<{ es: string; en: string; pt: string }> | null;
+    location_image_url?: string | null;
+    location_es?: string | null;
+    location_en?: string | null;
+    location_pt?: string | null;
     itinerary: Array<{
       day: string;
       title: { es: string; en: string; pt: string };
@@ -40,25 +44,32 @@ function loc(es: string, en: string | null, pt: string | null, fallback: string)
   };
 }
 
-async function fetchFromSupabase(): Promise<TourCategory[]> {
-  const { data, error } = await supabase!
-    .from("categories")
-    .select(`
-      slug,
-      name_es,
-      name_en,
-      name_pt,
-      tours (
+const COLUMNAS_TOUR = `
         slug,
         name_es, name_en, name_pt,
         duration_es, duration_en, duration_pt,
         price, rating, featured,
         image_url, gallery,
         excerpt_es, excerpt_en, excerpt_pt,
-        included, itinerary
-      )
-    `)
-    .order("sort_order");
+        included, itinerary`;
+
+async function fetchFromSupabase(): Promise<TourCategory[]> {
+  const pedir = (tour: string) =>
+    supabase!
+      .from("categories")
+      .select(`slug, name_es, name_en, name_pt, tours (${tour})`)
+      .order("sort_order");
+
+  /* Primero con la ubicación propia; si la migración 008 todavía no se ha
+     ejecutado, sin ella. Sin este segundo intento, pedir una columna que no
+     existe tumbaba la consulta y la web entera caía a los nueve tours de
+     ejemplo. */
+  let { data, error } = await pedir(
+    `${COLUMNAS_TOUR}, location_image_url, location_es, location_en, location_pt`
+  );
+  if ((error as { code?: string } | null)?.code === "42703") {
+    ({ data, error } = await pedir(COLUMNAS_TOUR));
+  }
 
   if (error) throw error;
   if (!data || data.length === 0) return [];
@@ -108,6 +119,10 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
               : {}),
             ...(included.length > 0 ? { included } : {}),
             ...(itinerary.length > 0 ? { itinerary } : {}),
+            ...(tour.location_image_url ? { locationImage: tour.location_image_url } : {}),
+            ...(tour.location_es
+              ? { location: loc(tour.location_es, tour.location_en ?? null, tour.location_pt ?? null, "") }
+              : {}),
           };
         }),
     }));

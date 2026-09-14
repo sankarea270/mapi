@@ -36,6 +36,7 @@ export default async function ExperiencesPage({
   const lista = await getExperiences();
   setRequestLocale(locale);
   const t = await getTranslations("experiencias");
+  const tn = await getTranslations("nav");
 
   return (
     <div className="min-h-dvh bg-slate-50">
@@ -52,8 +53,22 @@ export default async function ExperiencesPage({
       </div>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        {/* Sin experiencias publicadas, se dice y se ofrece otra salida en
+            vez de dejar la página en blanco bajo un «0 experiencias». */}
+        {lista.length === 0 && (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+            <p className="mx-auto max-w-md text-base text-slate-600">{t("empty2")}</p>
+            <Link
+              href="/tours"
+              className="mt-6 inline-flex items-center gap-2 font-heading text-[13px] font-bold uppercase tracking-[0.1em] text-teal-700"
+            >
+              {tn("tours")}
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        )}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {(await getExperiences()).map((experience) => (
+          {lista.map((experience) => (
             <Link
               key={experience.slug}
               href={`/experiencias/${experience.slug}`}

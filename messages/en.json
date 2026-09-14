@@ -115,7 +115,9 @@
     "count": "{count} experiences to live",
     "explore": "Explore",
     "back": "Back to experiences",
-    "empty": "Tours will be available for this experience soon."
+    "empty": "Tours will be available for this experience soon.",
+    "reviewsFromTours": "What travellers say about the tours that make up this experience.",
+    "empty2": "New experiences are coming soon. Meanwhile, take a look at our tours."
   },
   "guia": {
     "before": "Before you travel",
@@ -220,7 +222,8 @@
     "services": "{count, plural, one {# service} other {# services}}",
     "navSummary": "Overview",
     "navFaq": "Questions",
-    "noOwnReviews": "This tour doesn't have its own reviews yet. Meanwhile, here is what travellers on our other trips say."
+    "noOwnReviews": "This tour doesn't have its own reviews yet. Meanwhile, here is what travellers on our other trips say.",
+    "mapZoom": "Enlarge map"
   },
   "reserva": {
     "title": "Book your trip",

@@ -69,6 +69,7 @@ export function MenuCompleto({
   onOpenChange,
   catalog,
   fotos,
+  experiencias,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -77,6 +78,8 @@ export function MenuCompleto({
       enseñaban una sola imagen para todas sus entradas —la de `featured`—,
       así que recorrerlas no previsualizaba nada. */
   fotos: Record<string, string>;
+  /** Las experiencias publicadas. Vacía, la sección no sale en el menú. */
+  experiencias: Array<{ etiqueta: string; href: string; imagen: string }>;
 }) {
   const t = useTranslations();
   const [seccion, setSeccion] = useState(0);
@@ -86,8 +89,16 @@ export function MenuCompleto({
   // en cada movimiento del ratón sería trabajo repetido en un panel que ya
   // está cambiando una foto.
   const secciones = useMemo(() => {
-    const desdeNav = NAV_ITEMS.map((item) => {
+    const desdeNav = NAV_ITEMS.flatMap((item) => {
       const etiqueta = t(item.labelKey);
+
+      /* Experiencias: las de la tabla. Sin ninguna publicada, la sección no
+         aparece; un apartado del menú que lleva a una página vacía se lee
+         como algo roto. */
+      if (item.kind === "links" && item.href === "/experiencias") {
+        if (experiencias.length === 0) return [];
+        return [{ etiqueta, href: item.href, entradas: experiencias }];
+      }
 
       if (item.kind === "tours") {
         return {
@@ -139,7 +150,7 @@ export function MenuCompleto({
       { etiqueta: t("nav.about"), href: "/nosotros", entradas: [] as Entrada[] },
       { etiqueta: t("nav.contact"), href: "/contacto", entradas: [] as Entrada[] },
     ];
-  }, [catalog, fotos, t]);
+  }, [catalog, fotos, experiencias, t]);
 
   useEffect(() => {
     if (!open) return;

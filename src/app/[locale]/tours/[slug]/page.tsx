@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
-  ArrowRight,
   Check,
   Clock,
   MapPin,
@@ -23,7 +21,8 @@ import { getCategoriesWithTours } from "@/lib/tours";
 import { whatsappLink, siteConfig } from "@/config/site";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
-import { getDestinations, getPackages, getReviews } from "@/lib/content";
+import { getDestinations, getExperiences, getPackages, getReviews } from "@/lib/content";
+import { construirFichas, esDe, fichaDe } from "@/lib/resenas";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
 import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
 import { FranjaDatos } from "@/components/tours/FranjaDatos";
@@ -31,7 +30,8 @@ import { TourFaq } from "@/components/tours/TourFaq";
 import { TourCard } from "@/components/tours/TourCard";
 import { FichaSecciones } from "@/components/tours/FichaSecciones";
 import { RutaItinerario } from "@/components/tours/RutaItinerario";
-import { TarjetaResena, type FichaResena } from "@/components/reviews/TarjetaResena";
+import { TarjetaResena } from "@/components/reviews/TarjetaResena";
+import { BloqueUbicacion } from "@/components/tours/BloqueUbicacion";
 import { cn } from "@/lib/utils";
 import { TourSidebar } from "@/components/tours/TourSidebar";
 
@@ -94,10 +94,11 @@ export default async function TourDetailPage({
   if (!tour) notFound();
 
   const category = categories.find((c) => c.slug === tour.categorySlug);
-  const [destinos, resenas, paquetes] = await Promise.all([
+  const [destinos, resenas, paquetes, experiencias] = await Promise.all([
     getDestinations(),
     getReviews(),
     getPackages(),
+    getExperiences(),
   ]);
   const destination = destinos.find((d) =>
     d.categorySlugs?.includes(tour.categorySlug)
@@ -109,7 +110,7 @@ export default async function TourDetailPage({
         .slice(0, 3) ?? []
     : [];
 
-  const tourReviews = resenas.filter((r) => r.tourSlug === tour.slug);
+  const tourReviews = resenas.filter((r) => esDe(r, "tour", tour.slug));
 
   const t = await getTranslations("tourDetail");
   const tReserva = await getTranslations("reserva");
@@ -234,15 +235,7 @@ export default async function TourDetailPage({
 
   /* De qué viaje habla cada reseña, para cuando se enseñan las de otros
      tours: sin esto parecerían escritas sobre este. */
-  const fichas: Record<string, FichaResena> = {};
-  for (const c of categories) {
-    for (const x of c.tours) {
-      fichas[x.slug] = { nombre: pickLocalized(x.name, l), imagen: x.image, href: `/tours/${x.slug}` };
-    }
-  }
-  for (const x of paquetes) {
-    fichas[x.slug] = { nombre: pickLocalized(x.name, l), imagen: x.image, href: `/paquetes/${x.slug}` };
-  }
+  const fichas = construirFichas(l, { categorias: categories, paquetes, experiencias });
 
   const propias = tourReviews.length > 0;
   const resenasVisibles = propias ? tourReviews : resenas.slice(0, 4);
@@ -457,36 +450,26 @@ export default async function TourDetailPage({
                 <p className="mt-2 text-[15px] text-slate-500">{t("locationSubtitle")}</p>
               </div>
 
-              <div className="escena-foto mt-8 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
-                <div className="group relative aspect-[21/9] overflow-hidden bg-slate-100">
-                  <Image
-                    src={destination?.image ?? tour.image}
-                    alt={destination ? pickLocalized(destination.name, l) : name}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    className="object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-[1.04]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-slate-950/10 to-transparent" />
-                  <p className="absolute bottom-4 left-6 flex items-center gap-2 font-heading text-2xl font-bold text-white">
-                    <MapPin className="size-5 text-amber-400" />
-                    {region || name}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-end justify-between gap-4 p-6">
-                  <p className="max-w-xl text-[15px] leading-relaxed text-slate-600">
-                    {destination ? pickLocalized(destination.description, l) : `${name} · ${duration}`}
-                  </p>
-                  {destination && (
-                    <Link
-                      href={`/destinos/${destination.slug}`}
-                      className="group/v inline-flex shrink-0 items-center gap-2 font-heading text-[13px] font-bold uppercase tracking-[0.1em] text-teal-700"
-                    >
-                      {t("locationVisit")}
-                      <ArrowRight className="size-4 transition-transform duration-300 group-hover/v:translate-x-1" />
-                    </Link>
-                  )}
-                </div>
-              </div>
+              {/* El mapa y el texto propios del tour, cargados desde el panel;
+                  sin ellos, la foto y la descripción del destino. */}
+              <BloqueUbicacion
+                mapa={tour.locationImage}
+                foto={destination?.image ?? tour.image}
+                titulo={region || name}
+                texto={
+                  tour.location
+                    ? pickLocalized(tour.location, l)
+                    : destination
+                      ? pickLocalized(destination.description, l)
+                      : `${name} · ${duration}`
+                }
+                enlace={
+                  destination
+                    ? { href: `/destinos/${destination.slug}`, texto: t("locationVisit") }
+                    : undefined
+                }
+                rotuloAmpliar={t("mapZoom")}
+              />
             </section>
 
             <section id="resenas" className={seccion}>
@@ -511,7 +494,7 @@ export default async function TourDetailPage({
                     key={review.id}
                     review={review}
                     locale={locale}
-                    ficha={!propias && review.tourSlug ? fichas[review.tourSlug] : undefined}
+                    ficha={propias ? undefined : fichaDe(review, fichas)}
                   />
                 ))}
               </div>

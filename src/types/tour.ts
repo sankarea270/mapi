@@ -23,6 +23,10 @@ export interface Tour {
   gallery?: string[];
   included?: LocalizedText[];
   itinerary?: TourItineraryDay[];
+  /** Mapa propio de la ubicación (una imagen: la ruta, el punto de
+      encuentro) y su texto. Sin ellos la ficha usa los del destino. */
+  locationImage?: string;
+  location?: LocalizedText;
 }
 
 export interface TourCategory {

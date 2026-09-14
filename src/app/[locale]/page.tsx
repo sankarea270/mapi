@@ -7,7 +7,8 @@ import { Link } from "@/i18n/navigation";
 import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
 import { buildMetadata, LOGO_URL } from "@/lib/seo";
 import { pickLocalized } from "@/lib/format";
-import { getDestinations, getReviews, getHeroSlides, getPackages } from "@/lib/content";
+import { getDestinations, getExperiences, getReviews, getHeroSlides, getPackages } from "@/lib/content";
+import { construirFichas } from "@/lib/resenas";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { climateForCategory } from "@/data/climate";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
@@ -53,11 +54,12 @@ export default async function HomePage({
      se reutilizan en vez de duplicarlos. */
   const tSeason = await getTranslations("season");
   const resenas = await getReviews();
-  const [categorias, destinos, slidesPortada, paquetes] = await Promise.all([
+  const [categorias, destinos, slidesPortada, paquetes, experiencias] = await Promise.all([
     getCategoriesWithTours(),
     getDestinations(),
     getHeroSlides(),
     getPackages(),
+    getExperiences(),
   ]);
 
   /* Destacados para la tira de debajo de la portada.
@@ -138,26 +140,10 @@ export default async function HomePage({
    * slug no existe la reseña sale sin enlace. Un enlace roto en una sección
    * que se titula «opiniones reales» es peor que ninguno.
    *
-   * Se miran tours y paquetes porque hay reseñas que hablan de un circuito
-   * —«hicimos el circuito del Sur del Perú»—, y un circuito es un paquete.
+   * Se miran tours, paquetes y experiencias: desde el panel una reseña se
+   * puede asignar a cualquiera de los tres.
    */
-  const fichas: Record<string, { nombre: string; imagen: string; href: string }> = {};
-  for (const c of categorias) {
-    for (const tour of c.tours) {
-      fichas[tour.slug] = {
-        nombre: pickLocalized(tour.name, locale),
-        imagen: tour.image,
-        href: `/tours/${tour.slug}`,
-      };
-    }
-  }
-  for (const x of paquetes) {
-    fichas[x.slug] = {
-      nombre: pickLocalized(x.name, locale),
-      imagen: x.image,
-      href: `/paquetes/${x.slug}`,
-    };
-  }
+  const fichas = construirFichas(locale, { categorias, paquetes, experiencias });
 
   /* Foto del bloque "por qué viajar con nosotros". Se busca en public/ y, si
      no está, el bloque se dibuja sin ella. Así se puede subir la foto por

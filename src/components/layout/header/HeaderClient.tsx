@@ -13,10 +13,13 @@ const SCROLL_THRESHOLD = 16;
 export function HeaderClient({
   catalog,
   fotos,
+  experiencias,
 }: {
   catalog: CategoryBrief[];
   /** Una foto por dirección de enlace, para la previsualización del menú. */
   fotos: Record<string, string>;
+  /** Las experiencias publicadas, ya en el idioma de la página. */
+  experiencias: Array<{ etiqueta: string; href: string; imagen: string }>;
 }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -92,6 +95,7 @@ export function HeaderClient({
         onOpenChange={setMobileOpen}
         catalog={catalog}
         fotos={fotos}
+        experiencias={experiencias}
       />
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} catalog={catalog} />
     </header>

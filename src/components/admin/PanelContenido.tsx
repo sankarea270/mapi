@@ -22,7 +22,7 @@ import { CampoImagen } from "./CampoImagen";
  * —poder cambiarles la imagen— sí está.
  */
 
-type TipoCampo = "texto" | "area" | "numero" | "lista" | "imagen";
+type TipoCampo = "texto" | "area" | "numero" | "lista" | "imagen" | "ficha";
 
 interface CampoDef {
   /** Columna en Postgres. Si `ml`, el sufijo _es/_en/_pt se añade solo. */
@@ -32,6 +32,11 @@ interface CampoDef {
   ml?: boolean;
   ayuda?: string;
   placeholder?: string;
+  /** Imágenes que llevan texto pequeño (mapas): menos compresión. */
+  nitido?: boolean;
+  /** Columnas que llegan con la migración 008. Si no se ha ejecutado, se
+      guarda el resto y se avisa de que esto no se guardó. */
+  migracion008?: boolean;
 }
 
 interface Esquema {
@@ -67,6 +72,23 @@ const ESQUEMAS: Record<string, Esquema> = {
       },
       { col: "price", etiqueta: "Precio (US$)", tipo: "numero" },
       { col: "image_url", etiqueta: "Imagen", tipo: "imagen" },
+      {
+        col: "location_image_url",
+        etiqueta: "Mapa de la ubicación",
+        tipo: "imagen",
+        nitido: true,
+        migracion008: true,
+        ayuda:
+          "El mapa del recorrido del paquete. Se guarda más nítido que las fotos para que se lean los nombres. Opcional.",
+      },
+      {
+        col: "location",
+        etiqueta: "Descripción de la ubicación",
+        tipo: "area",
+        ml: true,
+        migracion008: true,
+        ayuda: "Por dónde pasa el viaje. Opcional: sin ella, el apartado «Ubicación» no sale.",
+      },
       {
         col: "tour_slugs",
         etiqueta: "Tours que incluye",
@@ -149,9 +171,10 @@ const ESQUEMAS: Record<string, Esquema> = {
       { col: "text", etiqueta: "Reseña", tipo: "area", ml: true },
       {
         col: "tour_slug",
-        etiqueta: "Tour al que se refiere",
-        tipo: "texto",
-        ayuda: "Déjalo vacío si es una reseña general de la agencia.",
+        etiqueta: "¿De qué es esta reseña?",
+        tipo: "ficha",
+        ayuda:
+          "Sale en la ficha que elijas: la de ese tour, ese paquete o esa experiencia. Las de la agencia salen solo en la portada.",
       },
     ],
   },
@@ -173,6 +196,7 @@ function aSlug(t: string): string {
 
 function filaNueva(esquema: Esquema): Fila {
   const f: Fila = { status: "draft" };
+  if (esquema.campos.some((c) => c.tipo === "ficha")) f.target_type = "agencia";
   if (esquema.conSlug) f.slug = "";
   for (const c of esquema.campos) {
     if (c.ml) {
@@ -200,6 +224,8 @@ export function PanelContenido({
   const [cargando, setCargando] = useState(true);
   const [editando, setEditando] = useState<Fila | null>(null);
   const [error, setError] = useState("");
+  const conFicha = esquema.campos.some((c) => c.tipo === "ficha");
+  const opciones = useOpcionesFicha(conFicha, revision);
 
   useEffect(() => {
     if (!supabase) return;
@@ -241,6 +267,13 @@ export function PanelContenido({
           .filter(Boolean);
       } else if (c.tipo === "numero") {
         datos[c.col] = Number(texto(f[c.col])) || 0;
+      } else if (c.tipo === "ficha") {
+        const tipoFicha = texto(f.target_type) || "agencia";
+        datos.target_type = tipoFicha;
+        datos[c.col] = tipoFicha === "agencia" ? null : texto(f[c.col]) || null;
+        if (tipoFicha !== "agencia" && !datos[c.col]) {
+          return setError("Elige de qué tour, paquete o experiencia es la reseña.");
+        }
       } else {
         datos[c.col] = texto(f[c.col]) || null;
       }
@@ -254,9 +287,36 @@ export function PanelContenido({
     }
 
     const id = f.id as string | undefined;
-    const { error: fallo } = id
-      ? await supabase.from(esquema.tabla).update(datos).eq("id", id)
-      : await supabase.from(esquema.tabla).insert(datos);
+    const escribir = (d: Fila) =>
+      id
+        ? supabase!.from(esquema.tabla).update(d).eq("id", id)
+        : supabase!.from(esquema.tabla).insert(d);
+
+    let { error: fallo } = await escribir(datos);
+
+    /* Si la migración 008 no se ha ejecutado, Supabase rechaza el guardado
+       ENTERO por las columnas que no conoce. Se reintenta sin ellas para que
+       el resto se guarde, y se dice qué se quedó fuera. */
+    if (fallo?.code === "PGRST204" || fallo?.code === "42703") {
+      const nuevas = new Set(["target_type"]);
+      for (const c of esquema.campos) {
+        if (!c.migracion008) continue;
+        if (c.ml) for (const l of ["es", "en", "pt"]) nuevas.add(`${c.col}_${l}`);
+        else nuevas.add(c.col);
+      }
+      const reducida = Object.fromEntries(Object.entries(datos).filter(([k]) => !nuevas.has(k)));
+      ({ error: fallo } = await escribir(reducida));
+      if (!fallo) {
+        setEditando(null);
+        setError(
+          `Se guardó, pero sin ${
+            esquema.tabla === "reviews" ? "el tipo de ficha" : "el mapa ni la ubicación"
+          }: falta ejecutar 008_ubicacion_resenas.sql en Supabase.`
+        );
+        onCambio();
+        return;
+      }
+    }
 
     if (fallo) {
       setError(
@@ -285,6 +345,7 @@ export function PanelContenido({
     return (
       <Editor
         esquema={esquema}
+        opciones={opciones}
         fila={editando}
         error={error}
         onCambiar={setEditando}
@@ -327,6 +388,11 @@ export function PanelContenido({
                 {esquema.conSlug && (
                   <p className="truncate text-xs text-slate-400">/{texto(f.slug)}</p>
                 )}
+                {conFicha && (
+                  <p className="truncate text-xs text-slate-400">
+                    {etiquetaFicha(f, opciones)}
+                  </p>
+                )}
               </div>
               <Etiqueta estado={texto(f.status) || "draft"} />
               <div className="flex gap-2">
@@ -347,6 +413,7 @@ export function PanelContenido({
 
 function Editor({
   esquema,
+  opciones,
   fila,
   error,
   onCambiar,
@@ -354,6 +421,7 @@ function Editor({
   onCancelar,
 }: {
   esquema: Esquema;
+  opciones: OpcionFicha[];
   fila: Fila;
   error: string;
   onCambiar: (f: Fila) => void;
@@ -420,8 +488,23 @@ function Editor({
                 etiqueta={c.etiqueta}
                 valor={valor}
                 onChange={cambiar}
-                carpeta={esquema.carpeta}
+                carpeta={c.nitido ? "mapas" : esquema.carpeta}
                 ayuda={c.ayuda}
+                nitido={c.nitido}
+              />
+            );
+          }
+          if (c.tipo === "ficha") {
+            return (
+              <SelectorFicha
+                key={col}
+                etiqueta={c.etiqueta}
+                ayuda={c.ayuda}
+                opciones={opciones}
+                valor={valorFicha(fila, opciones)}
+                onChange={(tipoFicha, slug) =>
+                  onCambiar({ ...fila, target_type: tipoFicha, [c.col]: slug })
+                }
               />
             );
           }
@@ -493,5 +576,128 @@ function Editor({
         <Boton tipo="submit">Guardar</Boton>
       </div>
     </form>
+  );
+}
+
+
+/* ─── Selector de ficha para las reseñas ─────────────────────────────────
+   Antes era un campo de texto donde escribir la dirección del tour a mano.
+   Así nació el problema de las reseñas de la portada: cinco de seis
+   apuntaban a direcciones que no existían, y nada lo avisaba. Eligiendo de
+   una lista no hay dirección que se pueda escribir mal. */
+
+type TipoFichaResena = "tour" | "paquete" | "experiencia";
+
+interface OpcionFicha {
+  tipo: TipoFichaResena;
+  slug: string;
+  nombre: string;
+}
+
+const GRUPOS: Array<{ tipo: TipoFichaResena; tabla: string; titulo: string }> = [
+  { tipo: "tour", tabla: "tours", titulo: "Tours" },
+  { tipo: "paquete", tabla: "packages", titulo: "Paquetes" },
+  { tipo: "experiencia", tabla: "experiences", titulo: "Experiencias" },
+];
+
+function useOpcionesFicha(activo: boolean, revision: number): OpcionFicha[] {
+  const [opciones, setOpciones] = useState<OpcionFicha[]>([]);
+  useEffect(() => {
+    if (!activo || !supabase) return;
+    let vivo = true;
+    (async () => {
+      const partes = await Promise.all(
+        GRUPOS.map(async (g) => {
+          const { data } = await supabase!.from(g.tabla).select("slug, name_es").order("name_es");
+          return ((data ?? []) as Array<{ slug: string; name_es: string }>).map((r) => ({
+            tipo: g.tipo,
+            slug: r.slug,
+            nombre: r.name_es,
+          }));
+        })
+      );
+      if (vivo) setOpciones(partes.flat());
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, [activo, revision]);
+  return opciones;
+}
+
+/** "tipo:slug" → ["tipo", "slug"]. Solo el primer ":" separa. */
+function partir(v: string): [string, string] {
+  const i = v.indexOf(":");
+  return [v.slice(0, i), v.slice(i + 1)];
+}
+
+/** "tipo:slug" de una fila, deduciendo el tipo si la 008 aún no lo guarda. */
+function valorFicha(f: Fila, opciones: OpcionFicha[]): string {
+  const slug = texto(f.tour_slug);
+  const tipo = texto(f.target_type);
+  if (!slug || tipo === "agencia") return "agencia";
+  if (tipo) return `${tipo}:${slug}`;
+  const hallada = GRUPOS.map((g) => opciones.find((o) => o.tipo === g.tipo && o.slug === slug)).find(Boolean);
+  return hallada ? `${hallada.tipo}:${slug}` : `tour:${slug}`;
+}
+
+function etiquetaFicha(f: Fila, opciones: OpcionFicha[]): string {
+  const v = valorFicha(f, opciones);
+  if (v === "agencia") return "General de la agencia";
+  const [tipo, slug] = partir(v);
+  const o = opciones.find((x) => x.tipo === tipo && x.slug === slug);
+  const titulo = GRUPOS.find((g) => g.tipo === tipo)?.titulo.slice(0, -1) ?? "Tour";
+  /* Si la dirección no está en el catálogo se dice: es justo el caso que
+     antes pasaba desapercibido. */
+  return o ? `${titulo}: ${o.nombre}` : `${titulo}: /${slug} · no existe en el catálogo`;
+}
+
+function SelectorFicha({
+  etiqueta,
+  ayuda,
+  opciones,
+  valor,
+  onChange,
+}: {
+  etiqueta: string;
+  ayuda?: string;
+  opciones: OpcionFicha[];
+  valor: string;
+  onChange: (tipo: string, slug: string | null) => void;
+}) {
+  const conocida = valor === "agencia" || opciones.some((o) => `${o.tipo}:${o.slug}` === valor);
+  return (
+    <label className="block">
+      <span className="eyebrow text-slate-400">{etiqueta}</span>
+      <select
+        value={valor}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === "agencia") return onChange("agencia", null);
+          const [tipo, slug] = partir(v);
+          onChange(tipo, slug);
+        }}
+        className="mt-1 w-full border-0 border-b border-slate-200 bg-transparent px-0 py-2 text-[15px] text-slate-900 outline-none focus:border-teal-500"
+      >
+        <option value="agencia">General de la agencia</option>
+        {!conocida && (
+          <option value={valor}>{valor.replace(":", ": /")} · no existe en el catálogo</option>
+        )}
+        {GRUPOS.map((g) => {
+          const deGrupo = opciones.filter((o) => o.tipo === g.tipo);
+          if (deGrupo.length === 0) return null;
+          return (
+            <optgroup key={g.tipo} label={g.titulo}>
+              {deGrupo.map((o) => (
+                <option key={`${o.tipo}:${o.slug}`} value={`${o.tipo}:${o.slug}`}>
+                  {o.nombre}
+                </option>
+              ))}
+            </optgroup>
+          );
+        })}
+      </select>
+      {ayuda && <span className="mt-1.5 block text-xs text-slate-400">{ayuda}</span>}
+    </label>
   );
 }

@@ -30,6 +30,8 @@ interface Borrador {
   gallery: string[];
   included: TextoML[];
   itinerary: DiaItinerario[];
+  location_image_url: string;
+  location: TextoML;
 }
 
 const ML_VACIO: TextoML = { es: "", en: "", pt: "" };
@@ -61,6 +63,8 @@ function aBorrador(t: FilaTour): Borrador {
     gallery: t.gallery ?? [],
     included: t.included ?? [],
     itinerary: t.itinerary ?? [],
+    location_image_url: t.location_image_url ?? "",
+    location: ml(t.location_es ?? null, t.location_en ?? null, t.location_pt ?? null),
   };
 }
 
@@ -82,6 +86,8 @@ function nuevoBorrador(category_id: string): Borrador {
     gallery: [],
     included: [],
     itinerary: [],
+    location_image_url: "",
+    location: { ...ML_VACIO },
   };
 }
 
@@ -106,7 +112,21 @@ function aFila(b: Borrador) {
     gallery: b.gallery.filter(Boolean),
     included: b.included.filter((i) => i.es.trim()),
     itinerary: b.itinerary.filter((d) => d.title.es.trim()),
+    location_image_url: b.location_image_url || null,
+    location_es: b.location.es || null,
+    location_en: b.location.en || null,
+    location_pt: b.location.pt || null,
   };
+}
+
+/* Columnas que llegan con la migración 008. Si todavía no se ha ejecutado,
+   Supabase rechaza el guardado ENTERO por no conocerlas; se reintenta sin
+   ellas para que editar un tour siga funcionando, y se avisa de lo que no
+   se guardó. */
+const COLUMNAS_008 = ["location_image_url", "location_es", "location_en", "location_pt"];
+
+function faltaColumna(fallo: { code?: string } | null): boolean {
+  return fallo?.code === "PGRST204" || fallo?.code === "42703";
 }
 
 export function PanelTours({ revision, onCambio }: { revision: number; onCambio: () => void }) {
@@ -149,10 +169,31 @@ export function PanelTours({ revision, onCambio }: { revision: number; onCambio:
     if (!b.name.es.trim()) return setError("El nombre en español es obligatorio.");
     if (!slug) return setError("No se pudo generar la dirección; escribe un nombre.");
 
-    const fila = { ...aFila(b), slug };
-    const { error: fallo } = b.id
-      ? await supabase.from("tours").update(fila).eq("id", b.id)
-      : await supabase.from("tours").insert(fila);
+    const fila: Record<string, unknown> = { ...aFila(b), slug };
+    const escribir = (f: Record<string, unknown>) =>
+      b.id ? supabase!.from("tours").update(f).eq("id", b.id) : supabase!.from("tours").insert(f);
+
+    let { error: fallo } = await escribir(fila);
+    let sinUbicacion = false;
+    if (faltaColumna(fallo)) {
+      const reducida = Object.fromEntries(
+        Object.entries(fila).filter(([k]) => !COLUMNAS_008.includes(k))
+      );
+      ({ error: fallo } = await escribir(reducida));
+      sinUbicacion = !fallo;
+    }
+
+    if (sinUbicacion) {
+      /* Guardado, pero sin el mapa: se dice claro en el listado. El editor
+         se cierra igualmente; dejarlo abierto con un tour NUEVO haría que
+         volver a pulsar Guardar lo insertara dos veces. */
+      setEditando(null);
+      setError(
+        "El tour se guardó, pero el mapa y el texto de ubicación NO: falta ejecutar 008_ubicacion_resenas.sql en Supabase."
+      );
+      onCambio();
+      return;
+    }
 
     if (fallo) {
       /* 23505 es la clave única: dos tours no pueden compartir dirección
@@ -428,6 +469,35 @@ function EditorTour({
       />
 
       <ListaGaleria valores={b.gallery} onChange={(v) => set("gallery", v)} />
+
+      {/* Ubicación propia del tour. Sin ella la ficha enseña la foto y el
+          texto del destino, que son los mismos en todos los tours de la
+          región: el mapa de la ruta del Camino Inca y el del city tour de
+          Cusco no pueden ser la misma imagen. */}
+      <div className="rounded-lg bg-white p-6 ring-1 ring-slate-200">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="eyebrow text-slate-900">Ubicación</h3>
+          <div className="w-full max-w-xs">
+            <SelectorIdioma idioma={idioma} onChange={setIdioma} completado={completado} />
+          </div>
+        </div>
+        <div className="mt-6 space-y-6">
+          <CampoImagen
+            etiqueta="Mapa"
+            valor={b.location_image_url}
+            onChange={(v) => set("location_image_url", v)}
+            carpeta="mapas"
+            nitido
+            ayuda="El mapa de la ruta, el plano con el punto de encuentro o una captura de Google Maps. Se guarda más nítido que las fotos para que se lean los nombres. Si lo dejas vacío, se usa la foto del destino."
+          />
+          <Area
+            etiqueta="Descripción de la ubicación"
+            valor={b.location[idioma]}
+            onChange={(v) => onCambiar({ ...b, location: { ...b.location, [idioma]: v } })}
+            ayuda="Dónde empieza, por dónde pasa, dónde termina. Si lo dejas vacío, se usa la descripción del destino."
+          />
+        </div>
+      </div>
 
       <div className="flex justify-end gap-2 border-t border-slate-200 pt-6">
         <Boton variante="neutro" onClick={onCancelar}>

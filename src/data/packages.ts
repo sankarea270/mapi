@@ -8,6 +8,10 @@ export interface TourPackage {
   price: number;
   duration: LocalizedText;
   tourSlugs: string[];
+  /** Mapa propio de la ubicación (una imagen) y su texto. Opcionales: sin
+      ellos la ficha usa los del destino. */
+  locationImage?: string;
+  location?: LocalizedText;
 }
 
 const t = (es: string, en: string, pt: string): LocalizedText => ({ es, en, pt });

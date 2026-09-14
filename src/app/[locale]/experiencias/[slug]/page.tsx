@@ -4,19 +4,28 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { getExperiences } from "@/lib/content";
+import { getExperiences, getReviews } from "@/lib/content";
+import { construirFichas, esDe, fichaDe } from "@/lib/resenas";
+import { TarjetaResena } from "@/components/reviews/TarjetaResena";
 import { Link } from "@/i18n/navigation";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
 
+/* Dirección de relleno para cuando no hay ninguna experiencia publicada. */
+const SIN_EXPERIENCIAS = "sin-experiencias";
+
 /* Asíncrona: la lista sale de Supabase al compilar, no de un archivo. */
 export async function generateStaticParams() {
   const lista = await getExperiences();
-  return routing.locales.flatMap((locale) =>
-    lista.map((experience) => ({ locale, slug: experience.slug }))
-  );
+  /* Con la exportación estática, una ruta dinámica que devuelve CERO páginas
+     tumba la compilación entera («missing generateStaticParams»). Las
+     experiencias pueden quedarse a cero —se borraron las de relleno y aún no
+     hay propias—, así que en ese caso se genera una sola página que responde
+     «no encontrada» y que nada enlaza. */
+  const slugs = lista.length > 0 ? lista.map((e) => e.slug) : [SIN_EXPERIENCIAS];
+  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export async function generateMetadata({
@@ -57,6 +66,15 @@ export default async function ExperiencePage({
 
   const t = await getTranslations("experiencias");
   const tn = await getTranslations("nav");
+  const tt = await getTranslations("tourDetail");
+
+  /* Las reseñas asignadas a esta experiencia en el panel, y detrás las de
+     sus tours con el nombre del tour del que hablan. */
+  const resenas = await getReviews();
+  const fichas = construirFichas(locale, { categorias: categories });
+  const propias = resenas.filter((r) => esDe(r, "experiencia", experience.slug));
+  const deSusTours = resenas.filter((r) => tours.some((x) => esDe(r, "tour", x!.slug)));
+  const resenasExperiencia = [...propias, ...deSusTours];
   const name = pickLocalized(experience.name, locale);
 
   return (
@@ -112,6 +130,27 @@ export default async function ExperiencePage({
           </div>
         )}
       </section>
+
+      {resenasExperiencia.length > 0 && (
+        <section className="mx-auto max-w-7xl border-t border-slate-200 px-4 py-12 sm:px-6">
+          <div className="escena-texto">
+            <h2 className="font-heading text-2xl font-bold text-slate-900">{tt("tabReviews")}</h2>
+            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-500">
+              {propias.length > 0 ? tt("reviewsSubtitle") : t("reviewsFromTours")}
+            </p>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {resenasExperiencia.map((review) => (
+              <TarjetaResena
+                key={review.id}
+                review={review}
+                locale={locale}
+                ficha={propias.includes(review) ? undefined : fichaDe(review, fichas)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
