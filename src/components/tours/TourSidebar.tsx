@@ -112,7 +112,7 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
     "w-full border-0 border-b border-slate-200 bg-transparent px-0 py-2.5 text-[15px] text-slate-900 placeholder:text-slate-300 outline-none transition-colors focus:border-teal-500";
 
   return (
-    <aside className="space-y-6 lg:sticky lg:top-[calc(var(--alto-cabecera,8.25rem)+1.25rem)] lg:self-start">
+    <aside className="space-y-6 lg:sticky lg:top-[calc(var(--alto-cabecera,8.25rem)+1.25rem)] lg:transition-[top] lg:duration-300 lg:self-start">
       <div
         id="reservar"
         className="ticket-notch scroll-mt-28 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200"

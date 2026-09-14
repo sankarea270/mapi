@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { getCategoriesWithTours } from "@/lib/tours";
+import { getAjustes } from "@/lib/content";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
 import { ToursBrowser } from "@/components/tours/ToursBrowser";
@@ -38,7 +39,7 @@ export default async function ToursPage({ params }: ToursPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const categories = await getCategoriesWithTours();
+  const [categories, ajustes] = await Promise.all([getCategoriesWithTours(), getAjustes()]);
   const allTours = categories.flatMap((c) => c.tours);
 
   // El JSON-LD se genera en el build con el orden por defecto (mejor valorados).
@@ -70,21 +71,12 @@ export default async function ToursPage({ params }: ToursPageProps) {
 
   return (
     <div className="min-h-dvh bg-slate-50">
-      <div className="border-b border-slate-100 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
-            {t("found", { count: allTours.length })}
-          </p>
-          <h1 className="mt-2 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
-            {t("title")}
-          </h1>
-          <p className="mt-3 max-w-2xl text-base text-slate-500">{t("subtitle")}</p>
-        </div>
-      </div>
-
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <ToursBrowser categories={categories} locale={locale} fromLabel={tn("from")} />
-      </section>
+      <ToursBrowser
+        categories={categories}
+        locale={locale}
+        fromLabel={tn("from")}
+        fondoGeneral={ajustes.fondoTours}
+      />
 
       <script
         type="application/ld+json"

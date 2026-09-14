@@ -7,6 +7,7 @@ import type { TourCategory } from "@/types/tour";
 import { pickLocalized, tourDurationBucket } from "@/lib/format";
 import { TourCard } from "@/components/tours/TourCard";
 import { FilterBar, type TourFilters } from "@/components/tours/FilterBar";
+import { cn } from "@/lib/utils";
 
 const PER_PAGE = 12;
 
@@ -47,6 +48,8 @@ interface ToursBrowserProps {
   categories: TourCategory[];
   locale: string;
   fromLabel: string;
+  /** Fondo para «Todos», configurado en Ajustes del panel. */
+  fondoGeneral: string;
 }
 
 /**
@@ -54,8 +57,13 @@ interface ToursBrowserProps {
  * completa siga estando en el HTML generado (SEO + sin JS), este componente se
  * prerenderiza sin filtros y lee la query de la URL al montar en el navegador.
  * No usa useSearchParams a propósito: eso forzaría un bailout del prerender.
+ *
+ * La cabecera vive aquí y no en la página porque cambia con la categoría:
+ * el fondo, el titular y el recuento. Antes era una franja blanca fija y, al
+ * llegar desde el menú a «Machu Picchu», la página decía lo mismo que en
+ * «Todos» y solo cambiaba una pastilla naranja entre diez.
  */
-export function ToursBrowser({ categories, locale, fromLabel }: ToursBrowserProps) {
+export function ToursBrowser({ categories, locale, fromLabel, fondoGeneral }: ToursBrowserProps) {
   const t = useTranslations("tours");
   const [filters, setFilters] = useState<TourFilters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
@@ -89,6 +97,25 @@ export function ToursBrowser({ categories, locale, fromLabel }: ToursBrowserProp
   );
 
   const allTours = useMemo(() => categories.flatMap((c) => c.tours), [categories]);
+
+  /*
+   * Un fondo por categoría, y uno para «Todos».
+   *
+   * El de cada categoría es el que se sube en el panel; si no tiene —hoy
+   * ninguna lo tiene—, la foto de su tour mejor valorado, que ya está
+   * elegida con cuidado para su tarjeta. El de «Todos», el de Ajustes o, si
+   * no hay, el del tour mejor valorado de todo el catálogo. Así ninguna
+   * categoría se queda sin fondo mientras no se configure.
+   */
+  const fondos = useMemo(() => {
+    const mejor = (tours: TourCategory["tours"]) =>
+      [...tours].sort((a, b) => b.rating - a.rating).find((x) => x.image)?.image ?? "";
+    const mapa: Record<string, string> = { "": fondoGeneral || mejor(allTours) };
+    for (const c of categories) mapa[c.slug] = c.image || mejor(c.tours) || mapa[""];
+    return mapa;
+  }, [categories, allTours, fondoGeneral]);
+
+  const categoriaActual = categories.find((c) => c.slug === filters.categoria);
 
   const sorted = useMemo(() => {
     const normalized = filters.q.toLocaleLowerCase(locale).trim();
@@ -134,79 +161,132 @@ export function ToursBrowser({ categories, locale, fromLabel }: ToursBrowserProp
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const enCategoria = categoriaActual ? categoriaActual.tours.length : allTours.length;
+
   return (
     <>
-      <FilterBar
-        categories={categories}
-        locale={locale}
-        filters={filters}
-        onChange={handleFiltersChange}
-      />
+      <section className="tours-portada relative isolate overflow-hidden bg-slate-950">
+        {/* Todas las fotos a la vez, una encima de otra, y solo la activa
+            visible. Cambiar la `src` de una sola imagen haría un parpadeo en
+            blanco mientras carga la nueva; con las capas ya puestas el
+            cambio es un fundido, y la de salida sigue ahí mientras entra la
+            siguiente. */}
+        {Object.entries(fondos).map(([slug, src]) =>
+          src ? (
+            <div
+              key={slug || "todos"}
+              aria-hidden
+              className={cn(
+                "tours-portada-capa absolute inset-0 -z-10 bg-cover bg-center",
+                filters.categoria === slug && "tours-portada-capa--activa"
+              )}
+              style={{ backgroundImage: `url("${src}")` }}
+            />
+          ) : null
+        )}
+        {/* Velo: oscuro abajo, donde van los filtros, y más ligero arriba,
+            para que la foto se vea y el texto se lea en cualquier foto. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(2_6_23/0.55)_0%,rgb(2_6_23/0.35)_40%,rgb(2_6_23/0.82)_100%)]"
+        />
 
-      <p className="mt-8 text-sm font-medium text-slate-500">
-        {t("results", { count: sorted.length })}
-      </p>
-
-      {visible.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-          <p className="text-base text-slate-600">{t("empty")}</p>
-          <button
-            type="button"
-            onClick={() => handleFiltersChange(EMPTY_FILTERS)}
-            className="mt-4 inline-block rounded-full bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-700"
+        <div className="mx-auto max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pb-10 sm:pt-20 lg:pt-24">
+          <p
+            key={`c-${filters.categoria}`}
+            className="tours-portada-texto text-xs font-bold uppercase tracking-[0.22em] text-amber-300"
           >
-            {t("reset")}
-          </button>
+            {t("found", { count: enCategoria })}
+          </p>
+          <h1
+            key={`t-${filters.categoria}`}
+            className="tours-portada-texto mt-3 font-heading text-4xl font-bold uppercase leading-[0.95] text-white [text-shadow:0_2px_24px_rgb(2_6_23/0.45)] sm:text-5xl lg:text-6xl"
+            style={{ animationDelay: "60ms" }}
+          >
+            {categoriaActual ? pickLocalized(categoriaActual.name, locale) : t("title")}
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
+            {t("subtitle")}
+          </p>
+
+          <div className="mt-8 sm:mt-10">
+            <FilterBar
+              categories={categories}
+              locale={locale}
+              filters={filters}
+              onChange={handleFiltersChange}
+              sobreFoto
+            />
+          </div>
         </div>
-      ) : (
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {visible.map((tour) => {
-            const category = categories.find((c) => c.slug === tour.categorySlug);
-            return (
-              <TourCard
-                key={tour.slug}
-                tour={tour}
-                categoryName={category ? pickLocalized(category.name, locale) : ""}
-                locale={locale}
-                fromLabel={fromLabel}
-              />
-            );
-          })}
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        <p className="text-sm font-medium text-slate-500">
+          {t("results", { count: sorted.length })}
+        </p>
+
+        {visible.length === 0 ? (
+          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+            <p className="text-base text-slate-600">{t("empty")}</p>
+            <button
+              type="button"
+              onClick={() => handleFiltersChange(EMPTY_FILTERS)}
+              className="mt-4 inline-block rounded-full bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-700"
+            >
+              {t("reset")}
+            </button>
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {visible.map((tour) => {
+              const category = categories.find((c) => c.slug === tour.categorySlug);
+              return (
+                <TourCard
+                  key={tour.slug}
+                  tour={tour}
+                  categoryName={category ? pickLocalized(category.name, locale) : ""}
+                  locale={locale}
+                  fromLabel={fromLabel}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <nav className="mt-10 flex items-center justify-center gap-4" aria-label={t("title")}>
+            <button
+              type="button"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-amber-500 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {t("prev")}
+            </button>
+            <span className="text-sm font-medium text-slate-500">
+              {t("pageInfo", { current: currentPage, total: totalPages })}
+            </span>
+            <button
+              type="button"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-amber-500 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {t("next")}
+            </button>
+          </nav>
+        )}
+
+        {/* Enlaces rastreables al resto del catálogo (no visibles) */}
+        <div className="sr-only">
+          {sorted.slice(PER_PAGE).map((tour) => (
+            <Link key={tour.slug} href={`/tours/${tour.slug}`}>
+              {pickLocalized(tour.name, locale)}
+            </Link>
+          ))}
         </div>
-      )}
-
-      {totalPages > 1 && (
-        <nav className="mt-10 flex items-center justify-center gap-4" aria-label={t("title")}>
-          <button
-            type="button"
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage <= 1}
-            className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-amber-500 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {t("prev")}
-          </button>
-          <span className="text-sm font-medium text-slate-500">
-            {t("pageInfo", { current: currentPage, total: totalPages })}
-          </span>
-          <button
-            type="button"
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-            className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-amber-500 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {t("next")}
-          </button>
-        </nav>
-      )}
-
-      {/* Enlaces rastreables al resto del catálogo (no visibles) */}
-      <div className="sr-only">
-        {sorted.slice(PER_PAGE).map((tour) => (
-          <Link key={tour.slug} href={`/tours/${tour.slug}`}>
-            {pickLocalized(tour.name, locale)}
-          </Link>
-        ))}
-      </div>
+      </section>
     </>
   );
 }

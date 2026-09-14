@@ -134,6 +134,7 @@ export function PanelTours({ revision, onCambio }: { revision: number; onCambio:
   const [categorias, setCategorias] = useState<FilaCategoria[]>([]);
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const [verFondos, setVerFondos] = useState(false);
   const [editando, setEditando] = useState<Borrador | null>(null);
   const [error, setError] = useState("");
 
@@ -246,6 +247,9 @@ export function PanelTours({ revision, onCambio }: { revision: number; onCambio:
           placeholder="Buscar por nombre o dirección…"
           className="min-w-56 flex-1 rounded-md border-0 bg-white px-4 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none placeholder:text-slate-300 focus:ring-teal-500"
         />
+        <Boton variante="neutro" onClick={() => setVerFondos((v) => !v)}>
+          {verFondos ? "Ocultar fondos" : "Fondos de categoría"}
+        </Boton>
         <Boton
           onClick={() => setEditando(nuevoBorrador(categorias[0]?.id ?? ""))}
           disabled={categorias.length === 0}
@@ -253,6 +257,14 @@ export function PanelTours({ revision, onCambio }: { revision: number; onCambio:
           Nuevo tour
         </Boton>
       </div>
+
+      {verFondos && (
+        <FondosCategorias
+          categorias={categorias}
+          tours={tours}
+          onCambio={onCambio}
+        />
+      )}
 
       {categorias.length === 0 && (
         <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800 ring-1 ring-amber-200">
@@ -760,6 +772,98 @@ function ListaGaleria({
           )}
         </ul>
       )}
+    </div>
+  );
+}
+
+
+/**
+ * Fondo de la cabecera de «Tours» para cada categoría.
+ *
+ * Al elegir una categoría —desde el menú o desde las pastillas— la cabecera
+ * de la página cambia a su foto. Ninguna categoría tenía imagen, así que la
+ * web usa por defecto la del tour mejor valorado de cada una; aquí se puede
+ * poner una propia. Lo que se ve en cada tarjeta es exactamente lo que saldrá
+ * en la web, con o sin imagen subida.
+ */
+function FondosCategorias({
+  categorias,
+  tours,
+  onCambio,
+}: {
+  categorias: FilaCategoria[];
+  tours: FilaTour[];
+  onCambio: () => void;
+}) {
+  const [valores, setValores] = useState<Record<string, string>>(() =>
+    Object.fromEntries(categorias.map((c) => [c.id, c.image_url ?? ""]))
+  );
+  const [estado, setEstado] = useState<Record<string, string>>({});
+
+  /* La foto que la web usa si la categoría no tiene la suya. */
+  const automatica = (c: FilaCategoria) =>
+    [...tours]
+      .filter((t) => t.category_id === c.id && t.image_url && t.status === "published")
+      .sort((a, b) => Number(b.rating ?? 0) - Number(a.rating ?? 0))[0]?.image_url ?? "";
+
+  async function guardar(c: FilaCategoria, url: string) {
+    if (!supabase) return;
+    setValores((v) => ({ ...v, [c.id]: url }));
+    setEstado((e) => ({ ...e, [c.id]: "Guardando…" }));
+    const { error } = await supabase.from("categories").update({ image_url: url || null }).eq("id", c.id);
+    setEstado((e) => ({ ...e, [c.id]: error ? `Error: ${error.message}` : "Guardado" }));
+    if (!error) onCambio();
+  }
+
+  return (
+    <div className="rounded-lg bg-white p-6 ring-1 ring-slate-200">
+      <h3 className="eyebrow text-slate-900">Fondos de la página de tours</h3>
+      <p className="mt-2 text-sm text-slate-500">
+        Es la foto de la cabecera al elegir cada categoría. Sin foto propia se usa la del tour mejor
+        valorado, que es la que ves marcada como «automática». El fondo de «Todos» se cambia en
+        Ajustes. Se ve al publicar.
+      </p>
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {categorias.map((c) => {
+          const propia = valores[c.id];
+          const vista = propia || automatica(c);
+          return (
+            <div key={c.id} className="overflow-hidden rounded-md ring-1 ring-slate-200">
+              <div className="relative aspect-[21/9] bg-slate-900">
+                {vista && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={vista} alt="" className="absolute inset-0 size-full object-cover opacity-80" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent" />
+                <p className="absolute bottom-3 left-4 font-heading text-lg font-bold uppercase text-white">
+                  {c.name_es}
+                </p>
+                <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                  {propia ? "Propia" : vista ? "Automática" : "Sin foto"}
+                </span>
+              </div>
+              <div className="p-4">
+                <CampoImagen
+                  etiqueta="Foto de fondo"
+                  valor={propia}
+                  onChange={(url) => void guardar(c, url)}
+                  carpeta="categorias"
+                  ayuda={estado[c.id]}
+                />
+                {propia && (
+                  <button
+                    type="button"
+                    onClick={() => void guardar(c, "")}
+                    className="mt-2 text-xs font-semibold text-slate-500 hover:text-red-600"
+                  >
+                    Quitar y usar la automática
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

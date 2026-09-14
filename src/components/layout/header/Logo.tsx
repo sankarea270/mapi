@@ -35,7 +35,7 @@ export function Logo({
       href="/"
       className={cn(
         "group flex shrink-0 items-center",
-        centrado ? "flex-col gap-1.5" : "gap-2.5"
+        centrado ? "flex-col gap-1 lg:gap-1.5" : "gap-2.5"
       )}
     >
       {/* Solo el pin del logo: la pieza completa lleva el rótulo "GoToMapi
@@ -44,7 +44,10 @@ export function Logo({
       <div
         className={cn(
           "relative shrink-0 transition-transform duration-300 group-hover:-rotate-3",
-          centrado ? "size-11" : "size-16"
+          /* Grande solo desde `lg`, que es cuando la franja pasa de 80 a 96px.
+             Con 44px de pin el logotipo medía 90px y sobresalía de la de 80;
+             medido: 9px de más en tableta. */
+          centrado ? "size-9 lg:size-11" : "size-16"
         )}
       >
         <Image
@@ -61,7 +64,7 @@ export function Logo({
         <span
           className={cn(
             "block font-logo font-medium transition-colors",
-            centrado ? "text-[1.6rem]" : "text-2xl",
+            centrado ? "text-[1.35rem] lg:text-[1.6rem]" : "text-2xl",
             light ? "text-white" : "text-slate-900"
           )}
         >

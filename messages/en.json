@@ -159,7 +159,7 @@
   "tours": {
     "title": "Our Tours",
     "subtitle": "Explore our selection of experiences across Peru: Machu Picchu, Sacred Valley, Amazon and more.",
-    "found": "{count} experiences available",
+    "found": "{count} tours available",
     "searchPlaceholder": "Search tours, destinations...",
     "searchLabel": "Search",
     "sortLabel": "Sort by",
@@ -168,7 +168,7 @@
     "sortPriceDesc": "Price: high to low",
     "sortName": "Name A-Z",
     "allCategories": "All",
-    "results": "{count} experiences",
+    "results": "{count, plural, one {# tour} other {# tours}}",
     "empty": "We couldn't find tours matching your search.",
     "reset": "Clear filters",
     "prev": "Previous",
@@ -323,7 +323,9 @@
     "email": "Email address",
     "whatsapp": "Your WhatsApp",
     "message": "How can we help you?",
-    "submit": "Send via WhatsApp"
+    "submit": "Send via WhatsApp",
+    "emailBookings": "Bookings email",
+    "emailGeneral": "Enquiries email"
   },
   "footer": {
     "description": "Peruvian travel agency specialized in tours to Machu Picchu, Cusco, Sacred Valley, Amazon and all of Peru.",
@@ -337,7 +339,9 @@
     "refund": "Refund up to 48h",
     "paymentMethods": "Payment methods",
     "security": "Security",
-    "legal": "Legal"
+    "legal": "Legal",
+    "emailBookings": "Bookings",
+    "emailGeneral": "Enquiries"
   },
   "whyTravel": {
     "badge": "Quality experience",

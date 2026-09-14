@@ -159,7 +159,7 @@
   "tours": {
     "title": "Nuestros Tours",
     "subtitle": "Explora nuestra selección de experiencias por todo el Perú: Machu Picchu, Valle Sagrado, Amazonía y más.",
-    "found": "{count} experiencias disponibles",
+    "found": "{count} tours disponibles",
     "searchPlaceholder": "Buscar tours, destinos...",
     "searchLabel": "Buscar",
     "sortLabel": "Ordenar por",
@@ -168,7 +168,7 @@
     "sortPriceDesc": "Precio: mayor a menor",
     "sortName": "Nombre A-Z",
     "allCategories": "Todos",
-    "results": "{count} experiencias",
+    "results": "{count, plural, one {# tour} other {# tours}}",
     "empty": "No encontramos tours que coincidan con tu búsqueda.",
     "reset": "Limpiar filtros",
     "prev": "Anterior",
@@ -323,7 +323,9 @@
     "email": "Correo electrónico",
     "whatsapp": "Tu WhatsApp",
     "message": "¿En qué te ayudamos?",
-    "submit": "Enviar por WhatsApp"
+    "submit": "Enviar por WhatsApp",
+    "emailBookings": "Correo de reservas",
+    "emailGeneral": "Correo de consultas"
   },
   "footer": {
     "description": "Agencia peruana de viajes especializada en tours a Machu Picchu, Cusco, Valle Sagrado, Amazonía y todo el Perú.",
@@ -337,7 +339,9 @@
     "paymentMethods": "Métodos de pago",
     "security": "Seguridad",
     "refund": "Reembolso hasta 48h",
-    "legal": "Legal"
+    "legal": "Legal",
+    "emailBookings": "Reservas",
+    "emailGeneral": "Consultas"
   },
   "whyTravel": {
     "badge": "Experiencia de calidad",

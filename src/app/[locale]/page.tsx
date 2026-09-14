@@ -169,7 +169,7 @@ export default async function HomePage({
     logo: LOGO_URL,
     image: LOGO_URL,
     telephone: ajustes.telefono,
-    email: ajustes.correo,
+    email: ajustes.correoReservas || ajustes.correo,
     address: {
       "@type": "PostalAddress",
       streetAddress: ajustes.domicilio,

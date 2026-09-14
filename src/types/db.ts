@@ -19,6 +19,7 @@ export interface FilaCategoria {
   name_es: string;
   name_en: string;
   name_pt: string;
+  image_url?: string | null;
   sort_order: number | null;
 }
 

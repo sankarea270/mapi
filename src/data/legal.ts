@@ -75,7 +75,8 @@ const hayAnalitica = Boolean(process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_P
  */
 function datos(empresa: Ajustes) {
   const TELEFONO = empresa.telefono;
-  const correo = empresa.correo;
+  /* El de reservas primero: está en el dominio de la agencia. */
+  const correo = [empresa.correoReservas, empresa.correo].filter(Boolean).join(" o ");
   const { razonSocial, ruc, domicilio, ciudad } = empresa;
   const IDENTIDAD = t(
     `${razonSocial}, con RUC ${ruc} y domicilio en ${domicilio}, que opera bajo la marca ${siteConfig.fullName}.`,

@@ -237,12 +237,15 @@ export function MenuCompleto({
           >
             {ajustes.telefono}
           </a>
-          <a
-            href={`mailto:${ajustes.correo}`}
-            className="block py-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-slate-500 transition-colors hover:text-teal-700"
-          >
-            {ajustes.correo}
-          </a>
+          {[ajustes.correoReservas, ajustes.correo].filter(Boolean).map((correo) => (
+            <a
+              key={correo}
+              href={`mailto:${correo}`}
+              className="block truncate py-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-slate-500 transition-colors hover:text-teal-700"
+            >
+              {correo}
+            </a>
+          ))}
 
           {/* Iconos de verdad y no las siglas del nombre: en la referencia
               son glifos, y "FA / IN / YO" no se entiende. */}

@@ -61,8 +61,30 @@ function num(value: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+/**
+ * Lista de direcciones de tours, limpia.
+ *
+ * En el panel se escribían a mano y llegaban de todas las formas:
+ * «/valle-sagrado-pisac», «/Cusco-Nocturno», la dirección entera copiada del
+ * navegador… Ninguna coincidía con la dirección real del tour, así que las
+ * experiencias salían sin un solo tour dentro. Se quita todo lo que no es la
+ * dirección y se pasa a minúsculas. (El panel ya las elige de una lista; esto
+ * arregla las que se guardaron antes.)
+ */
+export function limpiarSlug(s: string): string {
+  return s
+    .trim()
+    .replace(/^https?:\/\/[^/]+/i, "")
+    .replace(/[?#].*$/, "")
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/^(?:(?:es|en|pt)\/)?tours\//i, "")
+    .toLowerCase();
+}
+
 function slugList(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((s): s is string => typeof s === "string") : [];
+  if (!Array.isArray(value)) return [];
+  const limpios = value.filter((s): s is string => typeof s === "string").map(limpiarSlug).filter(Boolean);
+  return [...new Set(limpios)];
 }
 
 /**

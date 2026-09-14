@@ -22,7 +22,7 @@ import { CampoImagen } from "./CampoImagen";
  * —poder cambiarles la imagen— sí está.
  */
 
-type TipoCampo = "texto" | "area" | "numero" | "lista" | "imagen" | "ficha";
+type TipoCampo = "texto" | "area" | "numero" | "lista" | "imagen" | "ficha" | "tours" | "categorias";
 
 interface CampoDef {
   /** Columna en Postgres. Si `ml`, el sufijo _es/_en/_pt se añade solo. */
@@ -92,8 +92,8 @@ const ESQUEMAS: Record<string, Esquema> = {
       {
         col: "tour_slugs",
         etiqueta: "Tours que incluye",
-        tipo: "lista",
-        ayuda: "Las direcciones de los tours, una por línea, en el orden del viaje.",
+        tipo: "tours",
+        ayuda: "Elige los tours en el orden del viaje. Puedes reordenarlos con las flechas.",
       },
     ],
   },
@@ -111,10 +111,10 @@ const ESQUEMAS: Record<string, Esquema> = {
       {
         col: "category_slugs",
         etiqueta: "Categorías asociadas",
-        tipo: "lista",
-        ayuda: "Direcciones de categorías, una por línea.",
+        tipo: "categorias",
+        ayuda: "Los tours de estas categorías son los que se ofrecen en el destino.",
       },
-      { col: "tour_slugs", etiqueta: "Tours asociados", tipo: "lista" },
+      { col: "tour_slugs", etiqueta: "Tours asociados", tipo: "tours" },
     ],
   },
   experiencias: {
@@ -131,8 +131,8 @@ const ESQUEMAS: Record<string, Esquema> = {
       {
         col: "tour_slugs",
         etiqueta: "Tours que la componen",
-        tipo: "lista",
-        ayuda: "Las direcciones de los tours, una por línea.",
+        tipo: "tours",
+        ayuda: "Son los tours que se muestran en la página de la experiencia.",
       },
     ],
   },
@@ -204,7 +204,7 @@ function filaNueva(esquema: Esquema): Fila {
       f[`${c.col}_en`] = "";
       f[`${c.col}_pt`] = "";
     } else {
-      f[c.col] = c.tipo === "lista" ? [] : "";
+      f[c.col] = c.tipo === "lista" || c.tipo === "tours" || c.tipo === "categorias" ? [] : "";
     }
   }
   return f;
@@ -265,6 +265,8 @@ export function PanelContenido({
           .split("\n")
           .map((s) => s.trim())
           .filter(Boolean);
+      } else if (c.tipo === "tours" || c.tipo === "categorias") {
+        datos[c.col] = [...new Set(comoLista(f[c.col]).map(limpiarDireccion).filter(Boolean))];
       } else if (c.tipo === "numero") {
         datos[c.col] = Number(texto(f[c.col])) || 0;
       } else if (c.tipo === "ficha") {
@@ -430,6 +432,7 @@ function Editor({
 }) {
   const [idioma, setIdioma] = useState<Idioma>("es");
   const set = (col: string, v: unknown) => onCambiar({ ...fila, [col]: v });
+  const catalogo = useCatalogo(esquema.campos.some((c) => c.tipo === "tours" || c.tipo === "categorias"));
 
   const primero = esquema.campos[0];
   const completado = useMemo(() => {
@@ -517,6 +520,19 @@ function Editor({
                 onChange={cambiar}
                 ayuda={c.ayuda}
                 placeholder={c.placeholder}
+              />
+            );
+          }
+          if (c.tipo === "tours" || c.tipo === "categorias") {
+            return (
+              <SelectorMultiple
+                key={col}
+                etiqueta={c.etiqueta}
+                ayuda={c.ayuda}
+                opciones={c.tipo === "tours" ? catalogo.tours : catalogo.categorias}
+                valores={comoLista(fila[c.col]).map(limpiarDireccion).filter(Boolean)}
+                onChange={(v) => set(c.col, v)}
+                buscar={c.tipo === "tours" ? "Buscar un tour…" : "Buscar una categoría…"}
               />
             );
           }
@@ -699,5 +715,167 @@ function SelectorFicha({
       </select>
       {ayuda && <span className="mt-1.5 block text-xs text-slate-400">{ayuda}</span>}
     </label>
+  );
+}
+
+
+/* ─── Selector de tours y categorías ─────────────────────────────────────
+   Las direcciones de los tours se escribían a mano, una por línea, y
+   llegaban de todas las formas: «/valle-sagrado-pisac», «/Cusco-Nocturno»…
+   Ninguna coincidía con la dirección real, así que las experiencias salían
+   sin un solo tour. Eligiendo de la lista de tours que existen no hay nada
+   que escribir mal. */
+
+interface OpcionCatalogo {
+  valor: string;
+  etiqueta: string;
+  grupo: string;
+}
+
+function comoLista(v: unknown): string[] {
+  if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string");
+  return texto(v).split("\n");
+}
+
+/** Lo mismo que hace la web al leer: sin barras, sin dominio, en minúsculas. */
+function limpiarDireccion(s: string): string {
+  return s
+    .trim()
+    .replace(/^https?:\/\/[^/]+/i, "")
+    .replace(/[?#].*$/, "")
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/^(?:(?:es|en|pt)\/)?tours\//i, "")
+    .toLowerCase();
+}
+
+function useCatalogo(activo: boolean) {
+  const [catalogo, setCatalogo] = useState<{ tours: OpcionCatalogo[]; categorias: OpcionCatalogo[] }>({
+    tours: [],
+    categorias: [],
+  });
+  useEffect(() => {
+    if (!activo || !supabase) return;
+    let vivo = true;
+    (async () => {
+      const [t, c] = await Promise.all([
+        supabase!.from("tours").select("slug, name_es, category_id").order("name_es"),
+        supabase!.from("categories").select("id, slug, name_es").order("sort_order"),
+      ]);
+      if (!vivo) return;
+      const cats = (c.data ?? []) as Array<{ id: string; slug: string; name_es: string }>;
+      const nombreCat = new Map(cats.map((x) => [x.id, x.name_es]));
+      setCatalogo({
+        tours: ((t.data ?? []) as Array<{ slug: string; name_es: string; category_id: string | null }>).map(
+          (x) => ({ valor: x.slug, etiqueta: x.name_es, grupo: nombreCat.get(x.category_id ?? "") ?? "Sin categoría" })
+        ),
+        categorias: cats.map((x) => ({ valor: x.slug, etiqueta: x.name_es, grupo: "Categorías" })),
+      });
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, [activo]);
+  return catalogo;
+}
+
+function SelectorMultiple({
+  etiqueta,
+  ayuda,
+  opciones,
+  valores,
+  onChange,
+  buscar,
+}: {
+  etiqueta: string;
+  ayuda?: string;
+  opciones: OpcionCatalogo[];
+  valores: string[];
+  onChange: (v: string[]) => void;
+  buscar: string;
+}) {
+  const [filtro, setFiltro] = useState("");
+  const porValor = useMemo(() => new Map(opciones.map((o) => [o.valor, o])), [opciones]);
+  const elegidos = new Set(valores);
+
+  const visibles = useMemo(() => {
+    const q = normalize(filtro.trim());
+    const lista = q ? opciones.filter((o) => normalize(`${o.etiqueta} ${o.valor} ${o.grupo}`).includes(q)) : opciones;
+    const grupos = new Map<string, OpcionCatalogo[]>();
+    for (const o of lista) grupos.set(o.grupo, [...(grupos.get(o.grupo) ?? []), o]);
+    return [...grupos.entries()];
+  }, [opciones, filtro]);
+
+  const alternar = (v: string) =>
+    onChange(elegidos.has(v) ? valores.filter((x) => x !== v) : [...valores, v]);
+  const mover = (i: number, d: -1 | 1) => {
+    const j = i + d;
+    if (j < 0 || j >= valores.length) return;
+    const copia = [...valores];
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+    onChange(copia);
+  };
+
+  return (
+    <div>
+      <span className="eyebrow text-slate-400">{etiqueta}</span>
+
+      {/* Los elegidos, en orden. Los que no existen en el catálogo se
+          marcan: son los que antes hacían que la página saliera vacía. */}
+      <ol className="mt-2 space-y-1.5">
+        {valores.length === 0 && <li className="text-sm text-slate-400">Ninguno elegido todavía.</li>}
+        {valores.map((v, i) => {
+          const o = porValor.get(v);
+          const falta = opciones.length > 0 && !o;
+          return (
+            <li
+              key={v}
+              className={
+                falta
+                  ? "flex items-center gap-2 rounded-md bg-red-50 px-3 py-2 text-sm ring-1 ring-red-200"
+                  : "flex items-center gap-2 rounded-md bg-slate-50 px-3 py-2 text-sm ring-1 ring-slate-200"
+              }
+            >
+              <span className="w-5 shrink-0 text-xs font-bold tabular-nums text-slate-400">{i + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className={falta ? "block truncate font-medium text-red-700" : "block truncate font-medium text-slate-800"}>
+                  {o?.etiqueta ?? v}
+                </span>
+                <span className="block truncate text-xs text-slate-400">
+                  {falta ? `/${v} · no existe en el catálogo` : `${o?.grupo ?? ""} · /${v}`}
+                </span>
+              </span>
+              <button type="button" onClick={() => mover(i, -1)} disabled={i === 0} aria-label="Subir" className="px-1.5 text-slate-400 hover:text-slate-900 disabled:opacity-30">↑</button>
+              <button type="button" onClick={() => mover(i, 1)} disabled={i === valores.length - 1} aria-label="Bajar" className="px-1.5 text-slate-400 hover:text-slate-900 disabled:opacity-30">↓</button>
+              <button type="button" onClick={() => alternar(v)} aria-label="Quitar" className="px-1.5 text-slate-400 hover:text-red-600">✕</button>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="mt-3 rounded-md ring-1 ring-slate-200">
+        <input
+          type="search"
+          value={filtro}
+          onChange={(e) => setFiltro(e.target.value)}
+          placeholder={buscar}
+          className="w-full border-0 border-b border-slate-200 bg-transparent px-3 py-2 text-sm outline-none focus:border-teal-500"
+        />
+        <div className="max-h-72 overflow-y-auto p-2">
+          {opciones.length === 0 && <p className="px-2 py-3 text-sm text-slate-400">Cargando…</p>}
+          {visibles.map(([grupo, lista]) => (
+            <div key={grupo} className="mb-2">
+              <p className="px-2 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">{grupo}</p>
+              {lista.map((o) => (
+                <label key={o.valor} className="flex cursor-pointer items-center gap-2.5 rounded px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
+                  <input type="checkbox" checked={elegidos.has(o.valor)} onChange={() => alternar(o.valor)} className="size-4 accent-amber-500" />
+                  <span className="min-w-0 flex-1 truncate">{o.etiqueta}</span>
+                </label>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      {ayuda && <span className="mt-1.5 block text-xs text-slate-400">{ayuda}</span>}
+    </div>
   );
 }

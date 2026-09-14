@@ -27,8 +27,14 @@ export interface Ajustes {
   telefono: string;
   /** Solo dígitos con prefijo de país: "51986377524". */
   whatsapp: string;
+  /** Correo general. */
   correo: string;
+  /** Correo de reservas, en el dominio de la agencia. */
+  correoReservas: string;
   horario: string;
+  /** Fondo de la cabecera de «Tours» cuando no hay categoría elegida. Vacío:
+      se usa la foto del tour mejor valorado. */
+  fondoTours: string;
   /** Direcciones completas. Vacía = esa red no se enseña en ninguna parte. */
   facebook: string;
   instagram: string;
@@ -47,7 +53,12 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   telefono: "+51 986 377 524",
   whatsapp: "51986377524",
   correo: "gotomapiperu@gmail.com",
+  /* Comprobado contra el servidor de correo del dominio: acepta
+     reservas@ (250 Ok) y rechaza una dirección inventada, así que el buzón
+     existe. info@, que enseñaba «Nosotros», no existe. */
+  correoReservas: "reservas@gotomachupicchuperu.com",
   horario: "Lun – Dom · 8:00 – 20:00",
+  fondoTours: "",
   facebook: "https://www.facebook.com/profile.php?id=61594386779195",
   /* Vacíos a propósito. La web enlazaba instagram.com/gotomapi, que no
      existe («Profile no está disponible»), y tiktok.com/@gotomapi, sin
@@ -67,11 +78,13 @@ export function mezclarAjustes(guardado: Partial<Record<string, unknown>> | null
   if (!guardado) return a;
   for (const k of CAMPOS_AJUSTES) {
     const v = guardado[k];
-    /* Una red vacía en el panel significa "no la enseñes": se respeta. En
-       el resto de campos, vacío significa "no lo he rellenado" y se usa el
-       de reserva, porque una ficha sin teléfono o sin RUC no tiene sentido. */
-    const esRed = k === "facebook" || k === "instagram" || k === "tiktok" || k === "youtube";
-    if (typeof v === "string" && (v.trim() !== "" || esRed)) a[k] = v.trim();
+    /* Vacío a propósito se respeta en las redes —no enseñarla— y en el fondo
+       de tours —usar la foto automática—. En el resto, vacío significa "no
+       lo he rellenado" y se usa el de reserva: una ficha sin teléfono o sin
+       RUC no tiene sentido. */
+    const vacioValido =
+      k === "facebook" || k === "instagram" || k === "tiktok" || k === "youtube" || k === "fondoTours";
+    if (typeof v === "string" && (v.trim() !== "" || vacioValido)) a[k] = v.trim();
   }
   if (!a.whatsapp) a.whatsapp = a.telefono.replace(/\D/g, "");
   return a;

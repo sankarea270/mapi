@@ -10,6 +10,7 @@ import {
   type Ajustes,
 } from "@/config/ajustes";
 import { Boton, Campo } from "./campos";
+import { CampoImagen } from "./CampoImagen";
 
 /*
  * Ajustes de la agencia: datos legales, contacto y redes.
@@ -68,6 +69,8 @@ function errores(a: Ajustes): Partial<Record<keyof Ajustes, string>> {
   if (!/^\d{8,15}$/.test(a.whatsapp.replace(/\D/g, "")))
     e.whatsapp = "Solo números, con el código de país: 51 y el número.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.correo.trim())) e.correo = "Revisa el correo.";
+  if (a.correoReservas.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.correoReservas.trim()))
+    e.correoReservas = "Revisa el correo.";
   if (a.telefono.replace(/\D/g, "").length < 7) e.telefono = "Revisa el teléfono.";
   for (const campo of ["razonSocial", "domicilio", "ciudad"] as const) {
     if (!a[campo].trim()) e[campo] = "Obligatorio.";
@@ -207,12 +210,20 @@ export function PanelAjustes({ revision, onCambio }: { revision: number; onCambi
             error={ver("whatsapp")}
           />
           <Campo
-            etiqueta="Correo"
+            etiqueta="Correo de reservas"
+            tipo="email"
+            valor={form.correoReservas}
+            onChange={set("correoReservas")}
+            error={ver("correoReservas")}
+            ayuda="El del dominio de la agencia. Sale en la barra de arriba y primero en contacto."
+          />
+          <Campo
+            etiqueta="Correo de consultas"
             tipo="email"
             valor={form.correo}
             onChange={set("correo")}
             error={ver("correo")}
-            ayuda="Comprueba que el buzón existe: es el que aparece en contacto y en los textos legales."
+            ayuda="Comprueba que el buzón existe: los dos salen en contacto, el pie y los textos legales."
           />
           <Campo etiqueta="Horario" valor={form.horario} onChange={set("horario")} />
         </div>
@@ -258,6 +269,19 @@ export function PanelAjustes({ revision, onCambio }: { revision: number; onCambi
           El botón de contacto de la web mostrará:{" "}
           <b className="text-slate-800">{canales.join(" · ")}</b>
         </p>
+      </section>
+
+      <section className="rounded-lg bg-white p-6 ring-1 ring-slate-200">
+        <h3 className="eyebrow text-slate-900">Página de tours</h3>
+        <div className="mt-6">
+          <CampoImagen
+            etiqueta="Fondo de la cabecera («Todos»)"
+            valor={form.fondoTours}
+            onChange={set("fondoTours")}
+            carpeta="categorias"
+            ayuda="Vacío: se usa la foto del tour mejor valorado. El de cada categoría se cambia en Tours → Fondos de categoría."
+          />
+        </div>
       </section>
 
       <section className="rounded-lg bg-white p-6 ring-1 ring-slate-200">

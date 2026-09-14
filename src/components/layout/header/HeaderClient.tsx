@@ -26,13 +26,32 @@ export function HeaderClient({
   const [overHero, setOverHero] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  /* Barra de contacto recogida: al bajar por la página se esconde y al
+     subir vuelve. Son 36px de la parte alta de la pantalla que en un móvil
+     se notan mucho, y lo que llevan —WhatsApp, teléfono, idioma— sigue a
+     mano en el botón de contacto y en el menú. */
+  const [recogida, setRecogida] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > SCROLL_THRESHOLD);
+    let anterior = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > SCROLL_THRESHOLD);
+      /* Umbral de 6px en cada sentido: sin él, el temblor de un dedo
+         apoyado en la pantalla la haría subir y bajar sin parar. Arriba del
+         todo siempre se ve. */
+      if (y < 180) setRecogida(false);
+      else if (y > anterior + 6) setRecogida(true);
+      else if (y < anterior - 6) setRecogida(false);
+      if (Math.abs(y - anterior) > 6) anterior = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  /* Con el menú o el buscador abiertos, la cabecera no se mueve. */
+  const oculta = recogida && !mobileOpen && !searchOpen;
 
   useEffect(() => {
     const sentinel = document.querySelector("[data-hero-sentinel]");
@@ -66,21 +85,32 @@ export function HeaderClient({
        sobresale 10px por debajo de la caja de la cabecera —la caja acaba en
        116 y la línea «Agencia de viajes» en 125—, y con la medida de la caja
        ese texto se montaba encima de lo que se clava debajo. */
-    const publicar = () =>
-      document.documentElement.style.setProperty(
-        "--alto-cabecera",
-        `${Math.max(el.offsetHeight, el.scrollHeight)}px`
-      );
+    /* Con la barra de contacto recogida se publica el alto que se VE, no el
+       de la caja: la cabecera sube con `transform`, que no cambia su caja, y
+       lo que se clava debajo tiene que subir con ella. */
+    const publicar = () => {
+      const barra = (el.firstElementChild as HTMLElement | null)?.offsetHeight ?? 0;
+      const alto = Math.max(el.offsetHeight, el.scrollHeight) - (oculta ? barra : 0);
+      document.documentElement.style.setProperty("--alto-cabecera", `${alto}px`);
+      el.style.transform = oculta ? `translateY(-${barra}px)` : "";
+    };
     publicar();
     const ro = new ResizeObserver(publicar);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [oculta]);
 
   const transparent = overHero && !scrolled;
 
   return (
-    <header ref={cabeceraRef} className="sticky top-0 z-50">
+    /* `transform` y no cambiar la altura: la cabecera va clavada y en el
+       flujo del documento, así que encogerla movería toda la página hacia
+       arriba en mitad del scroll, y ese salto dispararía otra vez el
+       gesto de subir. */
+    <header
+      ref={cabeceraRef}
+      className="sticky top-0 z-50 transition-transform duration-300 ease-out motion-reduce:transition-none"
+    >
       <TopBar />
       <NavBar
         transparent={transparent}

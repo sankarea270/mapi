@@ -54,7 +54,7 @@ const datosAdicionales = (empresa: Ajustes) => [
   },
   {
     key: "email",
-    value: empresa.correo
+    value: [empresa.correoReservas, empresa.correo].filter(Boolean).join(" · ")
   }
 ];
 

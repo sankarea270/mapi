@@ -32,5 +32,7 @@ export interface Tour {
 export interface TourCategory {
   slug: string;
   name: LocalizedText;
+  /** Fondo de la cabecera de «Tours» al elegir esta categoría. */
+  image?: string;
   tours: Tour[];
 }

@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 
 type RawRow = {
   slug: string;
+  image_url?: string | null;
   name_es: string;
   name_en: string;
   name_pt: string;
@@ -57,7 +58,7 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
   const pedir = (tour: string) =>
     supabase!
       .from("categories")
-      .select(`slug, name_es, name_en, name_pt, tours (${tour})`)
+      .select(`slug, name_es, name_en, name_pt, image_url, tours (${tour})`)
       .order("sort_order");
 
   /* Primero con la ubicación propia; si la migración 008 todavía no se ha
@@ -79,6 +80,7 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
     .map((category) => ({
       slug: category.slug,
       name: loc(category.name_es, category.name_en, category.name_pt, category.slug),
+      ...(category.image_url ? { image: category.image_url } : {}),
       tours: category.tours
         .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
         .map((tour) => {

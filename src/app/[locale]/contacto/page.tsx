@@ -55,15 +55,20 @@ export default async function ContactPage({
       accent: "text-primary",
       hover: "hover:bg-slate-50",
     },
-    {
-      icon: Mail,
-      label: "Email",
-      value: ajustes.correo,
-      href: `mailto:${ajustes.correo}`,
-      external: false,
-      accent: "text-amber-500",
-      hover: "hover:bg-slate-50",
-    },
+    ...[
+      { correo: ajustes.correoReservas, label: t("emailBookings") },
+      { correo: ajustes.correo, label: t("emailGeneral") },
+    ]
+      .filter((c) => c.correo)
+      .map((c) => ({
+        icon: Mail,
+        label: c.label,
+        value: c.correo,
+        href: `mailto:${c.correo}`,
+        external: false,
+        accent: "text-amber-500",
+        hover: "hover:bg-slate-50",
+      })),
     {
       icon: Clock,
       label: t("hours"),

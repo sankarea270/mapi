@@ -131,7 +131,7 @@ export async function LegalContent({
             ))}
           </div>
 
-          <aside className="space-y-4 lg:sticky lg:top-[calc(var(--alto-cabecera,8.25rem)+1.25rem)] lg:self-start">
+          <aside className="space-y-4 lg:sticky lg:top-[calc(var(--alto-cabecera,8.25rem)+1.25rem)] lg:transition-[top] lg:duration-300 lg:self-start">
             <div className="overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
               <div className="bg-slate-900 px-6 py-5">
                 <p className="font-heading text-lg font-bold text-white">{t("questions")}</p>
@@ -147,13 +147,16 @@ export async function LegalContent({
                   <MessageCircle className="size-4" aria-hidden />
                   {t("whatsapp")}
                 </a>
-                <a
-                  href={`mailto:${ajustes.correo}`}
-                  className="flex items-center justify-center gap-2 text-sm font-semibold text-slate-600 transition-colors hover:text-teal-700"
-                >
-                  <Mail className="size-4" aria-hidden />
-                  {ajustes.correo}
-                </a>
+                {[ajustes.correoReservas, ajustes.correo].filter(Boolean).map((correo) => (
+                  <a
+                    key={correo}
+                    href={`mailto:${correo}`}
+                    className="flex items-center justify-center gap-2 break-all text-sm font-semibold text-slate-600 transition-colors hover:text-teal-700"
+                  >
+                    <Mail className="size-4 shrink-0" aria-hidden />
+                    {correo}
+                  </a>
+                ))}
               </div>
             </div>
 

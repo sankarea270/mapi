@@ -197,15 +197,29 @@ export default async function Footer() {
                   {ajustes.telefono}
                 </a>
               </li>
-              <li>
-                <a
-                  href={`mailto:${ajustes.correo}`}
-                  className="flex items-center gap-2.5 text-slate-400 transition-colors hover:text-amber-300"
-                >
-                  <Mail className="size-4 shrink-0" />
-                  {ajustes.correo}
-                </a>
-              </li>
+              {/* Dos correos: el de reservas, en el dominio de la agencia, y
+                  el general. Cada uno dice para qué es. */}
+              {[
+                { correo: ajustes.correoReservas, uso: t("footer.emailBookings") },
+                { correo: ajustes.correo, uso: t("footer.emailGeneral") },
+              ]
+                .filter((c) => c.correo)
+                .map((c) => (
+                  <li key={c.correo}>
+                    <a
+                      href={`mailto:${c.correo}`}
+                      className="flex items-start gap-2.5 text-slate-400 transition-colors hover:text-amber-300"
+                    >
+                      <Mail className="mt-0.5 size-4 shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+                          {c.uso}
+                        </span>
+                        <span className="block break-all">{c.correo}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
               <li className="flex items-center gap-2.5 text-slate-400">
                 <Clock className="size-4 shrink-0" />
                 {t("footer.hours")}: {ajustes.horario}

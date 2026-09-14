@@ -39,11 +39,11 @@ export function TopBar() {
           </a>
           <span className="mx-1 hidden h-3.5 w-px bg-white/15 lg:block" />
           <a
-            href={`mailto:${ajustes.correo}`}
+            href={`mailto:${ajustes.correoReservas || ajustes.correo}`}
             className="hidden items-center gap-1.5 px-2 py-1 text-[13px] font-medium transition-colors hover:bg-white/10 hover:text-white sm:flex"
           >
             <Mail className="size-3.5 shrink-0" />
-            <span className="hidden xl:inline">{ajustes.correo}</span>
+            <span className="hidden xl:inline">{ajustes.correoReservas || ajustes.correo}</span>
           </a>
         </div>
 

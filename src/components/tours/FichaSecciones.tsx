@@ -124,7 +124,7 @@ export function FichaSecciones({
     <nav
       aria-label={ariaLabel}
       className={cn(
-        "ficha-indice sticky z-30 -mx-4 border-y border-slate-200 bg-white/90 backdrop-blur-md sm:mx-0 sm:rounded-lg sm:border",
+        "ficha-indice sticky z-30 transition-[top] duration-300 ease-out -mx-4 border-y border-slate-200 bg-white/90 backdrop-blur-md sm:mx-0 sm:rounded-lg sm:border",
         className
       )}
       style={{ top: "var(--alto-cabecera, 8.25rem)" }}
