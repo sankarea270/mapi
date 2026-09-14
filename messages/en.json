@@ -527,7 +527,14 @@
     "title": "From the first message to the first footprint",
     "lead": "We are with you from the moment you pick a date until you get home: route, permits, transfers and a local guide who knows the ground.",
     "ctaTours": "See all tours",
-    "ctaPlan": "Plan my trip"
+    "ctaPlan": "Plan my trip",
+    "responsibleBadge": "Responsible tourism",
+    "responsibleTitle": "We protect children and adolescents",
+    "responsibleLead": "We are part of «Protégeme», the campaign of Peru's Ministry of Foreign Trade and Tourism. Our agency does not promote or permit the sexual exploitation of minors, in accordance with Law No. 29408.",
+    "responsibleReport": "If you know of a case, report it free of charge, 24 hours a day:",
+    "responsibleLine100": "Línea 100",
+    "responsibleZoom": "Enlarge poster",
+    "responsibleAlt": "Protégeme poster from Peru's Ministry of Foreign Trade and Tourism: this agency does not promote or permit the sexual exploitation of children and adolescents"
   },
   "credentials": {
     "badge": "Official backing",

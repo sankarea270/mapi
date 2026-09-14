@@ -527,7 +527,14 @@
     "title": "Da primeira mensagem à primeira pegada",
     "lead": "Acompanhamos você desde a escolha da data até a volta para casa: rota, permissões, traslados e um guia local que conhece o terreno.",
     "ctaTours": "Ver todos os tours",
-    "ctaPlan": "Planejar minha viagem"
+    "ctaPlan": "Planejar minha viagem",
+    "responsibleBadge": "Turismo responsável",
+    "responsibleTitle": "Protegemos crianças e adolescentes",
+    "responsibleLead": "Fazemos parte do «Protégeme», a campanha do Ministério do Comércio Exterior e Turismo do Peru. Nossa agência não promove nem permite a exploração sexual de menores, conforme a Lei N.° 29408.",
+    "responsibleReport": "Se você souber de algum caso, denuncie gratuitamente, 24 horas por dia:",
+    "responsibleLine100": "Línea 100",
+    "responsibleZoom": "Ampliar cartaz",
+    "responsibleAlt": "Cartaz Protégeme do Ministério do Comércio Exterior e Turismo do Peru: esta agência não promove nem permite a exploração sexual de crianças e adolescentes"
   },
   "credentials": {
     "badge": "Respaldo oficial",

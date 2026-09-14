@@ -527,7 +527,14 @@
     "title": "Del primer mensaje a la primera huella",
     "lead": "Te acompañamos desde que eliges la fecha hasta que vuelves a casa: ruta, permisos, traslados y un guía local que conoce el terreno.",
     "ctaTours": "Ver todos los tours",
-    "ctaPlan": "Planificar mi viaje"
+    "ctaPlan": "Planificar mi viaje",
+    "responsibleBadge": "Turismo responsable",
+    "responsibleTitle": "Protegemos a niñas, niños y adolescentes",
+    "responsibleLead": "Somos parte de «Protégeme», la campaña del Ministerio de Comercio Exterior y Turismo. En nuestra agencia no promovemos ni permitimos la explotación sexual de menores, conforme a la Ley N.° 29408.",
+    "responsibleReport": "Si conoces algún caso, denúncialo gratis las 24 horas:",
+    "responsibleLine100": "Línea 100",
+    "responsibleZoom": "Ampliar cartel",
+    "responsibleAlt": "Cartel Protégeme del Ministerio de Comercio Exterior y Turismo: en esta agencia no promovemos ni permitimos la explotación sexual de niñas, niños y adolescentes"
   },
   "credentials": {
     "badge": "Respaldo oficial",
