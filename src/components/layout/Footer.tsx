@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { NAV_ITEMS } from "@/config/navigation";
 import { siteConfig, whatsappLink, siteEmail, socials } from "@/config/site";
 import { Link } from "@/i18n/navigation";
+import { empresa } from "@/config/empresa";
 import { Logo } from "@/components/layout/header/Logo";
 import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import {
@@ -141,6 +142,33 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
+
+            {/* Los documentos legales, con el mismo peso que el resto de
+                enlaces del pie. Antes solo estaban en la franja inferior, a
+                12px en gris sobre negro: estaban, pero no se veían. */}
+            <div className="mt-8">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-widest text-white">
+                {t("footer.legal")}
+              </h4>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <Link
+                    href="/legal/terminos"
+                    className="text-slate-400 transition-colors hover:text-amber-300"
+                  >
+                    {t("footer.terms")}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/legal/privacidad"
+                    className="text-slate-400 transition-colors hover:text-amber-300"
+                  >
+                    {t("footer.privacy")}
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div>
@@ -204,8 +232,12 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-xs text-slate-400 sm:flex-row sm:px-6">
-          <p>
-            © {year} {siteConfig.fullName} · {t("footer.rights")}
+          {/* Quién está detrás de la marca: razón social y RUC, como en los
+              términos. Es lo primero que busca quien quiere comprobar que la
+              agencia existe antes de pagar. */}
+          <p className="text-center sm:text-left">
+            © {year} {siteConfig.fullName} · {empresa.razonSocial} · RUC {empresa.ruc} ·{" "}
+            {t("footer.rights")}
           </p>
           <div className="flex gap-6">
             <Link href="/legal/terminos" className="transition-colors hover:text-slate-300">

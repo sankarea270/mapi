@@ -3,34 +3,35 @@
 import { Building2, FileText, Briefcase, Badge } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { mailAt, siteConfig } from "@/config/site";
+import { empresa } from "@/config/empresa";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const COMPANY_DATA = [
   {
     icon: Building2,
     key: "businessName",
-    value: "MAPI TRAVELS TOUR OPERATOR E.I.R.L.",
+    value: empresa.razonSocial,
     color: "text-slate-700",
     bgColor: "bg-slate-50"
   },
   {
     icon: FileText,
     key: "ruc",
-    value: "20491103753",
+    value: empresa.ruc,
     color: "text-slate-700",
     bgColor: "bg-slate-50"
   },
   {
     icon: Briefcase,
     key: "activity",
-    value: "Agencia de viajes y operador turístico",
+    value: empresa.actividad,
     color: "text-slate-700",
     bgColor: "bg-slate-50"
   },
   {
     icon: Badge,
     key: "license",
-    value: "002059-2012",
+    value: empresa.licenciaFuncionamiento,
     color: "text-slate-700",
     bgColor: "bg-slate-50"
   }
@@ -39,11 +40,11 @@ const COMPANY_DATA = [
 const ADDITIONAL_INFO = [
   {
     key: "authorization",
-    value: "301-2012"
+    value: empresa.certificadoAutorizacion
   },
   {
     key: "address",
-    value: "Av. El Sol 123, Cusco - Perú"
+    value: empresa.domicilio
   },
   {
     key: "phone",

@@ -334,7 +334,8 @@
     "privacy": "Privacy policy",
     "refund": "Refund up to 48h",
     "paymentMethods": "Payment methods",
-    "security": "Security"
+    "security": "Security",
+    "legal": "Legal"
   },
   "whyTravel": {
     "badge": "Quality experience",
@@ -561,5 +562,14 @@
   "historias": {
     "title": "Discover our tours",
     "subtitle": "The trips travellers ask us for most, ready to book."
+  },
+  "legal": {
+    "summary": "In short",
+    "index": "Document contents",
+    "questions": "Any questions?",
+    "questionsText": "Message us and we will explain, no small print.",
+    "whatsapp": "Message us on WhatsApp",
+    "whatsappMessage": "Hello, I have a question about «{doc}».",
+    "otherDoc": "Other document"
   }
 }

@@ -334,7 +334,8 @@
     "privacy": "Política de privacidad",
     "paymentMethods": "Métodos de pago",
     "security": "Seguridad",
-    "refund": "Reembolso hasta 48h"
+    "refund": "Reembolso hasta 48h",
+    "legal": "Legal"
   },
   "whyTravel": {
     "badge": "Experiencia de calidad",
@@ -561,5 +562,14 @@
   "historias": {
     "title": "Descubre nuestros tours",
     "subtitle": "Las salidas que más nos piden, listas para reservar."
+  },
+  "legal": {
+    "summary": "En resumen",
+    "index": "Índice del documento",
+    "questions": "¿Tienes alguna duda?",
+    "questionsText": "Escríbenos y te lo explicamos sin letra pequeña.",
+    "whatsapp": "Escribir por WhatsApp",
+    "whatsappMessage": "Hola, tengo una consulta sobre «{doc}».",
+    "otherDoc": "Otro documento"
   }
 }

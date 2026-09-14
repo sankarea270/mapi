@@ -28,9 +28,14 @@ export interface SeccionFicha {
 export function FichaSecciones({
   secciones,
   ariaLabel,
+  className,
 }: {
   secciones: SeccionFicha[];
   ariaLabel: string;
+  /** Márgenes y similares. Van en el propio índice y NO en un envoltorio:
+      un elemento clavado solo se clava dentro de su padre, y un envoltorio
+      del mismo tamaño que el índice lo deja sin recorrido y no se clava. */
+  className?: string;
 }) {
   const reducido = useReducedMotion();
   const [activa, setActiva] = useState(secciones[0]?.id ?? "");
@@ -48,8 +53,17 @@ export function FichaSecciones({
     let raf = 0;
     const medir = () => {
       raf = 0;
-      const lista = listaRef.current;
-      const suelo = (lista?.getBoundingClientRect().bottom ?? 0) + window.innerHeight * 0.28;
+      /* La línea se mide desde la cabecera y el alto del índice, no desde
+         dónde está el índice. Cuando la lectura pasa el final del contenido
+         el índice deja de estar clavado y sube con la página; medido desde
+         él, la línea acababa muy por encima de la ventana y la sección
+         activa volvía a ser la primera. */
+      const cabecera =
+        Number.parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue("--alto-cabecera")
+        ) || 132;
+      const suelo =
+        cabecera + (listaRef.current?.offsetHeight ?? 56) + window.innerHeight * 0.28;
       let actual = secciones[0]?.id ?? "";
       for (const s of secciones) {
         const el = document.getElementById(s.id);
@@ -109,7 +123,10 @@ export function FichaSecciones({
   return (
     <nav
       aria-label={ariaLabel}
-      className="ficha-indice sticky z-30 -mx-4 border-y border-slate-200 bg-white/90 backdrop-blur-md sm:mx-0 sm:rounded-lg sm:border"
+      className={cn(
+        "ficha-indice sticky z-30 -mx-4 border-y border-slate-200 bg-white/90 backdrop-blur-md sm:mx-0 sm:rounded-lg sm:border",
+        className
+      )}
       style={{ top: "var(--alto-cabecera, 8.25rem)" }}
     >
       <div
