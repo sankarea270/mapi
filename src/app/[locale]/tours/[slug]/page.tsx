@@ -18,10 +18,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { getCategoriesWithTours } from "@/lib/tours";
-import { whatsappLink, siteConfig } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { enlaceWhatsapp } from "@/config/ajustes";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
-import { getDestinations, getExperiences, getPackages, getReviews } from "@/lib/content";
+import { getAjustes, getDestinations, getExperiences, getPackages, getReviews } from "@/lib/content";
 import { construirFichas, esDe, fichaDe } from "@/lib/resenas";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
 import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
@@ -94,11 +95,12 @@ export default async function TourDetailPage({
   if (!tour) notFound();
 
   const category = categories.find((c) => c.slug === tour.categorySlug);
-  const [destinos, resenas, paquetes, experiencias] = await Promise.all([
+  const [destinos, resenas, paquetes, experiencias, ajustes] = await Promise.all([
     getDestinations(),
     getReviews(),
     getPackages(),
     getExperiences(),
+    getAjustes(),
   ]);
   const destination = destinos.find((d) =>
     d.categorySlugs?.includes(tour.categorySlug)
@@ -198,7 +200,7 @@ export default async function TourDetailPage({
       "@type": "TravelAgency",
       name: siteConfig.fullName,
       url: pageUrl("/", locale),
-      telephone: siteConfig.phone.display,
+      telephone: ajustes.telefono,
     },
     offers: {
       "@type": "Offer",
@@ -314,7 +316,8 @@ export default async function TourDetailPage({
             </div>
 
             <a
-              href={whatsappLink(
+              href={enlaceWhatsapp(
+                ajustes,
                 `Hola, me interesa el tour "${name}" (${formatPrice(tour.price, l, "USD")}). ¿Me pueden dar más información?`
               )}
               target="_blank"

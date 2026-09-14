@@ -62,6 +62,7 @@ const comprobaciones = [
     (await existe("tours", "location_image_url")) &&
     (await existe("packages", "location_image_url")) &&
     (await existe("reviews", "target_type"))],
+  ["009_ajustes.sql", () => existe("site_settings")],
 ];
 
 const extra = process.argv.slice(2);

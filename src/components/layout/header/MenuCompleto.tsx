@@ -6,7 +6,9 @@ import { useTranslations } from "next-intl";
 import { ArrowRight, ChevronRight, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { NAV_ITEMS } from "@/config/navigation";
-import { whatsappLink, socials, siteConfig, siteEmail } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { enlaceTelefono, enlaceWhatsapp, redesConEnlace } from "@/config/ajustes";
+import { useAjustes } from "@/components/providers/Ajustes";
 import type { CategoryBrief } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 import {
@@ -82,6 +84,7 @@ export function MenuCompleto({
   experiencias: Array<{ etiqueta: string; href: string; imagen: string }>;
 }) {
   const t = useTranslations();
+  const ajustes = useAjustes();
   const [seccion, setSeccion] = useState(0);
   const [destacado, setDestacado] = useState<Entrada | null>(null);
 
@@ -229,31 +232,31 @@ export function MenuCompleto({
 
         <div className="mt-8 border-t border-slate-300/70 pt-6">
           <a
-            href={`tel:${siteConfig.phone.tel}`}
+            href={enlaceTelefono(ajustes)}
             className="block py-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-slate-500 transition-colors hover:text-teal-700"
           >
-            {siteConfig.phone.display}
+            {ajustes.telefono}
           </a>
           <a
-            href={`mailto:${siteEmail}`}
+            href={`mailto:${ajustes.correo}`}
             className="block py-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-slate-500 transition-colors hover:text-teal-700"
           >
-            {siteEmail}
+            {ajustes.correo}
           </a>
 
           {/* Iconos de verdad y no las siglas del nombre: en la referencia
               son glifos, y "FA / IN / YO" no se entiende. */}
           <div className="mt-6 flex gap-4">
-            {(Object.keys(ICONO_SOCIAL) as Array<keyof typeof ICONO_SOCIAL>).map((clave) => {
-              const Icono = ICONO_SOCIAL[clave];
-              const s = socials[clave];
+            {/* Solo las redes con dirección puesta en el panel. */}
+            {redesConEnlace(ajustes).map((s) => {
+              const Icono = ICONO_SOCIAL[s.red];
               return (
                 <a
-                  key={s.href}
+                  key={s.red}
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={s.label}
+                  aria-label={s.etiqueta}
                   className="text-slate-500 transition-colors hover:text-teal-700"
                 >
                   <Icono className="size-[18px]" />
@@ -358,7 +361,7 @@ export function MenuCompleto({
       {/* ─── Acciones ─────────────────────────────────────────────────── */}
       <div className="absolute right-6 top-7 flex items-center gap-4">
         <a
-          href={whatsappLink()}
+          href={enlaceWhatsapp(ajustes)}
           target="_blank"
           rel="noopener noreferrer"
           className="hidden bg-teal-700 px-6 py-3 text-[13px] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:bg-teal-800 sm:inline-flex"

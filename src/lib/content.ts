@@ -7,6 +7,7 @@ import { HERO_SLIDES, type HeroSlide } from "@/data/portada";
 import { EQUIPO, type MiembroEquipo } from "@/data/equipo";
 import { EXPERIENCES, type Experience } from "@/data/experiences";
 import { GUIDES, type Guide } from "@/data/guides";
+import { AJUSTES_POR_DEFECTO, mezclarAjustes, type Ajustes } from "@/config/ajustes";
 
 /* Filas tal y como llegan de Postgres. Van aquí y no en `types/db` porque
    solo las usan estos dos lectores. */
@@ -318,4 +319,38 @@ export async function getGuides(): Promise<Guide[]> {
       };
     });
   });
+}
+
+let ajustesEnCurso: Promise<Ajustes> | null = null;
+
+/**
+ * Ajustes de la agencia: datos legales, contacto y redes.
+ *
+ * Una consulta por compilación: los usan la cabecera, el pie y casi todas
+ * las páginas, y cientos de consultas iguales serían cientos de ocasiones
+ * de pillar un corte de la API.
+ *
+ * Si la tabla todavía no existe (falta la migración 009) o Supabase falla,
+ * se usan los valores de reserva de `config/ajustes`. Aquí caer a la reserva
+ * sí es seguro: son los datos reales de la agencia, no contenido de relleno.
+ */
+export function getAjustes(): Promise<Ajustes> {
+  if (!supabase) return Promise.resolve(AJUSTES_POR_DEFECTO);
+  if (ajustesEnCurso) return ajustesEnCurso;
+  const consulta = (async () => {
+    try {
+      const { data, error } = await supabase!
+        .from("site_settings")
+        .select("data")
+        .eq("id", 1)
+        .maybeSingle();
+      if (error) throw error;
+      return mezclarAjustes((data?.data as Record<string, unknown> | undefined) ?? null);
+    } catch (error) {
+      console.error("[ajustes] Error consultando Supabase; se usan los valores de reserva:", error);
+      return AJUSTES_POR_DEFECTO;
+    }
+  })();
+  ajustesEnCurso = consulta;
+  return consulta;
 }

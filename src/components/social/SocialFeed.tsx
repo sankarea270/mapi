@@ -4,13 +4,17 @@ import Image from "next/image";
 import { Heart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { SOCIAL_POSTS } from "@/data/socialFeed";
-import { siteConfig, socials } from "@/config/site";
+import { redesConEnlace } from "@/config/ajustes";
+import { useAjustes } from "@/components/providers/Ajustes";
 import { TextoLetras } from "@/components/home/TextoLetras";
 import { Contornos } from "@/components/home/Contornos";
 
 export function SocialFeed() {
   const t = useTranslations("social");
-  const instagram = socials.instagram;
+  /* El botón lleva a Instagram si está puesto en el panel y, si no, a la
+     primera red que haya. Antes apuntaba a un Instagram que no existe. */
+  const redes = redesConEnlace(useAjustes());
+  const destino = redes.find((r) => r.red === "instagram") ?? redes[0];
 
   return (
     <section className="relative overflow-hidden bg-slate-950 py-20">
@@ -28,23 +32,24 @@ export function SocialFeed() {
               {t("subtitle")}
             </p>
           </div>
-          <a
-            href={instagram.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur transition-colors hover:bg-white/20"
-          >
-            {t("follow")}
-          </a>
+          {destino && (
+            <a
+              href={destino.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur transition-colors hover:bg-white/20"
+            >
+              {destino.red === "instagram" ? t("follow") : `${t("followOn")} ${destino.etiqueta}`}
+            </a>
+          )}
         </div>
 
         <div className="aparece-hijos mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           {SOCIAL_POSTS.map((post) => (
             <a
               key={post.id}
-              href={instagram.href}
-              target="_blank"
-              rel="noopener noreferrer"
+              /* Sin red configurada la foto no enlaza a ninguna parte. */
+              {...(destino ? { href: destino.href, target: "_blank", rel: "noopener noreferrer" } : {})}
               className="group relative block aspect-square overflow-hidden rounded-xl"
             >
               <Image

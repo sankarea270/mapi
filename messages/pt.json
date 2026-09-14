@@ -41,7 +41,8 @@
     "plan": "Planeje",
     "contact": "Contato",
     "seeAll": "Ver tudo",
-    "searchCount": "{count, plural, =0 {Sem resultados} one {1 tour encontrado} other {# tours encontrados}}"
+    "searchCount": "{count, plural, =0 {Sem resultados} one {1 tour encontrado} other {# tours encontrados}}",
+    "contactOpen": "Fale conosco"
   },
   "destinos": {
     "andesCusco": "Andes e Cusco",
@@ -309,7 +310,8 @@
     "badge": "Siga-nos",
     "title": "O Peru no nosso feed",
     "subtitle": "Compartilhamos momentos reais dos nossos tours no Instagram, Facebook e TikTok todos os dias.",
-    "follow": "Seguir no Instagram"
+    "follow": "Seguir no Instagram",
+    "followOn": "Siga-nos no"
   },
   "contact": {
     "title": "Fale Conosco",

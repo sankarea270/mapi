@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { socials } from "@/config/site";
+import { redesConEnlace } from "@/config/ajustes";
+import { useAjustes } from "@/components/providers/Ajustes";
 import { pickLocalized } from "@/lib/format";
 import { Price } from "@/components/ui/Price";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -47,6 +48,7 @@ interface TourSidebarProps {
 export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
   const t = useTranslations("tourDetail");
   const tr = useTranslations("reserva");
+  const redes = redesConEnlace(useAjustes());
   const l = locale as "es" | "en" | "pt";
   const duration = pickLocalized(tour.duration, l);
 
@@ -248,21 +250,21 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
         )}
       </div>
 
+      {redes.length > 0 && (
       <div className="rounded-lg border border-slate-200 px-6 py-5">
         <h2 className="font-heading text-base font-bold text-slate-900">
           {t("followUs")}
         </h2>
         <div className="mt-4 flex gap-2">
-          {(Object.keys(socialIcons) as Array<keyof typeof socialIcons>).map((key) => {
-            const Icon = socialIcons[key];
-            const social = socials[key];
+          {redes.map((social) => {
+            const Icon = socialIcons[social.red];
             return (
               <a
-                key={key}
+                key={social.red}
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={social.label}
+                aria-label={social.etiqueta}
                 className="grid size-10 place-items-center rounded-md text-slate-500 ring-1 ring-slate-200 transition-colors hover:bg-slate-900 hover:text-white hover:ring-slate-900"
               >
                 <Icon className="size-4" />
@@ -271,6 +273,7 @@ export function TourSidebar({ tour, name, locale }: TourSidebarProps) {
           })}
         </div>
       </div>
+      )}
     </aside>
   );
 }

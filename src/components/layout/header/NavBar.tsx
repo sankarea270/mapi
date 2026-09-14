@@ -3,7 +3,8 @@
 import { Menu, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { whatsappLink } from "@/config/site";
+import { enlaceWhatsapp } from "@/config/ajustes";
+import { useAjustes } from "@/components/providers/Ajustes";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 
@@ -30,6 +31,7 @@ interface NavBarProps {
  */
 export function NavBar({ transparent, onOpenSearch, onOpenMobile }: NavBarProps) {
   const t = useTranslations();
+  const ajustes = useAjustes();
   const light = transparent;
 
   return (
@@ -109,7 +111,7 @@ export function NavBar({ transparent, onOpenSearch, onOpenMobile }: NavBarProps)
           </span>
 
           <Link
-            href={whatsappLink()}
+            href={enlaceWhatsapp(ajustes)}
             target="_blank"
             rel="noopener noreferrer"
             className="hidden bg-teal-600 px-6 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-teal-700 sm:inline-flex"

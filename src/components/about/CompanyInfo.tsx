@@ -2,11 +2,11 @@
 
 import { Building2, FileText, Briefcase, Badge } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { mailAt, siteConfig } from "@/config/site";
-import { empresa } from "@/config/empresa";
+import type { Ajustes } from "@/config/ajustes";
+import { useAjustes } from "@/components/providers/Ajustes";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
-const COMPANY_DATA = [
+const datosEmpresa = (empresa: Ajustes) => [
   {
     icon: Building2,
     key: "businessName",
@@ -37,7 +37,7 @@ const COMPANY_DATA = [
   }
 ];
 
-const ADDITIONAL_INFO = [
+const datosAdicionales = (empresa: Ajustes) => [
   {
     key: "authorization",
     value: empresa.certificadoAutorizacion
@@ -48,17 +48,20 @@ const ADDITIONAL_INFO = [
   },
   {
     key: "phone",
-    /* De la configuración, no escrito aquí: tenerlo en tres sitios
+    /* De los ajustes del panel, no escrito aquí: tenerlo en tres sitios
        garantizaba que un cambio de número dejara alguno desfasado. */
-    value: siteConfig.phone.display
+    value: empresa.telefono
   },
   {
     key: "email",
-    value: mailAt("info")
+    value: empresa.correo
   }
 ];
 
 export function CompanyInfo() {
+  const ajustes = useAjustes();
+  const COMPANY_DATA = datosEmpresa(ajustes);
+  const ADDITIONAL_INFO = datosAdicionales(ajustes);
   const t = useTranslations("about");
   const { ref: sectionRef, isVisible } = useScrollAnimation(0.1);
 

@@ -20,28 +20,14 @@ export const siteConfig = {
   handle: "gotomapi",
 
   taglineKey: "brand.tagline",
-  phone: {
-    display: "+51 986 377 524",
-    tel: "+51986377524",
-  },
-  whatsapp: {
-    number: "51986377524",
-    defaultMessage: "Hola, quiero planificar un viaje a Perú",
-  },
-  emailUser: "reservas",
-  hours: "Lun – Dom · 8:00 – 20:00",
+  /* Teléfono, WhatsApp, correo, horario y redes ya no están aquí: se editan
+     en «Ajustes» del panel. Ver `config/ajustes.ts`. */
   currencies: [
     { code: "USD", symbol: "$" },
     { code: "PEN", symbol: "S/" },
     { code: "EUR", symbol: "€" },
   ],
   defaultCurrency: "USD",
-  socialBases: {
-    instagram: { label: "Instagram", base: "https://instagram.com/" },
-    facebook: { label: "Facebook", base: "https://facebook.com/" },
-    tiktok: { label: "TikTok", base: "https://tiktok.com/@" },
-    youtube: { label: "YouTube", base: "https://youtube.com/@" },
-  },
   locales: [
     { code: "es", label: "Español", flag: "🇪🇸" },
     { code: "en", label: "English", flag: "🇺🇸" },
@@ -49,29 +35,10 @@ export const siteConfig = {
   ],
 } as const;
 
-/** Dirección de correo de la agencia, derivada del dominio de marca. */
-export const siteEmail = `${siteConfig.emailUser}@${siteConfig.domain}`;
-
 /** URL pública del sitio. */
 export const siteUrl = `https://${siteConfig.domain}`;
 
 /** Construye un correo de la marca: mailAt("carlos") -> carlos@gotomapi.pe */
 export function mailAt(user: string): string {
   return `${user}@${siteConfig.domain}`;
-}
-
-/** Perfiles sociales, ya resueltos con el usuario de la marca. */
-export const socials = Object.fromEntries(
-  Object.entries(siteConfig.socialBases).map(([key, s]) => [
-    key,
-    { label: s.label, href: `${s.base}${siteConfig.handle}` },
-  ])
-) as Record<
-  keyof typeof siteConfig.socialBases,
-  { label: string; href: string }
->;
-
-export function whatsappLink(message?: string): string {
-  const text = encodeURIComponent(message ?? siteConfig.whatsapp.defaultMessage);
-  return `https://wa.me/${siteConfig.whatsapp.number}?text=${text}`;
 }

@@ -1,9 +1,10 @@
 import { Clock, Mail, MessageCircle, Phone, Shield, Banknote } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { NAV_ITEMS } from "@/config/navigation";
-import { siteConfig, whatsappLink, siteEmail, socials } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { enlaceTelefono, enlaceWhatsapp, redesConEnlace } from "@/config/ajustes";
+import { getAjustes } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
-import { empresa } from "@/config/empresa";
 import { Logo } from "@/components/layout/header/Logo";
 import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
 import {
@@ -34,8 +35,9 @@ const footerDestinations = [
    Mastercard, PayPal, Yape y Plin no distingue nada. La marca escrita sí. */
 const paymentMethods = ["Visa", "Mastercard", "PayPal", "Yape", "Plin"];
 
-export default function Footer() {
-  const t = useTranslations();
+export default async function Footer() {
+  const t = await getTranslations();
+  const ajustes = await getAjustes();
   const year = new Date().getFullYear();
 
   return (
@@ -64,16 +66,15 @@ export default function Footer() {
               {t("footer.description")}
             </p>
             <div className="mt-6 flex gap-2">
-              {(Object.keys(socialIcons) as Array<keyof typeof socialIcons>).map((key) => {
-                const Icon = socialIcons[key];
-                const social = socials[key];
+              {redesConEnlace(ajustes).map((social) => {
+                const Icon = socialIcons[social.red];
                 return (
                   <a
-                    key={key}
+                    key={social.red}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={social.label}
+                    aria-label={social.etiqueta}
                     className="grid size-9 place-items-center rounded-full bg-white/5 text-slate-300 transition-colors hover:bg-amber-400 hover:text-slate-900"
                   >
                     <Icon className="size-4" />
@@ -178,36 +179,36 @@ export default function Footer() {
             <ul className="mt-4 space-y-3 text-sm">
               <li>
                 <a
-                  href={whatsappLink()}
+                  href={enlaceWhatsapp(ajustes)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 text-slate-400 transition-colors hover:text-emerald-400"
                 >
                   <MessageCircle className="size-4 shrink-0" />
-                  {siteConfig.phone.display}
+                  {ajustes.telefono}
                 </a>
               </li>
               <li>
                 <a
-                  href={`tel:${siteConfig.phone.tel}`}
+                  href={enlaceTelefono(ajustes)}
                   className="flex items-center gap-2.5 text-slate-400 transition-colors hover:text-amber-300"
                 >
                   <Phone className="size-4 shrink-0" />
-                  {siteConfig.phone.display}
+                  {ajustes.telefono}
                 </a>
               </li>
               <li>
                 <a
-                  href={`mailto:${siteEmail}`}
+                  href={`mailto:${ajustes.correo}`}
                   className="flex items-center gap-2.5 text-slate-400 transition-colors hover:text-amber-300"
                 >
                   <Mail className="size-4 shrink-0" />
-                  {siteEmail}
+                  {ajustes.correo}
                 </a>
               </li>
               <li className="flex items-center gap-2.5 text-slate-400">
                 <Clock className="size-4 shrink-0" />
-                {t("footer.hours")}: {siteConfig.hours}
+                {t("footer.hours")}: {ajustes.horario}
               </li>
             </ul>
 
@@ -236,7 +237,7 @@ export default function Footer() {
               términos. Es lo primero que busca quien quiere comprobar que la
               agencia existe antes de pagar. */}
           <p className="text-center sm:text-left">
-            © {year} {siteConfig.fullName} · {empresa.razonSocial} · RUC {empresa.ruc} ·{" "}
+            © {year} {siteConfig.fullName} · {ajustes.razonSocial} · RUC {ajustes.ruc} ·{" "}
             {t("footer.rights")}
           </p>
           <div className="flex gap-6">

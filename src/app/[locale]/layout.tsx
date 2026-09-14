@@ -6,7 +6,9 @@ import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import Header from "@/components/layout/header/Header";
 import Footer from "@/components/layout/Footer";
-import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
+import { BotonContacto } from "@/components/layout/BotonContacto";
+import { AjustesProvider } from "@/components/providers/Ajustes";
+import { getAjustes } from "@/lib/content";
 import { Analytics } from "@/components/providers/Analytics";
 import { Revelados } from "@/components/home/Revelados";
 import { BASE_URL } from "@/lib/seo";
@@ -71,6 +73,9 @@ export default async function LocaleLayout({
   }
 
   setRequestLocale(locale);
+  /* Los ajustes del panel, leídos una vez al compilar y repartidos a los
+     componentes de cliente por contexto. */
+  const ajustes = await getAjustes();
 
   return (
     <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable}`}>
@@ -82,12 +87,14 @@ export default async function LocaleLayout({
           Saltar al contenido
         </a>
         <NextIntlClientProvider>
+          <AjustesProvider ajustes={ajustes}>
             <Header />
             <main id="contenido">{children}</main>
             <Footer />
-            <WhatsAppFloat />
+            <BotonContacto />
             <Revelados />
-        <Analytics />
+            <Analytics />
+          </AjustesProvider>
         </NextIntlClientProvider>
       </body>
     </html>

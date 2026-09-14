@@ -1772,3 +1772,83 @@ html {
     animation: none;
   }
 }
+
+/* ── Botón de contacto ─────────────────────────────────────────────────────
+   Los canales salen en abanico hacia arriba, cada uno 45ms después del
+   anterior. Curva con un pequeño rebote al llegar —1.45 de exceso—, que es
+   lo que hace que se lea como algo que se abre y no como algo que aparece;
+   al cerrar, sin rebote y todos a la vez, porque cerrar tiene que ser
+   inmediato. */
+.boton-contacto-canal {
+  opacity: 0;
+  transform: translateY(18px) scale(0.6);
+  transform-origin: bottom right;
+  transition:
+    transform 0.2s ease-in,
+    opacity 0.15s ease-in;
+}
+.boton-contacto-canal[data-abierto] {
+  opacity: 1;
+  transform: none;
+  transition:
+    transform 0.46s cubic-bezier(0.34, 1.45, 0.64, 1) calc(var(--orden) * 45ms),
+    opacity 0.22s ease-out calc(var(--orden) * 45ms);
+}
+
+/* El rótulo llega un instante detrás de su círculo, desde la derecha. */
+.boton-contacto-rotulo {
+  opacity: 0;
+  transform: translateX(10px);
+  transition:
+    transform 0.2s ease-in,
+    opacity 0.15s ease-in,
+    color 0.2s;
+}
+.boton-contacto-canal[data-abierto] .boton-contacto-rotulo {
+  opacity: 1;
+  transform: none;
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--orden) * 45ms + 90ms),
+    opacity 0.3s ease-out calc(var(--orden) * 45ms + 90ms),
+    color 0.2s;
+}
+
+.boton-contacto-icono {
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease-out;
+}
+
+.boton-contacto-velo {
+  transition: opacity 0.3s ease-out;
+}
+
+/* Un solo aviso: un anillo que se expande y se desvanece. */
+@keyframes boton-contacto-aviso {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+.boton-contacto-aviso {
+  z-index: -1;
+  animation: boton-contacto-aviso 1.4s cubic-bezier(0.22, 1, 0.36, 1) 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boton-contacto-canal,
+  .boton-contacto-canal[data-abierto],
+  .boton-contacto-rotulo,
+  .boton-contacto-canal[data-abierto] .boton-contacto-rotulo,
+  .boton-contacto-icono,
+  .boton-contacto-velo {
+    transition: none;
+  }
+  .boton-contacto-aviso {
+    display: none;
+  }
+}

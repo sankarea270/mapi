@@ -2,10 +2,10 @@ import { ArrowRight, Check, Mail, MessageCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { siteEmail, whatsappLink } from "@/config/site";
-import { empresa } from "@/config/empresa";
+import { enlaceWhatsapp } from "@/config/ajustes";
+import { getAjustes } from "@/lib/content";
 import { FichaSecciones } from "@/components/tours/FichaSecciones";
-import { TERMS, PRIVACY, type LegalDocument } from "@/data/legal";
+import { crearPrivacidad, crearTerminos, type LegalDocument } from "@/data/legal";
 
 /**
  * Página de un documento legal, con el mismo formato que las fichas de tour.
@@ -31,6 +31,8 @@ export async function LegalContent({
   otro: { href: string; doc: LegalDocument };
 }) {
   const t = await getTranslations({ locale, namespace: "legal" });
+  const ajustes = await getAjustes();
+  const empresa = ajustes;
 
   const secciones = doc.sections.map((s, i) => ({
     id: s.id,
@@ -137,7 +139,7 @@ export async function LegalContent({
               </div>
               <div className="space-y-3 p-6">
                 <a
-                  href={whatsappLink(t("whatsappMessage", { doc: doc.title[locale] }))}
+                  href={enlaceWhatsapp(ajustes, t("whatsappMessage", { doc: doc.title[locale] }))}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-md bg-teal-600 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-700"
@@ -146,11 +148,11 @@ export async function LegalContent({
                   {t("whatsapp")}
                 </a>
                 <a
-                  href={`mailto:${siteEmail}`}
+                  href={`mailto:${ajustes.correo}`}
                   className="flex items-center justify-center gap-2 text-sm font-semibold text-slate-600 transition-colors hover:text-teal-700"
                 >
                   <Mail className="size-4" aria-hidden />
-                  {siteEmail}
+                  {ajustes.correo}
                 </a>
               </div>
             </div>
@@ -176,4 +178,4 @@ export async function LegalContent({
   );
 }
 
-export { TERMS, PRIVACY };
+export { crearPrivacidad, crearTerminos };

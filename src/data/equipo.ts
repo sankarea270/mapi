@@ -1,4 +1,5 @@
-import { mailAt, siteConfig } from "@/config/site";
+import { mailAt } from "@/config/site";
+import { AJUSTES_POR_DEFECTO } from "@/config/ajustes";
 
 /**
  * Equipo, como respaldo del repositorio.
@@ -31,7 +32,7 @@ export const EQUIPO: MiembroEquipo[] = [
     area: "Administración",
     foto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
     correo: mailAt("carlos"),
-    telefono: siteConfig.phone.display
+    telefono: AJUSTES_POR_DEFECTO.telefono
   },
   {
     nombre: "Ana Quispe",

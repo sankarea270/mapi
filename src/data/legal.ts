@@ -1,6 +1,6 @@
 import type { LocalizedText } from "@/types/tour";
-import { empresa } from "@/config/empresa";
-import { siteConfig, siteEmail } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import type { Ajustes } from "@/config/ajustes";
 
 /*
  * Política de privacidad y términos y condiciones.
@@ -13,7 +13,7 @@ import { siteConfig, siteEmail } from "@/config/site";
  *
  * Todo lo que aquí se afirma sale de cómo funciona el sitio: qué formularios
  * hay, qué se guarda y dónde, qué no se cobra en línea. Los datos de la
- * empresa vienen de `config/empresa`, los mismos que enseña «Nosotros».
+ * empresa vienen de los ajustes del panel (`config/ajustes`), los mismos que enseña «Nosotros».
  *
  * El español es el texto de referencia; las versiones en inglés y portugués
  * lo traducen y así lo dicen.
@@ -51,21 +51,7 @@ const ACTUALIZADO = t(
   "Última atualização: 14 de setembro de 2026"
 );
 
-const TELEFONO = siteConfig.phone.display;
 const DOMINIO = siteConfig.domain;
-const { razonSocial, ruc, domicilio, ciudad } = empresa;
-
-const IDENTIDAD = t(
-  `${razonSocial}, con RUC ${ruc} y domicilio en ${domicilio}, que opera bajo la marca ${siteConfig.fullName}.`,
-  `${razonSocial}, taxpayer number (RUC) ${ruc}, registered address ${domicilio}, trading as ${siteConfig.fullName}.`,
-  `${razonSocial}, com RUC ${ruc} e endereço em ${domicilio}, que opera sob a marca ${siteConfig.fullName}.`
-);
-
-const CANALES = t(
-  `por WhatsApp al ${TELEFONO} o por correo a ${siteEmail}`,
-  `via WhatsApp at ${TELEFONO} or by email at ${siteEmail}`,
-  `pelo WhatsApp ${TELEFONO} ou pelo e-mail ${siteEmail}`
-);
 
 const TRADUCCION = t(
   "",
@@ -82,7 +68,31 @@ const hayAnalitica = Boolean(process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_P
 //  POLÍTICA DE PRIVACIDAD
 // ═════════════════════════════════════════════════════════════════════════
 
-export const PRIVACY: LegalDocument = {
+/*
+ * Los documentos se construyen con los ajustes del panel —razón social, RUC,
+ * domicilio, teléfono, correo—, así que cambiar un dato allí lo cambia aquí
+ * al publicar, sin tocar el texto.
+ */
+function datos(empresa: Ajustes) {
+  const TELEFONO = empresa.telefono;
+  const correo = empresa.correo;
+  const { razonSocial, ruc, domicilio, ciudad } = empresa;
+  const IDENTIDAD = t(
+    `${razonSocial}, con RUC ${ruc} y domicilio en ${domicilio}, que opera bajo la marca ${siteConfig.fullName}.`,
+    `${razonSocial}, taxpayer number (RUC) ${ruc}, registered address ${domicilio}, trading as ${siteConfig.fullName}.`,
+    `${razonSocial}, com RUC ${ruc} e endereço em ${domicilio}, que opera sob a marca ${siteConfig.fullName}.`
+  );
+  const CANALES = t(
+    `por WhatsApp al ${TELEFONO} o por correo a ${correo}`,
+    `via WhatsApp at ${TELEFONO} or by email at ${correo}`,
+    `pelo WhatsApp ${TELEFONO} ou pelo e-mail ${correo}`
+  );
+  return { TELEFONO, correo, razonSocial, ruc, domicilio, ciudad, IDENTIDAD, CANALES };
+}
+
+export function crearPrivacidad(empresa: Ajustes): LegalDocument {
+  const { IDENTIDAD, CANALES } = datos(empresa);
+  return {
   badge: t("Legal", "Legal", "Legal"),
   title: t("Política de privacidad", "Privacy Policy", "Política de Privacidade"),
   updated: ACTUALIZADO,
@@ -335,13 +345,16 @@ export const PRIVACY: LegalDocument = {
       ],
     },
   ],
-};
+  };
+}
 
 // ═════════════════════════════════════════════════════════════════════════
 //  TÉRMINOS Y CONDICIONES
 // ═════════════════════════════════════════════════════════════════════════
 
-export const TERMS: LegalDocument = {
+export function crearTerminos(empresa: Ajustes): LegalDocument {
+  const { TELEFONO, correo, razonSocial, IDENTIDAD, CANALES, ciudad } = datos(empresa);
+  return {
   badge: t("Legal", "Legal", "Legal"),
   title: t("Términos y condiciones", "Terms and Conditions", "Termos e Condições"),
   updated: ACTUALIZADO,
@@ -443,9 +456,9 @@ export const TERMS: LegalDocument = {
           )
         ),
         p(
-          `Paga solo por los medios que te indiquemos desde nuestros canales oficiales —WhatsApp ${TELEFONO} y correo ${siteEmail}— y pide siempre tu comprobante. Si alguien te pide un pago en nuestro nombre por otro medio, consúltanos antes.`,
-          `Only pay through the methods we give you from our official channels—WhatsApp ${TELEFONO} and email ${siteEmail}—and always ask for your receipt. If anyone asks you for payment in our name through any other channel, check with us first.`,
-          `Pague apenas pelos meios que indicarmos em nossos canais oficiais —WhatsApp ${TELEFONO} e e-mail ${siteEmail}— e peça sempre o comprovante. Se alguém pedir um pagamento em nosso nome por outro meio, consulte-nos antes.`
+          `Paga solo por los medios que te indiquemos desde nuestros canales oficiales —WhatsApp ${TELEFONO} y correo ${correo}— y pide siempre tu comprobante. Si alguien te pide un pago en nuestro nombre por otro medio, consúltanos antes.`,
+          `Only pay through the methods we give you from our official channels—WhatsApp ${TELEFONO} and email ${correo}—and always ask for your receipt. If anyone asks you for payment in our name through any other channel, check with us first.`,
+          `Pague apenas pelos meios que indicarmos em nossos canais oficiais —WhatsApp ${TELEFONO} e e-mail ${correo}— e peça sempre o comprovante. Se alguém pedir um pagamento em nosso nome por outro meio, consulte-nos antes.`
         ),
       ],
     },
@@ -605,4 +618,5 @@ export const TERMS: LegalDocument = {
       ],
     },
   ],
-};
+  };
+}

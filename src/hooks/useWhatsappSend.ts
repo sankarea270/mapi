@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { whatsappLink } from "@/config/site";
+import { enlaceWhatsapp } from "@/config/ajustes";
+import { useAjustes } from "@/components/providers/Ajustes";
 
 /**
  * Envío por WhatsApp con confirmación.
@@ -19,12 +20,16 @@ import { whatsappLink } from "@/config/site";
  */
 export function useWhatsappSend() {
   const [url, setUrl] = useState<string | null>(null);
+  const ajustes = useAjustes();
 
-  const send = useCallback((message: string) => {
-    const link = whatsappLink(message);
-    setUrl(link);
-    window.open(link, "_blank", "noopener,noreferrer");
-  }, []);
+  const send = useCallback(
+    (message: string) => {
+      const link = enlaceWhatsapp(ajustes, message);
+      setUrl(link);
+      window.open(link, "_blank", "noopener,noreferrer");
+    },
+    [ajustes]
+  );
 
   const reset = useCallback(() => setUrl(null), []);
 

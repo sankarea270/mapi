@@ -12,9 +12,9 @@ import {
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { getDestinations, getPackages, getReviews } from "@/lib/content";
+import { getAjustes, getDestinations, getPackages, getReviews } from "@/lib/content";
 import { getCategoriesWithTours } from "@/lib/tours";
-import { whatsappLink } from "@/config/site";
+import { enlaceWhatsapp } from "@/config/ajustes";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { TourCard } from "@/components/tours/TourCard";
@@ -80,7 +80,7 @@ export default async function PackagePage({
      coincide con la de alguno de sus tours. */
   const fotos = [...new Set([pkg.image, ...tours.map((x) => x!.image)])].filter(Boolean);
 
-  const [destinos, resenas] = await Promise.all([getDestinations(), getReviews()]);
+  const [destinos, resenas, ajustes] = await Promise.all([getDestinations(), getReviews(), getAjustes()]);
 
   /*
    * Las regiones que recorre, sacadas de sus tours: cada tour pertenece a una
@@ -184,7 +184,8 @@ export default async function PackagePage({
                 </p>
               </div>
               <a
-                href={whatsappLink(
+                href={enlaceWhatsapp(
+                  ajustes,
                   `Hola, me interesa el paquete "${name}" (${formatPrice(pkg.price, locale, "USD")}). ¿Me pueden dar más información?`
                 )}
                 target="_blank"

@@ -4,10 +4,11 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { whatsappLink, siteConfig, siteEmail, socials } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { enlaceWhatsapp, redesConEnlace } from "@/config/ajustes";
 import { buildMetadata, LOGO_URL } from "@/lib/seo";
 import { pickLocalized } from "@/lib/format";
-import { getDestinations, getExperiences, getReviews, getHeroSlides, getPackages } from "@/lib/content";
+import { getAjustes, getDestinations, getExperiences, getReviews, getHeroSlides, getPackages } from "@/lib/content";
 import { construirFichas } from "@/lib/resenas";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { climateForCategory } from "@/data/climate";
@@ -54,6 +55,7 @@ export default async function HomePage({
      se reutilizan en vez de duplicarlos. */
   const tSeason = await getTranslations("season");
   const resenas = await getReviews();
+  const ajustes = await getAjustes();
   const [categorias, destinos, slidesPortada, paquetes, experiencias] = await Promise.all([
     getCategoriesWithTours(),
     getDestinations(),
@@ -166,10 +168,17 @@ export default async function HomePage({
        fichas de resultado leen esa y no la otra. */
     logo: LOGO_URL,
     image: LOGO_URL,
-    telephone: siteConfig.phone.display,
-    email: siteEmail,
-    address: { "@type": "PostalAddress", addressLocality: "Cusco", addressCountry: "PE" },
-    sameAs: Object.values(socials).map((s) => s.href),
+    telephone: ajustes.telefono,
+    email: ajustes.correo,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: ajustes.domicilio,
+      addressLocality: ajustes.ciudad,
+      addressCountry: "PE",
+    },
+    /* Solo las redes que existen: con una dirección rota aquí, Google la
+       asocia a la agencia igual. */
+    sameAs: redesConEnlace(ajustes).map((s) => s.href),
   };
 
   return (
@@ -241,7 +250,7 @@ export default async function HomePage({
                   {t("ctaTours")}
                 </Link>
                 <a
-                  href={whatsappLink()}
+                  href={enlaceWhatsapp(ajustes)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="border-b-2 border-white/50 pb-1 font-heading text-sm font-bold uppercase tracking-[0.12em] text-white transition-all hover:border-amber-400 hover:text-amber-300"
@@ -279,12 +288,12 @@ export default async function HomePage({
                 <span aria-hidden className="h-px w-7 bg-white/40" />
               </p>
               <a
-                href={whatsappLink()}
+                href={enlaceWhatsapp(ajustes)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1.5 block font-heading text-lg font-bold uppercase tracking-[0.02em] text-white transition-colors hover:text-amber-300"
               >
-                {siteConfig.phone.display}
+                {ajustes.telefono}
               </a>
             </div>
           </div>

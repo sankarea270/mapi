@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Clock, Mail, MessageCircle, Phone } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { siteConfig, whatsappLink, siteEmail } from "@/config/site";
+import { enlaceTelefono, enlaceWhatsapp } from "@/config/ajustes";
+import { getAjustes } from "@/lib/content";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { buildMetadata } from "@/lib/seo";
 
@@ -33,13 +34,14 @@ export default async function ContactPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("contact");
+  const ajustes = await getAjustes();
 
   const cards = [
     {
       icon: MessageCircle,
       label: "WhatsApp",
-      value: siteConfig.phone.display,
-      href: whatsappLink(),
+      value: ajustes.telefono,
+      href: enlaceWhatsapp(ajustes),
       external: true,
       accent: "text-emerald-500",
       hover: "hover:bg-emerald-50",
@@ -47,8 +49,8 @@ export default async function ContactPage({
     {
       icon: Phone,
       label: t("quick"),
-      value: siteConfig.phone.display,
-      href: `tel:${siteConfig.phone.tel}`,
+      value: ajustes.telefono,
+      href: enlaceTelefono(ajustes),
       external: false,
       accent: "text-primary",
       hover: "hover:bg-slate-50",
@@ -56,8 +58,8 @@ export default async function ContactPage({
     {
       icon: Mail,
       label: "Email",
-      value: siteEmail,
-      href: `mailto:${siteEmail}`,
+      value: ajustes.correo,
+      href: `mailto:${ajustes.correo}`,
       external: false,
       accent: "text-amber-500",
       hover: "hover:bg-slate-50",
@@ -65,7 +67,7 @@ export default async function ContactPage({
     {
       icon: Clock,
       label: t("hours"),
-      value: siteConfig.hours,
+      value: ajustes.horario,
       href: undefined,
       external: false,
       accent: "text-slate-500",
