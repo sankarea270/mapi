@@ -6,6 +6,8 @@ import { getAjustes } from "@/lib/content";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata, pageUrl } from "@/lib/seo";
 import { ToursBrowser } from "@/components/tours/ToursBrowser";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
+import { getTripadvisor, tripadvisorEn } from "@/lib/tripadvisor";
 
 // Force static rendering
 export const dynamic = 'force-static';
@@ -40,6 +42,7 @@ export default async function ToursPage({ params }: ToursPageProps) {
   setRequestLocale(locale);
 
   const [categories, ajustes] = await Promise.all([getCategoriesWithTours(), getAjustes()]);
+  const tripadvisor = tripadvisorEn(ajustes, "tours") ? await getTripadvisor(ajustes) : null;
   const allTours = categories.flatMap((c) => c.tours);
 
   // El JSON-LD se genera en el build con el orden por defecto (mejor valorados).
@@ -77,6 +80,13 @@ export default async function ToursPage({ params }: ToursPageProps) {
         fromLabel={tn("from")}
         fondoGeneral={ajustes.fondoTours}
       />
+
+      {/* Reseñas reales de TripAdvisor bajo el catálogo, sea cual sea la
+          categoría elegida: la página es una sola y la categoría es un
+          filtro. Sin ficha configurada, no sale nada. */}
+      {tripadvisor && (
+        <ReviewsSection reviews={tripadvisor.resenas} fichas={{}} tripadvisor={tripadvisor} />
+      )}
 
       <script
         type="application/ld+json"

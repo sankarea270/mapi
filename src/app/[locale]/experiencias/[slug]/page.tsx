@@ -79,7 +79,11 @@ export default async function ExperiencePage({
 
   return (
     <div className="min-h-dvh bg-slate-50">
-      <div className="relative bg-slate-950">
+      {/* La foto con sus colores. Antes iba al 50% sobre el fondo verde de la
+          marca y con un degradado hasta verde macizo: todas las cabeceras
+          salían teñidas. Ahora solo hay una sombra neutra y transparente
+          abajo, donde va el texto. */}
+      <div className="relative flex min-h-[26rem] flex-col justify-end bg-neutral-900 sm:min-h-[32rem] lg:min-h-[36rem]">
         <div className="absolute inset-0">
           <Image
             src={experience.image}
@@ -87,14 +91,15 @@ export default async function ExperiencePage({
             fill
             priority
             sizes="100vw"
-            className="object-cover opacity-50"
+            quality={90}
+            className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 to-slate-950" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className="relative mx-auto w-full max-w-7xl px-4 pb-10 pt-16 [text-shadow:0_1px_3px_rgb(0_0_0/0.45)] sm:px-6 sm:pb-14 sm:pt-24">
           <Link
             href="/experiencias"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 transition-colors hover:text-white"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition-colors hover:text-amber-300"
           >
             <ArrowLeft className="size-4" />
             {t("back")}
@@ -102,7 +107,7 @@ export default async function ExperiencePage({
           <h1 className="mt-6 max-w-2xl font-heading text-3xl font-bold text-white sm:text-5xl">
             {name}
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg">
             {pickLocalized(experience.description, locale)}
           </p>
         </div>

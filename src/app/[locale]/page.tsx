@@ -10,13 +10,13 @@ import { buildMetadata, LOGO_URL } from "@/lib/seo";
 import { pickLocalized } from "@/lib/format";
 import { getAjustes, getDestinations, getExperiences, getReviews, getHeroSlides, getPackages } from "@/lib/content";
 import { construirFichas } from "@/lib/resenas";
+import { getTripadvisor, tripadvisorEn } from "@/lib/tripadvisor";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { climateForCategory } from "@/data/climate";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { SocialFeed } from "@/components/social/SocialFeed";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { ToursPackagesCarousel } from "@/components/home/ToursPackagesCarousel";
-import { CloudLayer } from "@/components/home/CloudLayer";
 import { JourneyBand } from "@/components/home/JourneyBand";
 import { Credentials } from "@/components/about/Credentials";
 import { WhyTravelWith } from "@/components/home/WhyTravelWith";
@@ -56,10 +56,11 @@ export default async function HomePage({
   const tSeason = await getTranslations("season");
   const resenas = await getReviews();
   const ajustes = await getAjustes();
+  const tripadvisor = tripadvisorEn(ajustes, "inicio") ? await getTripadvisor(ajustes) : null;
   const [categorias, destinos, slidesPortada, paquetes, experiencias] = await Promise.all([
     getCategoriesWithTours(),
     getDestinations(),
-    getHeroSlides(),
+    getHeroSlides(locale),
     getPackages(),
     getExperiences(),
   ]);
@@ -188,15 +189,22 @@ export default async function HomePage({
           data-hero-sentinel
           className="relative flex min-h-[92dvh] items-center overflow-hidden bg-slate-950"
         >
-          <HeroCarousel slides={slidesPortada} />
+          <HeroCarousel
+            slides={slidesPortada}
+            textos={{
+              destino: t("leyenda.destino"),
+              aventura: t("leyenda.aventura"),
+              tours: t("leyenda.tours"),
+              verDestino: t("leyenda.verDestino"),
+              verTours: t("leyenda.verTours"),
+            }}
+          />
 
-          {/* Orden de capas: foto (z-10) -> velo -> neblina (z-11) -> texto
-              (z-20) -> controles (z-30). La neblina va ENCIMA del velo porque
-              debe leerse densa y luminosa; debajo, el 70% de negro del velo
-              en la base la apagaría. A cambio, los bancos opacos se quedan
-              por debajo de la fila de botones y solo suben jirones finos. */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/30 to-slate-950/70" />
-          <CloudLayer />
+          {/* Orden de capas: foto (z-10) -> velo (z-auto) -> texto (z-20) ->
+              leyenda y controles (z-30). El velo es apenas una sombra: el
+              texto ya no depende de oscurecer la foto, lleva su propio
+              contorno, así que la foto se ve con sus colores. */}
+          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
 
           {/* Composición calcada de la referencia: volante GRANDE en blanco,
               titular enorme en el color de marca, entradilla en romana y dos
@@ -208,10 +216,10 @@ export default async function HomePage({
               En la referencia mide casi la mitad que el titular y es lo que
               hace que el bloque se lea como una frase encabalgada y no como
               una etiqueta suelta encima de un título. */}
-          <div className="portada-caja relative z-20 mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-28">
+          <div className="portada-caja relative z-20 mx-auto w-full max-w-7xl px-4 pb-64 pt-12 sm:px-6 sm:py-28">
             <div className="max-w-3xl">
               <p
-                className="portada-volante font-heading text-[1.4rem] font-bold uppercase leading-none tracking-[0.01em] text-white sm:text-[1.9rem] lg:text-[2.2rem]"
+                className="portada-volante portada-contorno-claro font-heading text-[1.4rem] font-bold uppercase leading-none tracking-[0.01em] text-teal-800 sm:text-[1.9rem] lg:text-[2.2rem]"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
               >
                 {t("eyebrow")}
@@ -222,7 +230,7 @@ export default async function HomePage({
                   separa la portada de cualquier foto con un texto encima.
                   Sobre el velo oscuro el ámbar da 8.9:1, de sobra. */}
               <h1
-                className="portada-titular mt-3 font-heading text-[3rem] font-bold uppercase leading-[0.88] text-amber-400 sm:text-7xl lg:text-[6rem]"
+                className="portada-titular portada-contorno-oscuro mt-3 font-heading text-[3rem] font-bold uppercase leading-[0.88] text-amber-400 sm:text-7xl lg:text-[6rem]"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
               >
                 {t("title")}
@@ -233,7 +241,7 @@ export default async function HomePage({
                   por esto, y el contraste entre la condensada de palo seco y
                   la romana es justo lo que hace que el bloque respire. */}
               <p
-                className="mt-6 max-w-xl font-logo text-lg leading-relaxed text-slate-100 sm:mt-8 sm:text-2xl"
+                className="portada-contorno-claro mt-6 max-w-xl font-logo text-lg font-semibold leading-relaxed text-teal-900 sm:mt-8 sm:text-2xl"
                 style={{ animation: "text-reveal 0.8s ease-out both 0.6s" }}
               >
                 {t("subtitle")}
@@ -253,7 +261,7 @@ export default async function HomePage({
                   href={enlaceWhatsapp(ajustes)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border-b-2 border-white/50 pb-1 font-heading text-sm font-bold uppercase tracking-[0.12em] text-white transition-all hover:border-amber-400 hover:text-amber-300"
+                  className="portada-contorno-claro border-b-2 border-teal-800/60 pb-1 font-heading text-sm font-bold uppercase tracking-[0.12em] text-teal-800 transition-all hover:border-amber-500 hover:text-teal-950"
                 >
                   {t("ctaContact")}
                 </a>
@@ -266,11 +274,11 @@ export default async function HomePage({
               un móvil se comería el sitio que necesitan los botones. */}
           <div className="portada-pie absolute inset-x-0 bottom-7 z-20 mx-auto hidden max-w-7xl items-end justify-between px-6 lg:flex">
             <div>
-              <p className="flex items-center gap-3 font-heading text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">
-                <span aria-hidden className="h-px w-7 bg-white/40" />
+              <p className="portada-contorno-claro flex items-center gap-3 font-heading text-[11px] font-bold uppercase tracking-[0.18em] text-teal-800">
+                <span aria-hidden className="h-px w-7 bg-teal-800/50" />
                 {t("pie.selloTitulo")}
               </p>
-              <p className="mt-1.5 font-heading text-lg font-bold uppercase tracking-[0.02em] text-white">
+              <p className="portada-contorno-claro mt-1.5 font-heading text-lg font-bold uppercase tracking-[0.02em] text-teal-900">
                 {t("pie.selloDato")}
               </p>
             </div>
@@ -283,15 +291,15 @@ export default async function HomePage({
             </span>
 
             <div className="text-right">
-              <p className="flex items-center justify-end gap-3 font-logo text-sm text-white/60">
+              <p className="portada-contorno-claro flex items-center justify-end gap-3 font-logo text-sm font-semibold text-teal-800">
                 {t("pie.contactoTitulo")}
-                <span aria-hidden className="h-px w-7 bg-white/40" />
+                <span aria-hidden className="h-px w-7 bg-teal-800/50" />
               </p>
               <a
                 href={enlaceWhatsapp(ajustes)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1.5 block font-heading text-lg font-bold uppercase tracking-[0.02em] text-white transition-colors hover:text-amber-300"
+                className="portada-contorno-claro mt-1.5 block font-heading text-lg font-bold uppercase tracking-[0.02em] text-teal-900 transition-colors hover:text-amber-700"
               >
                 {ajustes.telefono}
               </a>
@@ -336,7 +344,13 @@ export default async function HomePage({
       <SocialFeed />
     </Escena>
     <Escena>
-      <ReviewsSection reviews={resenas} fichas={fichas} />
+      {/* Con la ficha de TripAdvisor configurada, sus reseñas reales; si no,
+          las del panel. */}
+      {tripadvisor ? (
+        <ReviewsSection reviews={tripadvisor.resenas} fichas={fichas} tripadvisor={tripadvisor} />
+      ) : (
+        <ReviewsSection reviews={resenas} fichas={fichas} />
+      )}
     </Escena>
     <JourneyBand />
     </>

@@ -260,240 +260,72 @@
   }
 }
 
-/* ===== NEBLINA DEL HERO ===== */
 
-/* Los jirones altos cruzan el encuadre de lado a lado. */
-@keyframes mist-travel {
+/* ===== TEXTO DE LA PORTADA SOBRE LA FOTO ===== */
+
+/*
+ * El texto de la portada va sin velo oscuro detrás, así que cada línea
+ * lleva su propio contorno: un filo de 1px hecho con sombras en ocho
+ * direcciones, sin desenfoque. No `-webkit-text-stroke`, que se come el
+ * interior de las letras finas de la romana; y no un halo difuso, que sobre
+ * una foto con detalle se ve como una mancha gris alrededor de la letra.
+ *
+ * Verde de marca con un filo blanco muy fino, y el titular ámbar con un filo
+ * negro: juntos se leen sobre cielo, nieve, piedra o selva.
+ */
+.portada-contorno-claro {
+  text-shadow:
+    1px 0 0 rgb(255 255 255 / 0.92),
+    -1px 0 0 rgb(255 255 255 / 0.92),
+    0 1px 0 rgb(255 255 255 / 0.92),
+    0 -1px 0 rgb(255 255 255 / 0.92),
+    0.7px 0.7px 0 rgb(255 255 255 / 0.92),
+    -0.7px -0.7px 0 rgb(255 255 255 / 0.92),
+    0.7px -0.7px 0 rgb(255 255 255 / 0.92),
+    -0.7px 0.7px 0 rgb(255 255 255 / 0.92),
+    0 0 12px rgb(255 255 255 / 0.3);
+}
+
+.portada-contorno-oscuro {
+  text-shadow:
+    0 0 1px rgb(0 0 0 / 0.85),
+    0 1px 2px rgb(0 0 0 / 0.5),
+    0 0 18px rgb(0 0 0 / 0.22);
+}
+
+@keyframes portada-leyenda-entra {
   from {
-    transform: translate3d(-55vw, 0, 0);
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes portada-leyenda-progreso {
+  from {
+    transform: scaleX(0);
   }
   to {
-    transform: translate3d(130vw, 0, 0);
+    transform: scaleX(1);
   }
 }
 
-/*
- * Apertura de telón: al cargar, los bancos de cada costado se apartan hacia
- * afuera y descubren el centro del encuadre. Se ejecuta una sola vez y sobre
- * el envoltorio exterior, para no chocar con la deriva continua del interior.
- */
-@keyframes mist-part-left {
-  from {
-    transform: translate3d(26%, 0, 0);
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-  }
-}
-@keyframes mist-part-right {
-  from {
-    transform: translate3d(-26%, 0, 0);
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-  }
+.portada-leyenda {
+  animation: portada-leyenda-entra 0.7s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
 }
 
-/* Deriva lenta hacia afuera, ya instalado el banco en su costado. */
-@keyframes mist-breathe-left {
-  0%,
-  100% {
-    transform: translate3d(-2.5%, 0, 0);
-  }
-  50% {
-    transform: translate3d(2%, -1.5%, 0);
-  }
-}
-@keyframes mist-breathe-right {
-  0%,
-  100% {
-    transform: translate3d(2.5%, 0, 0);
-  }
-  50% {
-    transform: translate3d(-2%, -1.5%, 0);
-  }
+.portada-leyenda-progreso {
+  animation-name: portada-leyenda-progreso;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
 }
 
-/*
- * Respiración del dibujo. El scaleX(var(--flip)) va dentro de los keyframes
- * a propósito: si se deja solo en la regla estática, el transform de la
- * animación lo sustituye y el espejado se pierde al arrancar.
- */
-@keyframes mist-breathe {
-  0%,
-  100% {
-    transform: scaleX(var(--flip)) translateY(0) scaleY(1);
-  }
-  50% {
-    transform: scaleX(var(--flip)) translateY(-2.5%) scaleY(1.09);
-  }
-}
-
-@keyframes haze-drift {
-  0%,
-  100% {
-    transform: translate3d(-3%, 0, 0) scaleY(1);
-    opacity: 0.45;
-  }
-  50% {
-    transform: translate3d(3%, -4%, 0) scaleY(1.14);
-    opacity: 0.68;
-  }
-}
-
-.cloud-layer {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  /*
-   * Por encima de la foto y del velo oscuro, pero por debajo del titular
-   * (z-20) y de los controles del carrusel (z-30): la niebla ocupa la misma
-   * franja que el texto y lo taparía al pasar.
-   */
-  z-index: 11;
-  overflow: hidden;
-}
-
-/* Anclados por el pie: crecen hacia arriba desde la base del encuadre. */
-.mist {
-  position: absolute;
-  bottom: var(--band);
-  width: var(--w);
-  will-change: transform;
-}
-
-/* Costados: el centro queda despejado para que se vea la foto. */
-.mist--left {
-  left: 0;
-  animation: mist-part-left 2.6s cubic-bezier(0.16, 0.72, 0.3, 1) both;
-}
-.mist--right {
-  right: 0;
-  animation: mist-part-right 2.6s cubic-bezier(0.16, 0.72, 0.3, 1) both;
-}
-.mist--travel {
-  left: 0;
-  animation: mist-travel var(--dur) linear infinite;
-  animation-delay: var(--delay);
-}
-
-/* Nivel intermedio: deriva continua, ya abierto el telón. */
-.mist__drift {
-  animation: var(--drift, none) var(--dur) ease-in-out infinite;
-  animation-delay: var(--delay);
-}
-.mist--left .mist__drift {
-  --drift: mist-breathe-left;
-}
-.mist--right .mist__drift {
-  --drift: mist-breathe-right;
-}
-
-/*
- * Altura derivada del ancho por la proporción del viewBox (2000x240), no
- * fijada en CSS. Forzar la altura obligaba a `preserveAspectRatio="none"`,
- * que estiraba el dibujo y aplastaba los borregos.
- */
-.mist__art {
-  display: block;
-  width: 100%;
-  height: auto;
-  animation: mist-breathe 30s ease-in-out infinite;
-  animation-delay: var(--delay);
-  transform-origin: bottom center;
-}
-
-/* Translucidez: el grueso del alfa ya va en el gradiente del SVG. */
-.mist--d0 {
-  opacity: 0.5;
-}
-
-.mist--d1 {
-  opacity: 0.66;
-}
-
-.mist--d2 {
-  opacity: 0.82;
-}
-
-/* Halo difuso que asienta la niebla sobre el paisaje de la foto. */
-.haze {
-  position: absolute;
-  bottom: 0;
-  left: -6%;
-  width: 112%;
-  pointer-events: none;
-}
-
-/*
- * Se compone con alfa y no con `mix-blend-mode: screen`, porque .cloud-layer
- * tiene z-index y crea contexto de apilamiento: el blend no alcanzaría la
- * foto de fondo. Sobre una foto, blanco con alfa da el mismo resultado.
- */
-.haze--low {
-  height: 30vh;
-  background: linear-gradient(
-    to top,
-    rgba(214, 232, 236, 0.42) 0%,
-    rgba(214, 232, 236, 0.2) 40%,
-    rgba(214, 232, 236, 0.06) 70%,
-    transparent 100%
-  );
-  filter: blur(12px);
-}
-
-.haze--drift {
-  height: 22vh;
-  background: radial-gradient(
-      62% 100% at 24% 100%,
-      rgba(235, 244, 246, 0.3) 0%,
-      transparent 72%
-    ),
-    radial-gradient(54% 100% at 76% 100%, rgba(235, 244, 246, 0.24) 0%, transparent 70%);
-  filter: blur(18px);
-  animation: haze-drift 38s ease-in-out infinite;
-}
-
-@media (max-width: 640px) {
-  /* En móvil el hero es más estrecho y alto: bancos más gruesos, sin velos. */
-  .mist--d0 {
-    display: none;
-  }
-  /* El ancho fija el grosor: en móvil hay que exagerarlo mucho. */
-  .mist--left,
-  .mist--right {
-    width: calc(var(--w) * 2.4);
-  }
-  .haze--low {
-    height: 22vh;
-  }
-  .haze--drift {
-    height: 16vh;
-  }
-}
-
-/*
- * Con movimiento reducido, la regla global deja las animaciones en su estado
- * final: sin esto los jirones altos acabarían fuera de pantalla (130vw).
- */
 @media (prefers-reduced-motion: reduce) {
-  .mist,
-  .mist__drift,
-  .mist__art,
-  .haze--drift {
-    animation: none !important;
+  .portada-leyenda {
+    animation: none;
   }
-  .mist--travel {
-    transform: translate3d(var(--rest, 8vw), 0, 0);
-  }
-  .mist--travel:nth-of-type(2) {
-    --rest: 48vw;
-  }
-  .mist__art {
-    transform: scaleX(var(--flip));
-  }
-  .haze--drift {
-    opacity: 0.65;
+  .portada-leyenda-progreso {
+    animation: none;
+    transform: scaleX(1);
   }
 }
 

@@ -11,6 +11,7 @@ import {
 } from "@/config/ajustes";
 import { Boton, Campo } from "./campos";
 import { CampoImagen } from "./CampoImagen";
+import { idDeTripadvisor } from "@/lib/tripadvisor";
 
 /*
  * Ajustes de la agencia: datos legales, contacto y redes.
@@ -69,6 +70,8 @@ function errores(a: Ajustes): Partial<Record<keyof Ajustes, string>> {
   if (!/^\d{8,15}$/.test(a.whatsapp.replace(/\D/g, "")))
     e.whatsapp = "Solo números, con el código de país: 51 y el número.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.correo.trim())) e.correo = "Revisa el correo.";
+  if (a.tripadvisor.trim() && !idDeTripadvisor(a.tripadvisor))
+    e.tripadvisor = "No parece la dirección de una ficha: debe llevar «-d» y un número.";
   if (a.correoReservas.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.correoReservas.trim()))
     e.correoReservas = "Revisa el correo.";
   if (a.telefono.replace(/\D/g, "").length < 7) e.telefono = "Revisa el teléfono.";
@@ -269,6 +272,58 @@ export function PanelAjustes({ revision, onCambio }: { revision: number; onCambi
           El botón de contacto de la web mostrará:{" "}
           <b className="text-slate-800">{canales.join(" · ")}</b>
         </p>
+      </section>
+
+      <section className="rounded-lg bg-white p-6 ring-1 ring-slate-200">
+        <h3 className="eyebrow text-slate-900">Reseñas de TripAdvisor</h3>
+        <p className="mt-2 text-sm text-slate-500">
+          Pega la dirección de la ficha de la agencia en TripAdvisor. Al publicar, la web trae sus
+          reseñas más recientes y las enseña con la misma cinta animada, con la nota y el enlace a
+          TripAdvisor. Mientras no haya ficha —o si TripAdvisor no responde— se ven las reseñas de
+          este panel.
+        </p>
+        <div className="mt-6 space-y-5">
+          <Campo
+            etiqueta="Dirección de la ficha"
+            valor={form.tripadvisor}
+            onChange={set("tripadvisor")}
+            error={ver("tripadvisor")}
+            ayuda={
+              idDeTripadvisor(form.tripadvisor)
+                ? `Ficha n.º ${idDeTripadvisor(form.tripadvisor)}. Recuerda: la clave de la API va como secreto TRIPADVISOR_API_KEY en GitHub.`
+                : "Ej.: https://www.tripadvisor.com.pe/Attraction_Review-g294314-d12345678-Reviews-GoToMapi-Cusco.html"
+            }
+          />
+          <fieldset>
+            <legend className="eyebrow text-slate-400">Mostrarlas en</legend>
+            <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
+              {(
+                [
+                  ["inicio", "Inicio (en lugar de las del panel)"],
+                  ["tours", "Tours y sus categorías (Machu Picchu, Cusco, Aventura…)"],
+                ] as const
+              ).map(([valor, etiqueta]) => {
+                const lista = form.tripadvisorMostrar.split(",").map((s) => s.trim()).filter(Boolean);
+                const marcado = lista.includes(valor);
+                return (
+                  <label key={valor} className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={marcado}
+                      onChange={() =>
+                        set("tripadvisorMostrar")(
+                          (marcado ? lista.filter((x) => x !== valor) : [...lista, valor]).join(",")
+                        )
+                      }
+                      className="size-4 accent-amber-500"
+                    />
+                    {etiqueta}
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        </div>
       </section>
 
       <section className="rounded-lg bg-white p-6 ring-1 ring-slate-200">

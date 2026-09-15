@@ -58,7 +58,7 @@ const datosAdicionales = (empresa: Ajustes) => [
   }
 ];
 
-export function CompanyInfo() {
+export function CompanyInfo({ children }: { children?: React.ReactNode }) {
   const ajustes = useAjustes();
   const COMPANY_DATA = datosEmpresa(ajustes);
   const ADDITIONAL_INFO = datosAdicionales(ajustes);
@@ -128,6 +128,9 @@ export function CompanyInfo() {
             ))}
           </div>
         </div>
+
+        {/* Lo esencial de los términos, con enlace al texto completo. */}
+        {children}
 
         {/* Nota legal */}
         <div className={`mt-8 text-center scroll-animate ${isVisible ? "animate-fade-in delay-600" : ""}`}>

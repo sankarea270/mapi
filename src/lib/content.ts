@@ -3,7 +3,7 @@ import { pickLocalized } from "@/lib/format";
 import { DESTINATIONS, type Destination } from "@/data/destinations";
 import { PACKAGES, type TourPackage } from "@/data/packages";
 import { REVIEWS, type Review } from "@/data/reviews";
-import { HERO_SLIDES, type HeroSlide } from "@/data/portada";
+import { HERO_SLIDES, LEYENDAS_PORTADA, type HeroSlide } from "@/data/portada";
 import { EQUIPO, type MiembroEquipo } from "@/data/equipo";
 import { EXPERIENCES, type Experience } from "@/data/experiences";
 import { GUIDES, type Guide } from "@/data/guides";
@@ -201,20 +201,50 @@ export async function getReviews(): Promise<Review[]> {
  * devuelven las del repositorio: la primera pantalla nunca se queda en negro
  * por un problema de base de datos.
  */
-export async function getHeroSlides(): Promise<HeroSlide[]> {
+export async function getHeroSlides(locale = "es"): Promise<HeroSlide[]> {
   return conRespaldo("portada", HERO_SLIDES, async () => {
-    const { data, error } = await supabase!
-      .from("hero_slides")
-      .select("image_url, alt_es, sort_order, status")
-      .eq("status", "published")
-      .order("sort_order");
+    const base = "image_url, alt_es, sort_order, status";
+    const pedir = (columnas: string) =>
+      supabase!.from("hero_slides").select(columnas).eq("status", "published").order("sort_order");
+
+    /* Las leyendas llegan con la migración 010. Sin ella se leen las fotos
+       solas y cada una toma la leyenda de su posición. */
+    let { data, error } = await pedir(
+      `${base}, link_url, title_es, title_en, title_pt, description_es, description_en, description_pt`
+    );
+    const sinLeyendas = faltaColumna(error);
+    if (sinLeyendas) ({ data, error } = await pedir(base));
     if (error) throw error;
-    return (data ?? [])
-      .filter((f) => typeof f.image_url === "string" && f.image_url.trim() !== "")
-      .map((f) => ({
-        src: f.image_url as string,
-        alt: (f.alt_es as string) ?? "",
-      }));
+
+    const texto = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+    const filas = ((data ?? []) as unknown as Record<string, unknown>[]).filter(
+      (f) => texto(f.image_url) !== ""
+    );
+    return filas.map((f, i) => {
+      const enlace = texto(f.link_url);
+      /* La leyenda escrita para ese enlace. Sin la migración, la de su
+         posición; con ella, una foto sin enlace va sin leyenda. */
+      const escrita = sinLeyendas
+        ? LEYENDAS_PORTADA[i]
+        : LEYENDAS_PORTADA.find((l) => enlace !== "" && l.href === enlace);
+      if (!sinLeyendas && !enlace) return { src: texto(f.image_url), alt: texto(f.alt_es) };
+      const campo = (nombre: "title" | "description", respaldo?: LocalizedText) =>
+        pickLocalized(
+          {
+            es: texto(f[`${nombre}_es`]) || respaldo?.es || "",
+            en: texto(f[`${nombre}_en`]) || respaldo?.en || texto(f[`${nombre}_es`]) || "",
+            pt: texto(f[`${nombre}_pt`]) || respaldo?.pt || texto(f[`${nombre}_es`]) || "",
+          },
+          locale
+        );
+      return {
+        src: texto(f.image_url),
+        alt: texto(f.alt_es),
+        href: enlace || escrita?.href || undefined,
+        titulo: campo("title", escrita?.titulo) || undefined,
+        descripcion: campo("description", escrita?.descripcion) || undefined,
+      };
+    });
   });
 }
 

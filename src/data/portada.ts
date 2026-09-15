@@ -12,7 +12,131 @@ export interface HeroSlide {
   alt: string;
   /** Miniatura en base64 que se enseña mientras carga la foto de verdad. */
   blur?: string;
+  /** Nombre del lugar que se ve, ya en el idioma de la página. */
+  titulo?: string;
+  /** Una frase que invite a ir. */
+  descripcion?: string;
+  /** Adónde lleva la leyenda: la página del destino o una categoría de tours. */
+  href?: string;
 }
+
+type Texto3 = { es: string; en: string; pt: string };
+
+export interface LeyendaPortada {
+  href: string;
+  titulo: Texto3;
+  descripcion: Texto3;
+}
+
+/**
+ * Leyendas de las fotos de portada, en el orden en que están publicadas.
+ *
+ * Son las que siembra la migración 010 y las que se usan si esa migración
+ * aún no se ha pasado: la web no se queda sin leyenda por eso. Cada una
+ * lleva a una ruta que existe. Salkantay no es un destino con página propia
+ * y va a los tours de aventura, que es donde está su caminata.
+ */
+export const LEYENDAS_PORTADA: LeyendaPortada[] = [
+  {
+    href: "/destinos/cusco",
+    titulo: { es: "Cusco", en: "Cusco", pt: "Cusco" },
+    descripcion: {
+      es: "La capital inca: muros imperiales, balcones coloniales y plazas que no duermen.",
+      en: "The Inca capital: imperial walls, colonial balconies and squares that never sleep.",
+      pt: "A capital inca: muros imperiais, sacadas coloniais e praças que nunca dormem.",
+    },
+  },
+  {
+    href: "/destinos/machu-picchu",
+    titulo: { es: "Machu Picchu", en: "Machu Picchu", pt: "Machu Picchu" },
+    descripcion: {
+      es: "La ciudadela sagrada que asoma entre nubes y montañas. Un viaje de una vez en la vida.",
+      en: "The sacred citadel rising between clouds and peaks. A once-in-a-lifetime journey.",
+      pt: "A cidadela sagrada que surge entre nuvens e montanhas. Uma viagem única na vida.",
+    },
+  },
+  {
+    href: "/destinos/valle-sagrado",
+    titulo: { es: "Valle Sagrado", en: "Sacred Valley", pt: "Vale Sagrado" },
+    descripcion: {
+      es: "Terrazas incas, mercados andinos y el río Urubamba al pie de los nevados.",
+      en: "Inca terraces, Andean markets and the Urubamba River beneath snowy peaks.",
+      pt: "Terraços incas, mercados andinos e o rio Urubamba aos pés dos nevados.",
+    },
+  },
+  {
+    href: "/destinos/arequipa",
+    titulo: { es: "Arequipa", en: "Arequipa", pt: "Arequipa" },
+    descripcion: {
+      es: "La Ciudad Blanca de sillar volcánico, custodiada por el Misti.",
+      en: "The White City carved from volcanic stone, guarded by El Misti.",
+      pt: "A Cidade Branca de pedra vulcânica, guardada pelo Misti.",
+    },
+  },
+  {
+    href: "/destinos/colca",
+    titulo: { es: "Cañón del Colca", en: "Colca Canyon", pt: "Cânion do Colca" },
+    descripcion: {
+      es: "Uno de los cañones más profundos del planeta y el vuelo del cóndor andino.",
+      en: "One of the deepest canyons on Earth, where the Andean condor soars.",
+      pt: "Um dos cânions mais profundos do planeta e o voo do condor andino.",
+    },
+  },
+  {
+    href: "/destinos/puno",
+    titulo: { es: "Puno y el Titicaca", en: "Puno & Lake Titicaca", pt: "Puno e o Titicaca" },
+    descripcion: {
+      es: "Islas flotantes de totora sobre el lago navegable más alto del mundo.",
+      en: "Floating reed islands on the highest navigable lake in the world.",
+      pt: "Ilhas flutuantes de totora no lago navegável mais alto do mundo.",
+    },
+  },
+  {
+    href: "/destinos/nazca",
+    titulo: { es: "Líneas de Nazca", en: "Nazca Lines", pt: "Linhas de Nazca" },
+    descripcion: {
+      es: "Figuras gigantes trazadas en el desierto que solo se descifran desde el cielo.",
+      en: "Giant figures drawn on the desert that only reveal themselves from the sky.",
+      pt: "Figuras gigantes traçadas no deserto que só se revelam do céu.",
+    },
+  },
+  {
+    href: "/destinos/lima",
+    titulo: { es: "Lima", en: "Lima", pt: "Lima" },
+    descripcion: {
+      es: "Capital gastronómica de América, frente al Pacífico y con siglos de historia.",
+      en: "The culinary capital of the Americas, facing the Pacific with centuries of history.",
+      pt: "Capital gastronômica das Américas, de frente para o Pacífico e cheia de história.",
+    },
+  },
+  {
+    href: "/destinos/amazonia",
+    titulo: { es: "Amazonía", en: "Amazon", pt: "Amazônia" },
+    descripcion: {
+      es: "Ríos inmensos, fauna única y noches con el sonido de la selva.",
+      en: "Mighty rivers, unique wildlife and nights filled with jungle sounds.",
+      pt: "Rios imensos, fauna única e noites com o som da floresta.",
+    },
+  },
+  {
+    href: "/destinos/norte",
+    titulo: { es: "Norte del Perú", en: "Northern Peru", pt: "Norte do Peru" },
+    descripcion: {
+      es: "Tumbas de señores moches, la ciudad de barro de Chan Chan y sol todo el año.",
+      en: "Moche royal tombs, the adobe city of Chan Chan and sunshine all year round.",
+      pt: "Tumbas de senhores mochicas, a cidade de barro de Chan Chan e sol o ano todo.",
+    },
+  },
+  {
+    href: "/tours?categoria=aventura",
+    titulo: { es: "Salkantay", en: "Salkantay", pt: "Salkantay" },
+    descripcion: {
+      es: "Nevado sagrado y ruta épica hacia Machu Picchu para espíritus aventureros.",
+      en: "A sacred snow peak and an epic trail to Machu Picchu for adventurous spirits.",
+      pt: "Nevado sagrado e rota épica rumo a Machu Picchu para espíritos aventureiros.",
+    },
+  },
+];
 
 export const HERO_SLIDES: HeroSlide[] = [
   {

@@ -40,6 +40,11 @@ export interface Ajustes {
   instagram: string;
   tiktok: string;
   youtube: string;
+  /** Dirección de la ficha de la agencia en TripAdvisor. Vacía: no se leen
+      reseñas de allí. */
+  tripadvisor: string;
+  /** Dónde se enseñan esas reseñas: "inicio", "tours" o los dos. */
+  tripadvisorMostrar: string;
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
@@ -67,6 +72,8 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   instagram: "",
   tiktok: "",
   youtube: "",
+  tripadvisor: "",
+  tripadvisorMostrar: "inicio,tours",
 };
 
 /** Los campos que se pueden guardar, para no aceptar claves extrañas. */
@@ -83,7 +90,13 @@ export function mezclarAjustes(guardado: Partial<Record<string, unknown>> | null
        lo he rellenado" y se usa el de reserva: una ficha sin teléfono o sin
        RUC no tiene sentido. */
     const vacioValido =
-      k === "facebook" || k === "instagram" || k === "tiktok" || k === "youtube" || k === "fondoTours";
+      k === "facebook" ||
+      k === "instagram" ||
+      k === "tiktok" ||
+      k === "youtube" ||
+      k === "fondoTours" ||
+      k === "tripadvisor" ||
+      k === "tripadvisorMostrar";
     if (typeof v === "string" && (v.trim() !== "" || vacioValido)) a[k] = v.trim();
   }
   if (!a.whatsapp) a.whatsapp = a.telefono.replace(/\D/g, "");

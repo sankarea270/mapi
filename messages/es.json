@@ -154,6 +154,13 @@
       "selloTitulo": "Atención 24/7",
       "selloDato": "Español · English · Português",
       "contactoTitulo": "Contáctanos"
+    },
+    "leyenda": {
+      "destino": "Destino",
+      "aventura": "Tours de aventura",
+      "tours": "Tours",
+      "verDestino": "Explorar destino",
+      "verTours": "Ver tours de aventura"
     }
   },
   "tours": {
@@ -304,7 +311,13 @@
     "readMore": "Leer reseña completa",
     "readLess": "Mostrar menos",
     "pause": "Pausar opiniones",
-    "play": "Reanudar opiniones"
+    "play": "Reanudar opiniones",
+    "taBadge": "Opiniones en Tripadvisor",
+    "taCount": "{count, plural, one {# opinión en Tripadvisor} other {# opiniones en Tripadvisor}}",
+    "taSeeAll": "Ver todas en Tripadvisor",
+    "taReview": "Leer en Tripadvisor",
+    "taTitlePlain": "Lo que cuentan",
+    "taTitleAccent": "en Tripadvisor"
   },
   "social": {
     "badge": "Síguenos",
@@ -451,6 +464,12 @@
         "label": "Correo Electrónico"
       },
       "legalNote": "Toda la información presentada es verídica y está respaldada por documentos oficiales. GoToMapi opera bajo estricto cumplimiento de las normativas peruanas de turismo."
+    },
+    "transparency": {
+      "title": "Reserva con transparencia",
+      "subtitle": "Lo esencial de nuestros términos y condiciones, en cuatro puntos.",
+      "terms": "Leer términos y condiciones",
+      "privacy": "Política de privacidad"
     }
   },
   "season": {

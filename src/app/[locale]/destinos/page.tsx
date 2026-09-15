@@ -68,9 +68,9 @@ export default async function DestinationsPage({
                   alt={pickLocalized(destination.name, locale)}
                   fill
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
               </div>
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <h2 className="font-heading text-xl font-bold text-white">

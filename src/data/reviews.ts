@@ -8,6 +8,13 @@ export type Review = {
   /** A qué tipo de ficha apunta `tourSlug`. Sin él se deduce buscando la
       dirección entre tours, paquetes y experiencias. */
   targetType?: "tour" | "paquete" | "experiencia" | "agencia";
+  /** De dónde viene. Sin él, es una reseña del panel. */
+  fuente?: "tripadvisor";
+  /** La reseña en su sitio de origen. */
+  url?: string;
+  titulo?: string;
+  /** ISO 8601, tal como la da el origen. */
+  fecha?: string;
 };
 
 /*

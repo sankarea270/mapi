@@ -55,6 +55,10 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://gotomachupicchuperu.com
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # Reseñas de TripAdvisor (src/lib/tripadvisor.ts). Esta sí es secreta:
+          # solo se usa al compilar y no llega al JavaScript público. Sin ella
+          # la web enseña las reseñas del panel.
+          TRIPADVISOR_API_KEY: ${{ secrets.TRIPADVISOR_API_KEY }}
           # Verificación de Google Search Console por etiqueta HTML. Es la vía
           # alternativa: si la propiedad se verifica por DNS —que es lo
           # recomendable, porque cubre www, http y subdominios de una vez—

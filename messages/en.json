@@ -154,6 +154,13 @@
       "selloTitulo": "24/7 support",
       "selloDato": "Español · English · Português",
       "contactoTitulo": "Contact us"
+    },
+    "leyenda": {
+      "destino": "Destination",
+      "aventura": "Adventure tours",
+      "tours": "Tours",
+      "verDestino": "Explore destination",
+      "verTours": "See adventure tours"
     }
   },
   "tours": {
@@ -304,7 +311,13 @@
     "readMore": "Read full review",
     "readLess": "Show less",
     "pause": "Pause reviews",
-    "play": "Resume reviews"
+    "play": "Resume reviews",
+    "taBadge": "Tripadvisor reviews",
+    "taCount": "{count, plural, one {# review on Tripadvisor} other {# reviews on Tripadvisor}}",
+    "taSeeAll": "See all on Tripadvisor",
+    "taReview": "Read on Tripadvisor",
+    "taTitlePlain": "What travelers say",
+    "taTitleAccent": "on Tripadvisor"
   },
   "social": {
     "badge": "Follow us",
@@ -451,6 +464,12 @@
         "label": "Email"
       },
       "legalNote": "All information presented is truthful and backed by official documents. GoToMapi operates under strict compliance with Peruvian tourism regulations."
+    },
+    "transparency": {
+      "title": "Book with transparency",
+      "subtitle": "The essentials of our terms and conditions, in four points.",
+      "terms": "Read terms and conditions",
+      "privacy": "Privacy policy"
     }
   },
   "season": {

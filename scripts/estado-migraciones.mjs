@@ -63,6 +63,7 @@ const comprobaciones = [
     (await existe("packages", "location_image_url")) &&
     (await existe("reviews", "target_type"))],
   ["009_ajustes.sql", () => existe("site_settings")],
+  ["010_portada_leyendas.sql", () => existe("hero_slides", "link_url")],
 ];
 
 const extra = process.argv.slice(2);

@@ -64,10 +64,13 @@ function iniciales(nombre: string): string {
 export function ReviewsSection({
   reviews,
   fichas,
+  tripadvisor,
 }: {
   reviews: Review[];
   /** Fichas del catálogo por tipo y dirección. Solo trae las que existen. */
   fichas: Record<string, Ficha>;
+  /** Si las reseñas vienen de TripAdvisor: la ficha, su nota y su total. */
+  tripadvisor?: { url: string; nota: number | null; total: number | null };
 }) {
   const t = useTranslations("reviews");
   const locale = useLocale();
@@ -106,7 +109,8 @@ export function ReviewsSection({
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
-  const media = total > 0 ? reviews.reduce((n, r) => n + r.rating, 0) / total : 0;
+  const media =
+    tripadvisor?.nota ?? (total > 0 ? reviews.reduce((n, r) => n + r.rating, 0) / total : 0);
 
   /* Una vuelta de cinta. Si hay pocas reseñas se repiten dentro de la vuelta
      hasta llenarla. */
@@ -277,14 +281,18 @@ export function ReviewsSection({
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="escena-texto mx-auto max-w-3xl text-center">
           <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-amber-600">
-            {t("badge")}
+            {tripadvisor ? t("taBadge") : t("badge")}
           </p>
           <h2 className="mt-5 font-heading text-[2.1rem] font-bold uppercase leading-[0.95] text-slate-900 sm:text-[3.2rem]">
             {/* Cada mitad se escribe por su lado porque van en colores
                 distintos, y el barrido se apoya en el color del propio
                 elemento. */}
-            <TextoLetras texto={t("titlePlain")} />{" "}
-            <TextoLetras texto={t("titleAccent")} className="text-teal-700" retraso={620} />
+            <TextoLetras texto={tripadvisor ? t("taTitlePlain") : t("titlePlain")} />{" "}
+            <TextoLetras
+              texto={tripadvisor ? t("taTitleAccent") : t("titleAccent")}
+              className="text-teal-700"
+              retraso={620}
+            />
           </h2>
           <p className="mx-auto mt-5 max-w-xl font-logo text-lg leading-relaxed text-slate-600 sm:text-xl">
             {t("subtitle")}
@@ -297,7 +305,25 @@ export function ReviewsSection({
               <span className="tabular-nums">{numero.format(media)}</span>
             </span>
             <span aria-hidden className="h-3 w-px bg-slate-300" />
-            <span className="tabular-nums">{t("count", { count: total })}</span>
+            <span className="tabular-nums">
+              {tripadvisor
+                ? t("taCount", { count: tripadvisor.total ?? total })
+                : t("count", { count: total })}
+            </span>
+            {tripadvisor && (
+              <>
+                <span aria-hidden className="h-3 w-px bg-slate-300" />
+                <a
+                  href={tripadvisor.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-teal-700 underline-offset-4 transition-colors hover:text-teal-900 hover:underline"
+                >
+                  <OjoTripadvisor className="size-4" />
+                  {t("taSeeAll")}
+                </a>
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -428,6 +454,21 @@ export function ReviewsSection({
                         tarjetas caiga a la misma altura. */}
                     <div className="mt-auto pt-3">
                       <div className="flex h-8 items-center">
+                        {!ficha && r.fuente === "tripadvisor" && (
+                          <a
+                            href={r.url ?? tripadvisor?.url ?? "https://www.tripadvisor.com"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            tabIndex={oculta ? -1 : undefined}
+                            draggable={false}
+                            className="resena-ficha flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/80 py-1 pl-1.5 pr-3 transition-colors duration-300"
+                          >
+                            <OjoTripadvisor className="size-5 text-[#00af87]" />
+                            <span className="resena-ficha-txt font-heading text-[11px] font-bold uppercase tracking-[0.1em] text-slate-600 transition-colors duration-300">
+                              {t("taReview")}
+                            </span>
+                          </a>
+                        )}
                         {ficha && (
                           <Link
                             href={ficha.href}
@@ -555,5 +596,19 @@ function Cita({
         )}
       </div>
     </>
+  );
+}
+
+/** Los ojos del búho de TripAdvisor, dibujados en trazo: identifica el
+    origen sin cargar su logotipo desde fuera. */
+function OjoTripadvisor({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} fill="none" stroke="currentColor" strokeWidth={1.8}>
+      <circle cx="7" cy="13" r="4" />
+      <circle cx="17" cy="13" r="4" />
+      <circle cx="7" cy="13" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="13" r="1.3" fill="currentColor" stroke="none" />
+      <path d="M3 8.5c2.6-2 5.8-3 9-3s6.4 1 9 3" strokeLinecap="round" />
+    </svg>
   );
 }

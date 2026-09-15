@@ -161,10 +161,8 @@ export function FilterBar({ categories, locale, filters, onChange, sobreFoto = f
             !filters.categoria
               ? "border-amber-600 bg-amber-600 text-white"
               : sobreFoto
-                ? "border-white/30 bg-white/10 text-white backdrop-blur-sm hover:border-amber-300 hover:bg-white/20"
-                : sobreFoto
-                  ? "border-white/30 bg-white/10 text-white backdrop-blur-sm hover:border-amber-300 hover:bg-white/20"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-amber-500 hover:text-amber-700"
+                ? "border-white/60 bg-white/85 text-slate-800 shadow-sm backdrop-blur-md hover:border-amber-500 hover:text-amber-700"
+                : "border-slate-200 bg-white text-slate-600 hover:border-amber-500 hover:text-amber-700"
           )}
         >
           {t("allCategories")}
@@ -179,10 +177,8 @@ export function FilterBar({ categories, locale, filters, onChange, sobreFoto = f
               filters.categoria === category.slug
                 ? "border-amber-600 bg-amber-600 text-white"
                 : sobreFoto
-                ? "border-white/30 bg-white/10 text-white backdrop-blur-sm hover:border-amber-300 hover:bg-white/20"
-                : sobreFoto
-                  ? "border-white/30 bg-white/10 text-white backdrop-blur-sm hover:border-amber-300 hover:bg-white/20"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-amber-500 hover:text-amber-700"
+                ? "border-white/60 bg-white/85 text-slate-800 shadow-sm backdrop-blur-md hover:border-amber-500 hover:text-amber-700"
+                : "border-slate-200 bg-white text-slate-600 hover:border-amber-500 hover:text-amber-700"
             )}
           >
             {pickLocalized(category.name, locale)}

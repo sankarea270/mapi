@@ -165,7 +165,7 @@ export function ToursBrowser({ categories, locale, fromLabel, fondoGeneral }: To
 
   return (
     <>
-      <section className="tours-portada relative isolate overflow-hidden bg-slate-950">
+      <section className="tours-portada relative isolate flex min-h-[34rem] flex-col justify-end overflow-hidden bg-slate-200 sm:min-h-[40rem] lg:min-h-[46rem]">
         {/* Todas las fotos a la vez, una encima de otra, y solo la activa
             visible. Cambiar la `src` de una sola imagen haría un parpadeo en
             blanco mientras carga la nueva; con las capas ya puestas el
@@ -184,28 +184,24 @@ export function ToursBrowser({ categories, locale, fromLabel, fondoGeneral }: To
             />
           ) : null
         )}
-        {/* Velo: oscuro abajo, donde van los filtros, y más ligero arriba,
-            para que la foto se vea y el texto se lea en cualquier foto. */}
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(2_6_23/0.55)_0%,rgb(2_6_23/0.35)_40%,rgb(2_6_23/0.82)_100%)]"
-        />
-
-        <div className="mx-auto max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pb-10 sm:pt-20 lg:pt-24">
+        {/* Sin velo: la foto se ve con sus colores. El texto lleva su propio
+            contorno —el mismo de la portada— y los filtros van en cápsulas
+            claras, así se lee sobre cualquier foto sin oscurecerla. */}
+        <div className="mx-auto w-full max-w-7xl px-4 pb-8 pt-24 sm:px-6 sm:pb-10 sm:pt-32">
           <p
             key={`c-${filters.categoria}`}
-            className="tours-portada-texto text-xs font-bold uppercase tracking-[0.22em] text-amber-300"
+            className="tours-portada-texto portada-contorno-oscuro text-xs font-bold uppercase tracking-[0.22em] text-amber-400"
           >
             {t("found", { count: enCategoria })}
           </p>
           <h1
             key={`t-${filters.categoria}`}
-            className="tours-portada-texto mt-3 font-heading text-4xl font-bold uppercase leading-[0.95] text-white [text-shadow:0_2px_24px_rgb(2_6_23/0.45)] sm:text-5xl lg:text-6xl"
+            className="tours-portada-texto portada-contorno-claro mt-3 font-heading text-4xl font-bold uppercase leading-[0.95] text-teal-900 sm:text-5xl lg:text-6xl"
             style={{ animationDelay: "60ms" }}
           >
             {categoriaActual ? pickLocalized(categoriaActual.name, locale) : t("title")}
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
+          <p className="portada-contorno-claro mt-4 max-w-2xl text-base font-semibold leading-relaxed text-teal-900 sm:text-lg">
             {t("subtitle")}
           </p>
 

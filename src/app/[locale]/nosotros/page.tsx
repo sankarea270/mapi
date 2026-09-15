@@ -9,6 +9,8 @@ import { StatsSection } from "@/components/about/StatsSection";
 import { TeamSection } from "@/components/about/TeamSection";
 import { CertificationsSection } from "@/components/about/CertificationsSection";
 import { CompanyInfo } from "@/components/about/CompanyInfo";
+import { TransparenciaLegal } from "@/components/about/TransparenciaLegal";
+import type { AppLocale } from "@/i18n/routing";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -45,7 +47,9 @@ export default async function AboutPage({
       <StatsSection />
       <CertificationsSection locale={locale} />
       <TeamSection miembros={equipo} />
-      <CompanyInfo />
+      <CompanyInfo>
+        <TransparenciaLegal locale={locale as AppLocale} />
+      </CompanyInfo>
     </>
   );
 }
