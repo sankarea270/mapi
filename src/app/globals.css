@@ -52,6 +52,13 @@
   --color-amber-900: #573312;
   --color-amber-950: #301c09;
 
+  /* El oro del titular de la portada: el naranja del logo subido en luz y
+     saturación. El ámbar de marca (#e6a047) se apagaba contra los ocres y
+     los verdes de las fotos —piedra de Cusco, terrazas, selva— y el nombre
+     del lugar se perdía justo en la primera pantalla. Este mantiene el tono
+     de la marca y gana el brillo que hace falta sobre fotografía. */
+  --color-oro: #ffc24a;
+
   /* Apoyo: petróleo pleno del logo, para clasificar y para datos. */
   --color-teal-50: #effaf9;
   --color-teal-100: #d2f1ef;
@@ -80,10 +87,10 @@
      la variable que crea next/font tienen que ser distintos: si coinciden,
      `var()` se referencia a sí misma y la fuente nunca se aplica. */
   --font-logo: var(--font-cormorant);
-  /* La didona del titular de la portada: asta gruesa y remate de pelo. Solo
-     se usa ahí, y por eso tiene token propio en vez de sustituir a ninguna
-     de las otras dos. */
-  --font-portada: var(--font-bodoni);
+  /* Las capitales romanas del titular de la portada: rectas y de remate
+     plano. Solo se usan ahí, y por eso tienen token propio en vez de
+     sustituir a ninguna de las otras dos. */
+  --font-portada: var(--font-cinzel);
   /* El nombre de la variable de Next tiene que ser DISTINTO del token
      del tema: si coinciden, el token se define como var() de sí mismo, se
      vuelve circular y la fuente no se aplica sin dar ningún error. */
@@ -300,7 +307,8 @@
     -0.8px -0.8px 0 rgb(0 0 0 / 0.85),
     0.8px -0.8px 0 rgb(0 0 0 / 0.85),
     -0.8px 0.8px 0 rgb(0 0 0 / 0.85),
-    0 3px 14px rgb(0 0 0 / 0.35);
+    0 3px 14px rgb(0 0 0 / 0.35),
+    0 10px 34px rgb(0 0 0 / 0.28);
 }
 
 /*
@@ -314,10 +322,14 @@
  */
 .portada-titular {
   font-family: var(--font-portada), Georgia, "Times New Roman", serif;
-  font-weight: 800;
-  font-size: clamp(3.2rem, 8.6vw, 8.5rem);
-  line-height: 0.86;
-  letter-spacing: -0.015em;
+  font-weight: 900;
+  /* Capitales: ocupan más que la caja baja, así que el cuerpo baja un punto
+     respecto a la didona y el interlineado sube; con versales pegadas las
+     líneas se tocarían. */
+  font-size: clamp(2.7rem, 7vw, 6.8rem);
+  line-height: 0.98;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
 }
 
 /*
@@ -1212,7 +1224,7 @@ html {
     padding-bottom: 8rem;
   }
   .portada-titular {
-    font-size: clamp(3.2rem, 7vw, 6.5rem);
+    font-size: clamp(2.6rem, 5.6vw, 5.2rem);
   }
 }
 
@@ -1222,7 +1234,7 @@ html {
     padding-bottom: 6rem;
   }
   .portada-titular {
-    font-size: clamp(2.8rem, 5.8vw, 5rem);
+    font-size: clamp(2.3rem, 4.6vw, 4rem);
   }
 }
 

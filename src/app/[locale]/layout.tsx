@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
+import { Cinzel, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -15,18 +15,19 @@ import { BASE_URL } from "@/lib/seo";
 import "../globals.css";
 
 
-/* La didona del titular de la portada, y solo de ahí.
+/* La letra del titular de la portada, y solo de ahí.
  *
- * La portada es la primera impresión del sitio y el nombre del lugar es lo
- * único que se lee grande: pide una letra con carácter, de las de cartel de
- * moda —asta gruesa, remate de pelo, mucho contraste—. La garamond del
- * logotipo es elegante pero discreta, y a ese cuerpo se quedaba en nada.
+ * Capitales romanas de inscripción: asta recta, remate plano y anchura
+ * firme. Se probó antes una didona y el dibujo salía redondo y de trazo
+ * fino —las curvas muy abiertas y el perfil de pelo—, justo lo contrario de
+ * lo que pide un titular sobre una fotografía, donde lo delgado se pierde.
+ * Esta tiene el mismo aire clásico pero sostiene el cuerpo grande.
  *
  * Solo dos grosores y solo latino: la usa un puñado de palabras. */
-const bodoni = Bodoni_Moda({
-  variable: "--font-bodoni",
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
   subsets: ["latin"],
-  weight: ["700", "800"],
+  weight: ["700", "900"],
   display: "swap",
 });
 
@@ -94,7 +95,7 @@ export default async function LocaleLayout({
   const ajustes = await getAjustes();
 
   return (
-    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${bodoni.variable}`}>
+    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${cinzel.variable}`}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"

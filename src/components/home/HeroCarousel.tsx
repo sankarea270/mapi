@@ -132,7 +132,7 @@ export function HeroCarousel({
           <p className="portada-contorno-claro flex items-center gap-3 font-heading text-[0.95rem] font-bold uppercase tracking-[0.14em] text-teal-800 sm:text-[1.1rem]">
             {textos.volante}
             <span aria-hidden className="h-px w-8 bg-teal-800/50 sm:w-12" />
-            <span className="portada-contorno-oscuro tabular-nums text-amber-400">
+            <span className="portada-contorno-oscuro tabular-nums text-oro">
               {dos(active + 1)} / {dos(SLIDES.length)}
             </span>
           </p>
@@ -145,11 +145,11 @@ export function HeroCarousel({
           <div key={active} aria-live="polite" className="relative mt-4 pl-5 sm:pl-7">
             <span
               aria-hidden
-              className="portada-filete portada-filete--sup absolute left-0 top-0 h-24 w-8 border-l border-t border-amber-400/70 sm:h-32 sm:w-12"
+              className="portada-filete portada-filete--sup absolute left-0 top-0 h-24 w-8 border-l border-t border-[color-mix(in_srgb,var(--color-oro)_70%,transparent)] sm:h-32 sm:w-12"
             />
             <span
               aria-hidden
-              className="portada-filete portada-filete--inf absolute bottom-0 left-0 h-12 w-5 border-b border-l border-amber-400/45 sm:w-8"
+              className="portada-filete portada-filete--inf absolute bottom-0 left-0 h-12 w-5 border-b border-l border-[color-mix(in_srgb,var(--color-oro)_45%,transparent)] sm:w-8"
             />
 
             {/* El nombre del lugar, a cuerpo de cartel y en didona. Entra
@@ -158,7 +158,7 @@ export function HeroCarousel({
                 que asoman como en un letrero de cine y no aparecen de golpe.
                 El cuerpo lo fija `.portada-titular` con `clamp()`, que sube y
                 baja con el ancho de la ventana sin escalones. */}
-            <p className="portada-titular portada-contorno-oscuro text-amber-400" aria-label={titulo}>
+            <p className="portada-titular portada-contorno-oscuro text-oro" aria-label={titulo}>
               {titulo.split(" ").map((palabra, i) => (
                 <span key={`${palabra}-${i}`} aria-hidden className="portada-palabra">
                   <span style={{ animationDelay: `${0.06 + i * 0.09}s` }}>{palabra}</span>
