@@ -204,42 +204,6 @@ export default async function HomePage({
             }}
           />
 
-          {/* Fila de pie de la referencia: un dato a cada lado y el aviso de
-              seguir bajando en medio. Se oculta por debajo de `lg` porque en
-              un móvil se comería el sitio que necesitan los botones. */}
-          <div className="portada-pie absolute inset-x-0 bottom-7 z-20 mx-auto hidden max-w-7xl items-end justify-between px-6 lg:flex">
-            <div>
-              <p className="portada-contorno-claro flex items-center gap-3 font-heading text-[11px] font-bold uppercase tracking-[0.18em] text-teal-800">
-                <span aria-hidden className="h-px w-7 bg-teal-800/50" />
-                {t("pie.selloTitulo")}
-              </p>
-              <p className="portada-contorno-claro mt-1.5 font-heading text-lg font-bold uppercase tracking-[0.02em] text-teal-900">
-                {t("pie.selloDato")}
-              </p>
-            </div>
-
-            <span
-              aria-hidden
-              className="mb-1 grid h-9 w-[22px] place-items-start rounded-full border border-white/45 pt-1.5"
-            >
-              <span className="portada-rueda block size-1 rounded-full bg-white/85" />
-            </span>
-
-            <div className="text-right">
-              <p className="portada-contorno-claro flex items-center justify-end gap-3 font-logo text-sm font-semibold text-teal-800">
-                {t("pie.contactoTitulo")}
-                <span aria-hidden className="h-px w-7 bg-teal-800/50" />
-              </p>
-              <a
-                href={enlaceWhatsapp(ajustes)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="portada-contorno-claro mt-1.5 block font-heading text-lg font-bold uppercase tracking-[0.02em] text-teal-900 transition-colors hover:text-amber-700"
-              >
-                {ajustes.telefono}
-              </a>
-            </div>
-          </div>
         </section>
       </div>
 

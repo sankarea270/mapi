@@ -125,7 +125,7 @@ export function HeroCarousel({
         {textos.titulo} · {textos.volante}
       </h1>
 
-      <div className="portada-caja relative z-20 mx-auto w-full max-w-7xl px-4 pb-24 pt-10 sm:px-6 sm:pb-28 sm:pt-16 lg:pb-32">
+      <div className="portada-caja relative z-20 mx-auto w-full max-w-7xl px-4 pb-36 pt-8 sm:px-6 sm:pb-44 sm:pt-12 lg:pb-48">
         <div className="max-w-3xl">
           <p className="portada-contorno-claro flex items-center gap-3 font-heading text-[0.95rem] font-bold uppercase tracking-[0.14em] text-teal-800 sm:text-[1.1rem]">
             {textos.volante}
@@ -136,17 +136,32 @@ export function HeroCarousel({
           </p>
 
           {/* Todo lo que cambia con la foto va en el mismo bloque y con la
-              misma clave: así entra junto, en cascada, y no a trompicones. */}
-          <div key={active} aria-live="polite">
+              misma clave: así entra junto, en cascada, y no a trompicones.
+              El corchete de filete fino se dibuja con él y encuadra el
+              titular sin encerrarlo en una caja, que sobre una foto siempre
+              acaba pareciendo un cartel pegado encima. */}
+          <div key={active} aria-live="polite" className="relative mt-4 pl-5 sm:pl-7">
+            <span
+              aria-hidden
+              className="portada-filete portada-filete--sup absolute left-0 top-0 h-24 w-8 border-l border-t border-amber-400/70 sm:h-32 sm:w-12"
+            />
+            <span
+              aria-hidden
+              className="portada-filete portada-filete--inf absolute bottom-0 left-0 h-12 w-5 border-b border-l border-amber-400/45 sm:w-8"
+            />
+
+            {/* El nombre del lugar en la romana del logotipo: es la letra de
+                la marca y la que da el aire elegante que se busca. La
+                condensada de palo seco se queda para los rótulos. */}
             <p
-              className="portada-titular portada-contorno-oscuro mt-3 font-heading text-[2.9rem] font-bold uppercase leading-[0.9] text-amber-400 sm:text-6xl lg:text-[5.5rem]"
+              className="portada-titular portada-contorno-oscuro font-logo text-[3.1rem] font-bold leading-[0.95] tracking-[-0.01em] text-amber-400 sm:text-[4.6rem] lg:text-[6.2rem]"
               style={{ animation: "text-reveal 0.7s ease-out both 0.05s" }}
             >
               {titulo}
             </p>
 
             <p
-              className="portada-contorno-claro mt-5 max-w-xl font-logo text-base font-semibold leading-relaxed text-teal-900 sm:mt-7 sm:text-xl lg:text-2xl"
+              className="portada-contorno-claro mt-4 max-w-2xl font-logo text-xl font-semibold leading-snug text-teal-800 sm:mt-5 sm:text-2xl lg:text-[1.75rem]"
               style={{ animation: "text-reveal 0.7s ease-out both 0.18s" }}
             >
               {descripcion}

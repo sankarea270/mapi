@@ -15,14 +15,15 @@ import { BASE_URL } from "@/lib/seo";
 import "../globals.css";
 
 
-/* Serif solo para el logotipo, como en la referencia "Perú Travel": el
-   nombre en romana clásica y el subtítulo en versalitas muy espaciadas.
-   Se cargan únicamente dos grosores porque se usa en una sola palabra;
-   traer la familia entera sería pagar kilobytes por nada. */
+/* La romana del logotipo, y desde ahora también la del titular de la
+   portada: el nombre del lugar en letra clásica de contraste alto es lo que
+   da el aire de agencia de viajes de lujo que se busca, y lo que ata el
+   titular al logotipo en vez de dejarlos como dos marcas distintas.
+   Tres grosores, no la familia entera: el titular pide el más grueso. */
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
