@@ -267,7 +267,8 @@ export function PanelPortada({
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">
-          Las fotos grandes que se ven al entrar en la web. Se van pasando solas.
+          Las fotos grandes que se ven al entrar en la web. Se van pasando solas, y con cada una
+          cambian el titular, la frase y el botón que hay encima.
         </p>
         <Boton
           onClick={() =>
@@ -367,11 +368,12 @@ export function PanelPortada({
 }
 
 /**
- * Enlace y leyenda de una foto.
+ * Titular, frase y enlace de una foto.
  *
- * Lo que se elige es adónde lleva: un destino o una categoría de tours, de
- * la lista de los que existen, así no hay direcciones mal escritas. El
- * título y la frase se generan al elegirlo —con los textos preparados para
+ * Son los textos que se leen sobre la foto en la portada. Lo que se elige es
+ * adónde lleva el botón: un destino o una categoría de tours, de la lista de
+ * los que existen, así no hay direcciones mal escritas. El titular y la
+ * frase se generan al elegirlo —con los textos preparados para
  * cada destino o, si no hay, con el nombre y la descripción del destino— y
  * se pueden retocar.
  */
@@ -415,10 +417,10 @@ function EditorLeyenda({
 
   return (
     <fieldset className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
-      <legend className="px-1 text-sm font-semibold text-slate-900">Leyenda y enlace</legend>
+      <legend className="px-1 text-sm font-semibold text-slate-900">Titular y enlace</legend>
 
       <label className="block">
-        <span className="eyebrow text-slate-400">Al pulsar la leyenda, lleva a</span>
+        <span className="eyebrow text-slate-400">El botón de la foto lleva a</span>
         <select
           value={b.link_url ?? ""}
           onChange={(e) => {
@@ -427,7 +429,7 @@ function EditorLeyenda({
           }}
           className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
         >
-          <option value="">Sin enlace (no se muestra leyenda)</option>
+          <option value="">Sin enlace (se usa el titular de la agencia)</option>
           {!enLista && <option value={b.link_url ?? ""}>{b.link_url}</option>}
           {grupos.map((g) => (
             <optgroup key={g} label={g}>
@@ -442,20 +444,21 @@ function EditorLeyenda({
           ))}
         </select>
         <span className="mt-1.5 block text-xs text-slate-400">
-          Al elegirlo se escriben solos el título y la frase. Salkantay va a «Tours · Aventura».
+          Al elegirlo se escriben solos el titular y la frase. Salkantay va a «Tours · Aventura».
         </span>
       </label>
 
       <Campo
-        etiqueta="Título"
+        etiqueta="Titular"
         valor={b.title_es ?? ""}
         onChange={(v) => onChange({ ...b, title_es: v })}
+        ayuda="Es el texto GRANDE sobre la foto: el nombre del lugar que se ve («Cusco», «Machu Picchu»). Corto, de una o tres palabras."
       />
       <Campo
         etiqueta="Frase"
         valor={b.description_es ?? ""}
         onChange={(v) => onChange({ ...b, description_es: v })}
-        ayuda="Una sola frase, corta: se lee en la tarjeta de la portada."
+        ayuda="Va debajo del titular, en letra más pequeña. Una sola frase."
       />
 
       <div className="flex flex-wrap items-center gap-3">

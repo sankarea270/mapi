@@ -3,7 +3,6 @@ import { join } from "node:path";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { Link } from "@/i18n/navigation";
 import { siteConfig } from "@/config/site";
 import { enlaceWhatsapp, redesConEnlace } from "@/config/ajustes";
 import { buildMetadata, LOGO_URL } from "@/lib/seo";
@@ -189,85 +188,21 @@ export default async function HomePage({
           data-hero-sentinel
           className="relative flex min-h-[92dvh] items-center overflow-hidden bg-slate-950"
         >
+          {/* Las fotos, el titular de cada una y las llamadas: todo va
+              dentro del carrusel porque todo cambia con la foto. */}
           <HeroCarousel
             slides={slidesPortada}
             textos={{
-              destino: t("leyenda.destino"),
-              aventura: t("leyenda.aventura"),
-              tours: t("leyenda.tours"),
+              volante: t("eyebrow"),
+              titulo: t("title"),
+              subtitulo: t("subtitle"),
+              ctaTours: t("ctaTours"),
+              ctaContacto: t("ctaContact"),
+              whatsapp: enlaceWhatsapp(ajustes),
               verDestino: t("leyenda.verDestino"),
               verTours: t("leyenda.verTours"),
             }}
           />
-
-          {/* Orden de capas: foto (z-10) -> velo (z-auto) -> texto (z-20) ->
-              leyenda y controles (z-30). El velo es apenas una sombra: el
-              texto ya no depende de oscurecer la foto, lleva su propio
-              contorno, así que la foto se ve con sus colores. */}
-          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
-
-          {/* Composición calcada de la referencia: volante GRANDE en blanco,
-              titular enorme en el color de marca, entradilla en romana y dos
-              llamadas —una maciza y otra subrayada—. Todo a la izquierda: el
-              centrado obliga a que cada línea empiece en un sitio distinto y
-              es lo que hace que una portada parezca una plantilla.
-
-              El volante ya no es el rótulo diminuto y muy espaciado de antes.
-              En la referencia mide casi la mitad que el titular y es lo que
-              hace que el bloque se lea como una frase encabalgada y no como
-              una etiqueta suelta encima de un título. */}
-          <div className="portada-caja relative z-20 mx-auto w-full max-w-7xl px-4 pb-64 pt-12 sm:px-6 sm:py-28">
-            <div className="max-w-3xl">
-              <p
-                className="portada-volante portada-contorno-claro font-heading text-[1.4rem] font-bold uppercase leading-none tracking-[0.01em] text-teal-800 sm:text-[1.9rem] lg:text-[2.2rem]"
-                style={{ animation: "text-reveal 0.8s ease-out both 0.2s" }}
-              >
-                {t("eyebrow")}
-              </p>
-
-              {/* El titular va en ámbar y no en blanco porque en la
-                  referencia el titular lleva el color de la marca; es lo que
-                  separa la portada de cualquier foto con un texto encima.
-                  Sobre el velo oscuro el ámbar da 8.9:1, de sobra. */}
-              <h1
-                className="portada-titular portada-contorno-oscuro mt-3 font-heading text-[3rem] font-bold uppercase leading-[0.88] text-amber-400 sm:text-7xl lg:text-[6rem]"
-                style={{ animation: "text-reveal 0.8s ease-out both 0.4s" }}
-              >
-                {t("title")}
-              </h1>
-
-              {/* Entradilla en romana, como la referencia. Es la misma
-                  familia del logotipo, así que no entra ninguna fuente nueva
-                  por esto, y el contraste entre la condensada de palo seco y
-                  la romana es justo lo que hace que el bloque respire. */}
-              <p
-                className="portada-contorno-claro mt-6 max-w-xl font-logo text-lg font-semibold leading-relaxed text-teal-900 sm:mt-8 sm:text-2xl"
-                style={{ animation: "text-reveal 0.8s ease-out both 0.6s" }}
-              >
-                {t("subtitle")}
-              </p>
-
-              <div
-                className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-6 sm:mt-10"
-                style={{ animation: "text-reveal 0.8s ease-out both 0.8s" }}
-              >
-                <Link
-                  href="/tours"
-                  className="bg-amber-500 px-10 py-4 font-heading text-sm font-bold uppercase tracking-[0.12em] text-slate-950 transition-all hover:bg-amber-400 hover:scale-[1.02]"
-                >
-                  {t("ctaTours")}
-                </Link>
-                <a
-                  href={enlaceWhatsapp(ajustes)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="portada-contorno-claro border-b-2 border-teal-800/60 pb-1 font-heading text-sm font-bold uppercase tracking-[0.12em] text-teal-800 transition-all hover:border-amber-500 hover:text-teal-950"
-                >
-                  {t("ctaContact")}
-                </a>
-              </div>
-            </div>
-          </div>
 
           {/* Fila de pie de la referencia: un dato a cada lado y el aviso de
               seguir bajando en medio. Se oculta por debajo de `lg` porque en
