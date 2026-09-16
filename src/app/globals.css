@@ -322,13 +322,20 @@
  */
 .portada-titular {
   font-family: var(--font-portada), Georgia, "Times New Roman", serif;
-  font-weight: 900;
+  /* Semigrueso, no negro: en versales y a este cuerpo, el grosor máximo
+     cerraba los contadores de la «C» y la «U» y el nombre se leía como un
+     bloque macizo. */
+  font-weight: 700;
   /* Capitales: ocupan más que la caja baja, así que el cuerpo baja un punto
      respecto a la didona y el interlineado sube; con versales pegadas las
      líneas se tocarían. */
-  font-size: clamp(2.7rem, 7vw, 6.8rem);
+  font-size: clamp(2.8rem, 7.2vw, 7rem);
   line-height: 0.98;
-  letter-spacing: 0.005em;
+  /* Las romanas de inscripción vienen muy abiertas de origen —así se
+     grababan en piedra, para leerlas de lejos—. A cuerpo de titular eso
+     desparrama la palabra; se cierra el paso entre letras hasta que el
+     nombre se lee como una sola pieza. */
+  letter-spacing: -0.028em;
   text-transform: uppercase;
 }
 
