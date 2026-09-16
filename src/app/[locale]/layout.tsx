@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cinzel, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
+import { Playfair, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -17,17 +17,19 @@ import "../globals.css";
 
 /* La letra del titular de la portada, y solo de ahí.
  *
- * Capitales romanas de inscripción: asta recta, remate plano y anchura
- * firme. Se probó antes una didona y el dibujo salía redondo y de trazo
- * fino —las curvas muy abiertas y el perfil de pelo—, justo lo contrario de
- * lo que pide un titular sobre una fotografía, donde lo delgado se pierde.
- * Esta tiene el mismo aire clásico pero sostiene el cuerpo grande.
+ * Es una fuente variable con dos ejes que aquí importan: el tamaño óptico
+ * («opsz») y la anchura («wdth»). Llevando el óptico al máximo, el dibujo
+ * se afila —asta gruesa y perfil de pelo, el contraste de las portadas de
+ * revista— porque ese eje existe justo para eso: el mismo tipo se dibuja
+ * distinto para un cuerpo de texto que para un rótulo. Y con la anchura al
+ * mínimo, las versales salen altas y estrechas en vez de anchas.
  *
- * Solo dos grosores y solo latino: la usa un puñado de palabras. */
-const cinzel = Cinzel({
-  variable: "--font-cinzel",
+ * Se pide variable, no grosores sueltos, porque los ejes solo se pueden
+ * mover si viene el archivo variable. */
+const playfair = Playfair({
+  variable: "--font-playfair",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  axes: ["opsz", "wdth"],
   display: "swap",
 });
 
@@ -95,7 +97,7 @@ export default async function LocaleLayout({
   const ajustes = await getAjustes();
 
   return (
-    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${cinzel.variable}`}>
+    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${playfair.variable}`}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"

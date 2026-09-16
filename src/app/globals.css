@@ -87,10 +87,10 @@
      la variable que crea next/font tienen que ser distintos: si coinciden,
      `var()` se referencia a sí misma y la fuente nunca se aplica. */
   --font-logo: var(--font-cormorant);
-  /* Las capitales romanas del titular de la portada: rectas y de remate
-     plano. Solo se usan ahí, y por eso tienen token propio en vez de
+  /* La didona del titular de la portada: alta, estrecha y de mucho
+     contraste. Solo se usa ahí, y por eso tiene token propio en vez de
      sustituir a ninguna de las otras dos. */
-  --font-portada: var(--font-cinzel);
+  --font-portada: var(--font-playfair);
   /* El nombre de la variable de Next tiene que ser DISTINTO del token
      del tema: si coinciden, el token se define como var() de sí mismo, se
      vuelve circular y la fuente no se aplica sin dar ningún error. */
@@ -322,21 +322,34 @@
  */
 .portada-titular {
   font-family: var(--font-portada), Georgia, "Times New Roman", serif;
-  /* Semigrueso, no negro: en versales y a este cuerpo, el grosor máximo
-     cerraba los contadores de la «C» y la «U» y el nombre se leía como un
-     bloque macizo. */
-  font-weight: 700;
-  /* Capitales: ocupan más que la caja baja, así que el cuerpo baja un punto
-     respecto a la didona y el interlineado sube; con versales pegadas las
-     líneas se tocarían. */
-  font-size: clamp(2.8rem, 7.2vw, 7rem);
-  line-height: 0.98;
-  /* Las romanas de inscripción vienen muy abiertas de origen —así se
-     grababan en piedra, para leerlas de lejos—. A cuerpo de titular eso
-     desparrama la palabra; se cierra el paso entre letras hasta que el
-     nombre se lee como una sola pieza. */
-  letter-spacing: -0.028em;
+  font-weight: 800;
+  /* Los dos ejes de la variable: tamaño óptico al máximo —el dibujo de
+     rótulo, con el perfil afilado— y anchura al mínimo, que deja las
+     versales altas y juntas. `font-optical-sizing: none` es obligatorio:
+     sin él el navegador fija «opsz» por el cuerpo en píxeles y se come el
+     valor de aquí. */
+  font-optical-sizing: none;
+  font-variation-settings:
+    "opsz" 1200,
+    "wdth" 87.5;
+  font-size: clamp(3rem, 8.4vw, 8.2rem);
+  line-height: 0.92;
+  letter-spacing: -0.012em;
   text-transform: uppercase;
+}
+
+/*
+ * En el móvil el titular mide la mitad, y con el óptico al máximo los
+ * perfiles de pelo se quedaban en un hilo que la pantalla ya no dibuja: la
+ * palabra se veía débil. Se baja el eje —dibujo de rótulo, pero menos
+ * afilado— y el nombre vuelve a tener cuerpo.
+ */
+@media (max-width: 640px) {
+  .portada-titular {
+    font-variation-settings:
+      "opsz" 200,
+      "wdth" 87.5;
+  }
 }
 
 /*
@@ -1231,7 +1244,7 @@ html {
     padding-bottom: 8rem;
   }
   .portada-titular {
-    font-size: clamp(2.6rem, 5.6vw, 5.2rem);
+    font-size: clamp(2.8rem, 6.4vw, 6rem);
   }
 }
 
@@ -1241,7 +1254,7 @@ html {
     padding-bottom: 6rem;
   }
   .portada-titular {
-    font-size: clamp(2.3rem, 4.6vw, 4rem);
+    font-size: clamp(2.5rem, 5.2vw, 4.6rem);
   }
 }
 

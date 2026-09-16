@@ -167,7 +167,7 @@ export function HeroCarousel({
             </p>
 
             <p
-              className="portada-contorno-claro mt-4 max-w-2xl font-logo text-xl font-semibold leading-snug text-teal-800 sm:mt-5 sm:text-2xl lg:text-[1.75rem]"
+              className="portada-contorno-claro mt-5 max-w-2xl font-logo text-[1.35rem] font-bold leading-snug text-teal-800 sm:mt-6 sm:text-[1.65rem] lg:text-[2rem]"
               style={{ animation: "text-reveal 0.7s ease-out both 0.18s" }}
             >
               {descripcion}
@@ -179,11 +179,11 @@ export function HeroCarousel({
             >
               <Link
                 href={href}
-                className="group inline-flex items-center gap-2.5 bg-amber-500 px-8 py-3.5 font-heading text-[13px] font-bold uppercase tracking-[0.12em] text-slate-950 transition-all hover:scale-[1.02] hover:bg-amber-400 sm:px-10 sm:py-4 sm:text-sm"
+                className="group inline-flex items-center gap-2.5 bg-teal-700 px-8 py-4 font-heading text-sm font-bold uppercase tracking-[0.12em] text-white shadow-[0_14px_34px_-14px_rgb(3_33_32/0.8)] ring-1 ring-white/20 transition-all hover:scale-[1.02] hover:bg-teal-600 sm:px-11 sm:py-[1.15rem] sm:text-[0.95rem]"
               >
                 {cta}
                 <ArrowRight
-                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                  className="size-4 text-oro transition-transform duration-300 group-hover:translate-x-1"
                   aria-hidden
                 />
               </Link>
@@ -191,7 +191,7 @@ export function HeroCarousel({
                 href={textos.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="portada-contorno-claro border-b-2 border-teal-800/60 pb-1 font-heading text-[13px] font-bold uppercase tracking-[0.12em] text-teal-800 transition-all hover:border-amber-500 hover:text-teal-950 sm:text-sm"
+                className="portada-contorno-claro border-b-2 border-teal-800/70 pb-1.5 font-heading text-sm font-bold uppercase tracking-[0.12em] text-teal-800 transition-all hover:border-[var(--color-oro)] hover:text-teal-950 sm:text-[0.95rem]"
               >
                 {textos.ctaContacto}
               </a>
