@@ -80,6 +80,10 @@
      la variable que crea next/font tienen que ser distintos: si coinciden,
      `var()` se referencia a sí misma y la fuente nunca se aplica. */
   --font-logo: var(--font-cormorant);
+  /* La didona del titular de la portada: asta gruesa y remate de pelo. Solo
+     se usa ahí, y por eso tiene token propio en vez de sustituir a ninguna
+     de las otras dos. */
+  --font-portada: var(--font-bodoni);
   /* El nombre de la variable de Next tiene que ser DISTINTO del token
      del tema: si coinciden, el token se define como var() de sí mismo, se
      vuelve circular y la fuente no se aplica sin dar ningún error. */
@@ -297,6 +301,62 @@
     0.8px -0.8px 0 rgb(0 0 0 / 0.85),
     -0.8px 0.8px 0 rgb(0 0 0 / 0.85),
     0 3px 14px rgb(0 0 0 / 0.35);
+}
+
+/*
+ * El titular de la portada.
+ *
+ * Cuerpo fluido con `clamp()`: 3.2rem en el móvil más estrecho y hasta
+ * 8.5rem en escritorio ancho, sin los saltos que daban los cortes de
+ * Tailwind —a 1279px la letra medía 72px y a 1280px, 99—. El interlineado
+ * va por debajo de 1 porque a este cuerpo las líneas tienen que tocarse, que
+ * es lo que hace que un titular parezca un cartel y no un párrafo grande.
+ */
+.portada-titular {
+  font-family: var(--font-portada), Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  font-size: clamp(3.2rem, 8.6vw, 8.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.015em;
+}
+
+/*
+ * Cada palabra en su ventana: el hijo sube desde debajo y la ventana le
+ * recorta lo que sobra. El relleno inferior es para las letras con rabo —la
+ * «g» de «Sagrado»— y para el filo de la letra, que si no se cortarían con
+ * el desbordamiento; se compensa con el mismo margen en negativo para no
+ * mover el interlineado.
+ */
+.portada-palabra {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.18em;
+  margin-bottom: -0.18em;
+  margin-right: 0.2em;
+}
+
+.portada-palabra > span {
+  display: inline-block;
+  animation: portada-palabra 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform;
+}
+
+@keyframes portada-palabra {
+  from {
+    transform: translateY(115%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portada-palabra > span {
+    animation: none;
+  }
 }
 
 /*
@@ -1152,7 +1212,7 @@ html {
     padding-bottom: 8rem;
   }
   .portada-titular {
-    font-size: 4.5rem;
+    font-size: clamp(3.2rem, 7vw, 6.5rem);
   }
 }
 
@@ -1162,7 +1222,7 @@ html {
     padding-bottom: 6rem;
   }
   .portada-titular {
-    font-size: 3.6rem;
+    font-size: clamp(2.8rem, 5.8vw, 5rem);
   }
 }
 

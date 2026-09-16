@@ -126,7 +126,9 @@ export function HeroCarousel({
       </h1>
 
       <div className="portada-caja relative z-20 mx-auto w-full max-w-7xl px-4 pb-36 pt-8 sm:px-6 sm:pb-44 sm:pt-12 lg:pb-48">
-        <div className="max-w-3xl">
+        {/* Más ancho que el resto del bloque: a cuerpo de cartel, un nombre
+            como «Machu Picchu» no cabía en una línea y se partía en dos. */}
+        <div className="max-w-3xl lg:max-w-[58rem] xl:max-w-[66rem]">
           <p className="portada-contorno-claro flex items-center gap-3 font-heading text-[0.95rem] font-bold uppercase tracking-[0.14em] text-teal-800 sm:text-[1.1rem]">
             {textos.volante}
             <span aria-hidden className="h-px w-8 bg-teal-800/50 sm:w-12" />
@@ -150,14 +152,18 @@ export function HeroCarousel({
               className="portada-filete portada-filete--inf absolute bottom-0 left-0 h-12 w-5 border-b border-l border-amber-400/45 sm:w-8"
             />
 
-            {/* El nombre del lugar en la romana del logotipo: es la letra de
-                la marca y la que da el aire elegante que se busca. La
-                condensada de palo seco se queda para los rótulos. */}
-            <p
-              className="portada-titular portada-contorno-oscuro font-logo text-[3.1rem] font-bold leading-[0.95] tracking-[-0.01em] text-amber-400 sm:text-[4.6rem] lg:text-[6.2rem]"
-              style={{ animation: "text-reveal 0.7s ease-out both 0.05s" }}
-            >
-              {titulo}
+            {/* El nombre del lugar, a cuerpo de cartel y en didona. Entra
+                palabra por palabra, subiendo desde debajo de su propia línea:
+                cada una lleva su ventana con el desbordamiento recortado, así
+                que asoman como en un letrero de cine y no aparecen de golpe.
+                El cuerpo lo fija `.portada-titular` con `clamp()`, que sube y
+                baja con el ancho de la ventana sin escalones. */}
+            <p className="portada-titular portada-contorno-oscuro text-amber-400" aria-label={titulo}>
+              {titulo.split(" ").map((palabra, i) => (
+                <span key={`${palabra}-${i}`} aria-hidden className="portada-palabra">
+                  <span style={{ animationDelay: `${0.06 + i * 0.09}s` }}>{palabra}</span>
+                </span>
+              ))}
             </p>
 
             <p
