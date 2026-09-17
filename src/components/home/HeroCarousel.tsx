@@ -72,7 +72,6 @@ export function HeroCarousel({
     : slide.href.startsWith("/destinos/")
       ? textos.verDestino
       : textos.verTours;
-  const dos = (n: number) => String(n).padStart(2, "0");
 
   return (
     <div
@@ -130,11 +129,8 @@ export function HeroCarousel({
             como «Machu Picchu» no cabía en una línea y se partía en dos. */}
         <div className="max-w-3xl lg:max-w-[58rem] xl:max-w-[66rem]">
           <p className="portada-contorno-claro flex items-center gap-3 font-heading text-[0.95rem] font-bold uppercase tracking-[0.14em] text-teal-800 sm:text-[1.1rem]">
-            {textos.volante}
             <span aria-hidden className="h-px w-8 bg-teal-800/50 sm:w-12" />
-            <span className="portada-contorno-oscuro tabular-nums text-oro">
-              {dos(active + 1)} / {dos(SLIDES.length)}
-            </span>
+            {textos.volante}
           </p>
 
           {/* Todo lo que cambia con la foto va en el mismo bloque y con la
@@ -152,8 +148,8 @@ export function HeroCarousel({
               className="portada-filete portada-filete--inf absolute bottom-0 left-0 h-12 w-5 border-b border-l border-[color-mix(in_srgb,var(--color-oro)_45%,transparent)] sm:w-8"
             />
 
-            {/* El nombre del lugar, a cuerpo de cartel y en didona. Entra
-                palabra por palabra, subiendo desde debajo de su propia línea:
+            {/* El nombre del lugar, a cuerpo de cartel. Entra palabra por
+                palabra, subiendo desde debajo de su propia línea:
                 cada una lleva su ventana con el desbordamiento recortado, así
                 que asoman como en un letrero de cine y no aparecen de golpe.
                 El cuerpo lo fija `.portada-titular` con `clamp()`, que sube y

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
+import { Inter_Tight, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -17,19 +17,18 @@ import "../globals.css";
 
 /* La letra del titular de la portada, y solo de ahí.
  *
- * Es una fuente variable con dos ejes que aquí importan: el tamaño óptico
- * («opsz») y la anchura («wdth»). Llevando el óptico al máximo, el dibujo
- * se afila —asta gruesa y perfil de pelo, el contraste de las portadas de
- * revista— porque ese eje existe justo para eso: el mismo tipo se dibuja
- * distinto para un cuerpo de texto que para un rótulo. Y con la anchura al
- * mínimo, las versales salen altas y estrechas en vez de anchas.
+ * Grotesca de rótulo: trazo de grosor casi uniforme, terminales cortados en
+ * horizontal y caja alta y ancha. Es la letra de los carteles de producto
+ * de ahora, y el motivo de haber dejado las romanas: en una fotografía a
+ * pantalla completa, el perfil de pelo de una didona se rompe y la palabra
+ * pierde peso, mientras que esta se sostiene entera.
  *
- * Se pide variable, no grosores sueltos, porque los ejes solo se pueden
- * mover si viene el archivo variable. */
-const playfair = Playfair({
-  variable: "--font-playfair",
+ * La variante «Tight» viene ya ajustada de paso —las letras más juntas—,
+ * que es justo lo que pedía el titular. */
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
-  axes: ["opsz", "wdth"],
+  weight: ["700", "800"],
   display: "swap",
 });
 
@@ -97,7 +96,7 @@ export default async function LocaleLayout({
   const ajustes = await getAjustes();
 
   return (
-    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${playfair.variable}`}>
+    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${interTight.variable}`}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"

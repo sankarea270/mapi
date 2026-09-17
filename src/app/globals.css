@@ -87,10 +87,10 @@
      la variable que crea next/font tienen que ser distintos: si coinciden,
      `var()` se referencia a sí misma y la fuente nunca se aplica. */
   --font-logo: var(--font-cormorant);
-  /* La didona del titular de la portada: alta, estrecha y de mucho
-     contraste. Solo se usa ahí, y por eso tiene token propio en vez de
-     sustituir a ninguna de las otras dos. */
-  --font-portada: var(--font-playfair);
+  /* La grotesca del titular de la portada: trazo uniforme y letras juntas.
+     Solo se usa ahí, y por eso tiene token propio en vez de sustituir a
+     ninguna de las otras. */
+  --font-portada: var(--font-inter-tight);
   /* El nombre de la variable de Next tiene que ser DISTINTO del token
      del tema: si coinciden, el token se define como var() de sí mismo, se
      vuelve circular y la fuente no se aplica sin dar ningún error. */
@@ -321,35 +321,15 @@
  * es lo que hace que un titular parezca un cartel y no un párrafo grande.
  */
 .portada-titular {
-  font-family: var(--font-portada), Georgia, "Times New Roman", serif;
+  font-family: var(--font-portada), "Helvetica Neue", Arial, sans-serif;
   font-weight: 800;
-  /* Los dos ejes de la variable: tamaño óptico al máximo —el dibujo de
-     rótulo, con el perfil afilado— y anchura al mínimo, que deja las
-     versales altas y juntas. `font-optical-sizing: none` es obligatorio:
-     sin él el navegador fija «opsz» por el cuerpo en píxeles y se come el
-     valor de aquí. */
-  font-optical-sizing: none;
-  font-variation-settings:
-    "opsz" 1200,
-    "wdth" 87.5;
-  font-size: clamp(3rem, 8.4vw, 8.2rem);
+  font-size: clamp(2.9rem, 7.8vw, 7.4rem);
+  /* Las líneas casi se tocan y las letras van cerradas: así se compone un
+     rótulo con una grotesca, y es lo que separa un titular de un párrafo
+     grande. En caja alta y baja, no en versales: el nombre propio se lee
+     antes, y la referencia va así. */
   line-height: 0.92;
-  letter-spacing: -0.012em;
-  text-transform: uppercase;
-}
-
-/*
- * En el móvil el titular mide la mitad, y con el óptico al máximo los
- * perfiles de pelo se quedaban en un hilo que la pantalla ya no dibuja: la
- * palabra se veía débil. Se baja el eje —dibujo de rótulo, pero menos
- * afilado— y el nombre vuelve a tener cuerpo.
- */
-@media (max-width: 640px) {
-  .portada-titular {
-    font-variation-settings:
-      "opsz" 200,
-      "wdth" 87.5;
-  }
+  letter-spacing: -0.032em;
 }
 
 /*

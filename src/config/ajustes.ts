@@ -56,7 +56,7 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   domicilio: "Calle Siete Cuartones 344, Cusco, Perú",
   ciudad: "Cusco",
   telefono: "+51 986 377 524",
-  whatsapp: "51986377524",
+  whatsapp: "51910915111",
   correo: "gotomapiperu@gmail.com",
   /* Comprobado contra el servidor de correo del dominio: acepta
      reservas@ (250 Ok) y rechaza una dirección inventada, así que el buzón
@@ -65,11 +65,11 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   horario: "Lun – Dom · 8:00 – 20:00",
   fondoTours: "",
   facebook: "https://www.facebook.com/profile.php?id=61594386779195",
-  /* Vacíos a propósito. La web enlazaba instagram.com/gotomapi, que no
-     existe («Profile no está disponible»), y tiktok.com/@gotomapi, sin
-     comprobar. Un enlace a una cuenta que no existe resta más confianza que
-     no enlazar: se enseñan en cuanto se ponga la dirección en el panel. */
-  instagram: "",
+  instagram: "https://www.instagram.com/gotomachupicchuperu/",
+  /* TikTok y YouTube siguen vacíos a propósito: la web enlazaba
+     tiktok.com/@gotomapi sin comprobar, y un enlace a una cuenta que no
+     existe resta más confianza que no enlazar. Se enseñan en cuanto se
+     ponga la dirección en el panel. */
   tiktok: "",
   youtube: "",
   tripadvisor: "",
