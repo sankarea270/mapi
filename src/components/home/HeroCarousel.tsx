@@ -162,19 +162,18 @@ export function HeroCarousel({
               ))}
             </p>
 
-            {/* La frase, sobre una banda del verde de la marca.
-                Antes iba en verde directamente sobre la foto y con filo
-                blanco: sobre la piedra clara de Cusco o el cielo de
-                mediodía se apagaba, porque verde sobre ocre son dos tonos
-                de la misma luz. La banda le da un fondo propio, así que se
-                lee igual en las once fotos, y de paso hace el contraste con
-                el titular: bloque oscuro y letra clara debajo del oro.
-                Se abre de izquierda a derecha, como se subraya a mano. */}
-            <p className="portada-frase mt-5 max-w-2xl sm:mt-6">
-              <span aria-hidden className="portada-frase-fondo" />
-              <span className="relative block font-logo text-[1.3rem] font-bold leading-snug text-white sm:text-[1.6rem] lg:text-[1.9rem]">
-                {descripcion}
-              </span>
+            {/* La frase. El contraste con el titular lo hace la letra, no
+                un fondo: arriba la grotesca de rótulo, muy gruesa y en oro;
+                aquí la de texto del sitio, de grosor medio y en blanco, con
+                el interlineado suelto. Dos letras distintas y dos pesos
+                distintos se separan solos, sin necesidad de una caja que
+                tape la foto. Lo que la sostiene sobre cualquier fotografía
+                es la sombra proyectada, que oscurece solo lo que hay detrás
+                de cada letra. */}
+            <p
+              className="portada-frase mt-5 max-w-[44ch] font-sans text-[1.2rem] font-medium leading-relaxed text-white sm:mt-6 sm:text-[1.4rem] lg:text-[1.6rem]"
+            >
+              {descripcion}
             </p>
 
             <div

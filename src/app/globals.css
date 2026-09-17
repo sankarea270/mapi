@@ -372,45 +372,38 @@
 }
 
 /*
- * La banda de la frase de la portada.
+ * La frase de la portada.
  *
- * El fondo va en una capa aparte y no en el propio párrafo porque es lo
- * único que se anima: se abre de izquierda a derecha recortándose con
- * `clip-path`, mientras el texto entra por su lado. Animar el fondo del
- * párrafo obligaría a animar también la letra, y el texto acabaría
- * estirándose con él.
+ * Sin caja detrás: lo que la separa de la foto es la sombra proyectada, que
+ * oscurece únicamente lo que queda detrás de cada letra —dos capas, una
+ * corta y dura para el filo y otra ancha y suave que asienta el bloque—. Y
+ * lo que la separa del titular es la letra: aquí la de texto del sitio en
+ * grosor medio, frente a la grotesca de rótulo en oro de arriba.
+ *
+ * Entra deslizándose desde la izquierda, detrás del titular: primero el
+ * nombre del lugar, después lo que se cuenta de él.
  */
 .portada-frase {
-  position: relative;
-  display: inline-block;
-  padding: 0.85rem 1.35rem 0.95rem 1.5rem;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.55),
+    0 2px 6px rgb(0 0 0 / 0.45),
+    0 8px 28px rgb(0 0 0 / 0.4);
+  animation: portada-frase-entra 0.8s cubic-bezier(0.22, 1, 0.36, 1) both 0.34s;
 }
 
-.portada-frase-fondo {
-  position: absolute;
-  inset: 0;
-  background: rgb(3 33 32 / 0.62);
-  backdrop-filter: blur(6px);
-  border-left: 3px solid var(--color-oro);
-  animation: portada-frase-abre 0.85s cubic-bezier(0.22, 1, 0.36, 1) both 0.16s;
-}
-
-.portada-frase > span:last-child {
-  animation: text-reveal 0.7s ease-out both 0.42s;
-}
-
-@keyframes portada-frase-abre {
+@keyframes portada-frase-entra {
   from {
-    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+    transform: translateX(-16px);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .portada-frase-fondo,
-  .portada-frase > span:last-child {
+  .portada-frase {
     animation: none;
   }
 }
