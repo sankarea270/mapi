@@ -372,6 +372,50 @@
 }
 
 /*
+ * La banda de la frase de la portada.
+ *
+ * El fondo va en una capa aparte y no en el propio párrafo porque es lo
+ * único que se anima: se abre de izquierda a derecha recortándose con
+ * `clip-path`, mientras el texto entra por su lado. Animar el fondo del
+ * párrafo obligaría a animar también la letra, y el texto acabaría
+ * estirándose con él.
+ */
+.portada-frase {
+  position: relative;
+  display: inline-block;
+  padding: 0.85rem 1.35rem 0.95rem 1.5rem;
+}
+
+.portada-frase-fondo {
+  position: absolute;
+  inset: 0;
+  background: rgb(3 33 32 / 0.62);
+  backdrop-filter: blur(6px);
+  border-left: 3px solid var(--color-oro);
+  animation: portada-frase-abre 0.85s cubic-bezier(0.22, 1, 0.36, 1) both 0.16s;
+}
+
+.portada-frase > span:last-child {
+  animation: text-reveal 0.7s ease-out both 0.42s;
+}
+
+@keyframes portada-frase-abre {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portada-frase-fondo,
+  .portada-frase > span:last-child {
+    animation: none;
+  }
+}
+
+/*
  * El corchete de filete fino que encuadra el titular. Se dibuja de dentro
  * hacia fuera cada vez que cambia la foto: primero el trazo largo de arriba
  * y, un poco después, el corto de abajo. Son dos bordes de 1px, no una caja

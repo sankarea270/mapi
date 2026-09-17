@@ -55,7 +55,7 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   certificadoAutorizacion: "301-2012",
   domicilio: "Calle Siete Cuartones 344, Cusco, Perú",
   ciudad: "Cusco",
-  telefono: "+51 986 377 524",
+  telefono: "+51 910 915 111",
   whatsapp: "51910915111",
   correo: "gotomapiperu@gmail.com",
   /* Comprobado contra el servidor de correo del dominio: acepta

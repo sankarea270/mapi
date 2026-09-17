@@ -162,11 +162,19 @@ export function HeroCarousel({
               ))}
             </p>
 
-            <p
-              className="portada-contorno-claro mt-5 max-w-2xl font-logo text-[1.35rem] font-bold leading-snug text-teal-800 sm:mt-6 sm:text-[1.65rem] lg:text-[2rem]"
-              style={{ animation: "text-reveal 0.7s ease-out both 0.18s" }}
-            >
-              {descripcion}
+            {/* La frase, sobre una banda del verde de la marca.
+                Antes iba en verde directamente sobre la foto y con filo
+                blanco: sobre la piedra clara de Cusco o el cielo de
+                mediodía se apagaba, porque verde sobre ocre son dos tonos
+                de la misma luz. La banda le da un fondo propio, así que se
+                lee igual en las once fotos, y de paso hace el contraste con
+                el titular: bloque oscuro y letra clara debajo del oro.
+                Se abre de izquierda a derecha, como se subraya a mano. */}
+            <p className="portada-frase mt-5 max-w-2xl sm:mt-6">
+              <span aria-hidden className="portada-frase-fondo" />
+              <span className="relative block font-logo text-[1.3rem] font-bold leading-snug text-white sm:text-[1.6rem] lg:text-[1.9rem]">
+                {descripcion}
+              </span>
             </p>
 
             <div
