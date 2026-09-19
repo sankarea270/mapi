@@ -19,6 +19,16 @@ ErrorDocument 404 /404.html
   # vuelve imposible.
   RewriteRule ^\.well-known/ - [L]
 
+  # www.gotomachupicchuperu.com -> gotomachupicchuperu.com, en un solo salto.
+  #
+  # Antes «www» respondía 200 con el mismo contenido que el dominio limpio:
+  # dos direcciones para cada página. El canonical ya apuntaba al dominio
+  # limpio, pero un 301 es lo que de verdad junta las dos para Google y evita
+  # que los enlaces externos que lleven www repartan la autoridad. Va ANTES de
+  # la regla de HTTPS y ya redirige a https, para no encadenar dos saltos.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
