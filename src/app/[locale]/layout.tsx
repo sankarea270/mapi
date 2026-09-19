@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter_Tight, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import Header from "@/components/layout/header/Header";
 import Footer from "@/components/layout/Footer";
 import { BotonContacto } from "@/components/layout/BotonContacto";
+import { VolverArriba } from "@/components/layout/VolverArriba";
 import { AjustesProvider } from "@/components/providers/Ajustes";
 import { getAjustes } from "@/lib/content";
 import { Analytics } from "@/components/providers/Analytics";
@@ -65,8 +66,21 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+/*
+ * `theme-color` tiñe la barra del navegador en el móvil (la de direcciones
+ * en Chrome de Android y la de estado en Safari). Es el petróleo oscuro de la
+ * barra superior del sitio: así el navegador y la web parecen una sola pieza
+ * al abrir la página, en vez de una franja blanca o negra encima.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0f3736",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
+  applicationName: "GoToMapi",
   title: {
     default: "GoToMapi",
     template: "%s · GoToMapi",
@@ -94,6 +108,7 @@ export default async function LocaleLayout({
   /* Los ajustes del panel, leídos una vez al compilar y repartidos a los
      componentes de cliente por contexto. */
   const ajustes = await getAjustes();
+  const ta = await getTranslations({ locale, namespace: "a11y" });
 
   return (
     <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${interTight.variable}`}>
@@ -102,14 +117,19 @@ export default async function LocaleLayout({
           href="#contenido"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-full focus:bg-amber-400 focus:px-5 focus:py-2.5 focus:text-sm focus:font-bold focus:text-slate-900"
         >
-          Saltar al contenido
+          {ta("skip")}
         </a>
         <NextIntlClientProvider>
           <AjustesProvider ajustes={ajustes}>
             <Header />
-            <main id="contenido">{children}</main>
+            {/* tabIndex -1: el enlace «saltar al contenido» y «volver arriba»
+                mueven el foco aquí sin meter el <main> en el orden del Tab. */}
+            <main id="contenido" tabIndex={-1} className="outline-none">
+              {children}
+            </main>
             <Footer />
             <BotonContacto />
+            <VolverArriba />
             <Revelados />
             <Analytics />
           </AjustesProvider>

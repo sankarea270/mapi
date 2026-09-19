@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { getPackages } from "@/lib/content";
 import { pickLocalized, formatPrice } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
+import { MigasJsonLd } from "@/components/layout/Migas";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -39,6 +40,7 @@ export default async function PackagesPage({
 
   return (
     <div className="min-h-dvh bg-slate-50">
+      <MigasJsonLd locale={locale} migas={[{ nombre: t("title") }]} />
       <div className="border-b border-slate-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">

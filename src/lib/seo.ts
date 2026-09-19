@@ -48,19 +48,52 @@ function alternatesFor(path: string) {
   return languages;
 }
 
+/*
+ * Google enseña ~155 caracteres de la descripción y ~60 del título, y corta
+ * por el medio de una palabra si se pasa. De 345 páginas, 219 tenían la
+ * descripción más larga (la política de privacidad, 293) y acababan en
+ * «…»  a mitad de frase. Se recorta aquí, en el único sitio por el que
+ * pasan todas, y por el último espacio: nunca a mitad de palabra.
+ */
+const MAX_DESCRIPCION = 155;
+
+export function recortar(texto: string | undefined, max = MAX_DESCRIPCION): string | undefined {
+  if (!texto) return texto;
+  const limpio = texto.replace(/\s+/g, " ").trim();
+  if (limpio.length <= max) return limpio;
+  const corte = limpio.slice(0, max - 1);
+  const espacio = corte.lastIndexOf(" ");
+  /* Si no hay espacio razonable (una sola palabra kilométrica), se corta duro. */
+  const base = espacio > max * 0.6 ? corte.slice(0, espacio) : corte;
+  return `${base.replace(/[\s,;:.\-—]+$/, "")}…`;
+}
+
+/** Longitud que el layout suma al título con su plantilla: « · GoToMapi». */
+const SUFIJO_TITULO = 11;
+const MAX_TITULO = 60;
+
 export function buildMetadata({
   locale,
   title,
   description,
   path,
   image,
+  noindex = false,
 }: {
   locale: string;
   title: string;
   description?: string;
   path: string;
   image?: string;
+  /** Páginas sin nada que indexar: listas personales, formularios vacíos. */
+  noindex?: boolean;
 }): Metadata {
+  description = recortar(description);
+  /* Con la plantilla del layout, un título de más de ~49 caracteres pasa de
+     60 y Google lo corta. Los largos van sin el « · GoToMapi»: la marca ya
+     sale en el nombre del sitio del resultado (WebSite en la portada). */
+  const tituloMeta =
+    title.length + SUFIJO_TITULO > MAX_TITULO ? { absolute: title } : title;
   /*
    * Una foto de relleno NO se anuncia como imagen de compartir.
    *
@@ -77,8 +110,9 @@ export function buildMetadata({
   const esRelleno = image?.includes("picsum.photos");
   const ogImage = image && !esRelleno ? image : DEFAULT_OG_IMAGE;
   return {
-    title,
+    title: tituloMeta,
     description,
+    ...(noindex ? { robots: { index: false, follow: false } } : {}),
     alternates: {
       canonical: pageUrl(path, locale),
       languages: alternatesFor(path),

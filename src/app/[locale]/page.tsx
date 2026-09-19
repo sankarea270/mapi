@@ -10,6 +10,8 @@ import { pickLocalized } from "@/lib/format";
 import { getAjustes, getDestinations, getExperiences, getReviews, getHeroSlides, getPackages } from "@/lib/content";
 import { construirFichas } from "@/lib/resenas";
 import { getTripadvisor, tripadvisorEn } from "@/lib/tripadvisor";
+import { ID_AGENCIA, webSite } from "@/lib/jsonld";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { climateForCategory } from "@/data/climate";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
@@ -159,6 +161,7 @@ export default async function HomePage({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
+    "@id": ID_AGENCIA,
     name: siteConfig.fullName,
     description: t("subtitle"),
     url: buildMetadata({ locale, title: "", path: "/" }).alternates?.canonical,
@@ -221,6 +224,9 @@ export default async function HomePage({
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
+    {/* El nombre del sitio: es lo que Google enseña sobre cada resultado, y
+        sin esto lo deduce del título de la portada. */}
+    <JsonLd data={webSite(locale)} />
 
     {/* Los avales van al final, después de las reseñas. Nada más entrar,
         "Respaldo oficial · Autorizados y registrados" interrumpía con

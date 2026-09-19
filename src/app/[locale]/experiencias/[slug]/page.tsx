@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { getExperiences, getReviews } from "@/lib/content";
@@ -11,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
+import { Migas } from "@/components/layout/Migas";
 import { TourCard } from "@/components/tours/TourCard";
 
 /* Dirección de relleno para cuando no hay ninguna experiencia publicada. */
@@ -97,13 +97,12 @@ export default async function ExperiencePage({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
         </div>
         <div className="relative mx-auto w-full max-w-7xl px-4 pb-10 pt-16 [text-shadow:0_1px_3px_rgb(0_0_0/0.45)] sm:px-6 sm:pb-14 sm:pt-24">
-          <Link
-            href="/experiencias"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition-colors hover:text-amber-300"
-          >
-            <ArrowLeft className="size-4" />
-            {t("back")}
-          </Link>
+
+          <Migas
+            locale={locale}
+            sobreFoto
+            migas={[{ nombre: tn("experiences"), ruta: "/experiencias" }, { nombre: name }]}
+          />
           <h1 className="mt-6 max-w-2xl font-heading text-3xl font-bold text-white sm:text-5xl">
             {name}
           </h1>

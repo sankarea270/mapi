@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { getGuides } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
 import { pickLocalized } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
+import { Migas } from "@/components/layout/Migas";
 import {
   Accordion,
   AccordionContent,
@@ -76,13 +76,8 @@ export default async function GuideArticlePage({
     <div className="min-h-dvh bg-slate-50">
       <div className="border-b border-slate-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-          <Link
-            href="/guia"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-primary"
-          >
-            <ArrowLeft className="size-4" />
-            {t("back")}
-          </Link>
+
+          <Migas locale={locale} migas={[{ nombre: t("title"), ruta: "/guia" }, { nombre: title }]} />
         </div>
       </div>
 

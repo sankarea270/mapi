@@ -5,7 +5,10 @@ import { routing } from "@/i18n/routing";
 import { enlaceTelefono, enlaceWhatsapp } from "@/config/ajustes";
 import { getAjustes } from "@/lib/content";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, pageUrl } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { MigasJsonLd } from "@/components/layout/Migas";
+import { ID_AGENCIA } from "@/lib/jsonld";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -82,6 +85,41 @@ export default async function ContactPage({
 
   return (
     <div className="min-h-dvh bg-slate-50">
+      {/* ContactPage con la agencia como entidad principal: los teléfonos,
+          correos y horario que Google puede enseñar en su ficha salen de los
+          mismos ajustes que pinta la página, no de una copia. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          name: t("title"),
+          url: pageUrl("/contacto", locale),
+          inLanguage: locale,
+          mainEntity: {
+            "@type": "TravelAgency",
+            "@id": ID_AGENCIA,
+            name: "GoToMapi",
+            telephone: ajustes.telefono,
+            email: ajustes.correoReservas || ajustes.correo,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: ajustes.domicilio,
+              addressLocality: ajustes.ciudad,
+              addressCountry: "PE",
+            },
+            contactPoint: [
+              {
+                "@type": "ContactPoint",
+                contactType: "customer service",
+                telephone: ajustes.telefono,
+                email: ajustes.correoReservas || ajustes.correo,
+                availableLanguage: ["Spanish", "English", "Portuguese"],
+              },
+            ],
+          },
+        }}
+      />
+      <MigasJsonLd locale={locale} migas={[{ nombre: t("title") }]} />
       <div className="border-b border-slate-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">

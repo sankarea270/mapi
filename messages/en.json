@@ -42,7 +42,9 @@
     "contact": "Contact us",
     "seeAll": "See all",
     "searchCount": "{count, plural, =0 {No results} one {1 tour found} other {# tours found}}",
-    "contactOpen": "Contact us"
+    "contactOpen": "Contact us",
+    "home": "Home",
+    "breadcrumb": "Breadcrumb"
   },
   "destinos": {
     "andesCusco": "Andes & Cusco",
@@ -375,7 +377,7 @@
   },
   "about": {
     "meta": {
-      "title": "About Us - GoToMapi",
+      "title": "About us",
       "description": "Learn about the history, mission and team of GoToMapi. Authorized agency specialized in tours to Machu Picchu and all of Peru."
     },
     "hero": {
@@ -598,5 +600,9 @@
     "whatsapp": "Message us on WhatsApp",
     "whatsappMessage": "Hello, I have a question about «{doc}».",
     "otherDoc": "Other document"
+  },
+  "a11y": {
+    "skip": "Skip to content",
+    "top": "Back to top"
   }
 }

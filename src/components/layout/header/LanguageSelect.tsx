@@ -21,9 +21,24 @@ export function LanguageSelect() {
 
   const currentLocale = siteConfig.locales.find((l) => l.code === locale);
 
+  /*
+   * Cambiar de idioma conserva los filtros de la página. `usePathname` da
+   * solo la ruta, sin la parte «?categoria=aventura&orden=precio», así que
+   * quien estaba en «Tours › Aventura» caía en «Tours» a secas al cambiar de
+   * idioma y tenía que volver a elegir la categoría.
+   */
+  function cambiarA(codigo: string) {
+    const query = Object.fromEntries(new URLSearchParams(window.location.search));
+    router.replace(
+      Object.keys(query).length ? { pathname, query } : pathname,
+      { locale: codigo }
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        aria-label={t("language")}
         className={cn(
           "flex items-center gap-1.5 px-2 py-1 text-[13px] font-semibold text-slate-200 transition-colors outline-none",
           "hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-amber-400/60"
@@ -38,7 +53,8 @@ export function LanguageSelect() {
         {siteConfig.locales.map((l) => (
           <DropdownMenuItem
             key={l.code}
-            onSelect={() => router.replace(pathname, { locale: l.code })}
+            onSelect={() => cambiarA(l.code)}
+            lang={l.code}
             className="justify-between font-medium"
           >
             <span className="flex items-center gap-2">

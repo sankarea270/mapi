@@ -22,6 +22,30 @@ ErrorDocument 404 /404.html
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+  # Idioma en la raíz. El dominio pelado no es una página: lleva a /es/, /en/
+  # o /pt/ según el primer idioma que pida el navegador.
+  #
+  # Se hace aquí, en el servidor, y no solo con el index.html que redirige con
+  # JavaScript: Google no ejecuta esa redirección ni manda idioma, y veía una
+  # página vacía con «noindex» como portada del dominio. Sin cabecera de
+  # idioma —Googlebot— va al español, que es el idioma por defecto.
+  #
+  # Es 302 y no 301 porque el destino depende de quién pregunta. Los idiomas
+  # que la web no tiene (francés, alemán…) NO entran en ninguna regla y caen
+  # al index.html de siempre, que sí recorre la lista de preferencias.
+  RewriteCond %{HTTP:Accept-Language} ^\s*pt [NC]
+  RewriteRule ^$ /pt/ [R=302,L]
+  RewriteCond %{HTTP:Accept-Language} ^\s*en [NC]
+  RewriteRule ^$ /en/ [R=302,L]
+  RewriteCond %{HTTP:Accept-Language} ^\s*(es|$) [NC]
+  RewriteRule ^$ /es/ [R=302,L]
+</IfModule>
+
+# El manifiesto de la web (instalar en el móvil). Sin este tipo, algunos
+# Apache lo sirven como texto plano y Chrome lo ignora.
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
 </IfModule>
 
 # 3. Caché.
@@ -45,9 +69,16 @@ ErrorDocument 404 /404.html
   <FilesMatch "\.(webp|png|jpg|jpeg|svg|ico)$">
     ExpiresDefault "access plus 6 months"
   </FilesMatch>
+
+  # El favicon se pide siempre como «/favicon.ico», sin versión en la
+  # dirección, así que con seis meses de caché un cambio de icono tardaría
+  # medio año en llegar a quien ya visitó la web. Un día basta.
+  <FilesMatch "^(favicon\.ico|manifest\.webmanifest)$">
+    ExpiresDefault "access plus 1 day"
+  </FilesMatch>
 </IfModule>
 
 # 4. Compresión, si el servidor la tiene disponible.
 <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/manifest+json image/svg+xml
 </IfModule>

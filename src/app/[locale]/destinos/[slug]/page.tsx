@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
@@ -9,7 +9,9 @@ import { getCategoriesWithTours } from "@/lib/tours";
 import { getDestinationTours } from "@/lib/destinations";
 import { getDestinations } from "@/lib/content";
 import { pickLocalized } from "@/lib/format";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, pageUrl } from "@/lib/seo";
+import { Migas } from "@/components/layout/Migas";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { TourCard } from "@/components/tours/TourCard";
 
 /* Asíncrona: la lista de destinos sale de Supabase al compilar, así que
@@ -59,8 +61,23 @@ export default async function DestinationPage({
   const tn = await getTranslations("nav");
   const name = pickLocalized(destination.name, locale);
 
+  /* TouristDestination: dice a Google que la página es un lugar y no solo un
+     listado de tours. Sin fotos de relleno: `image` solo si es una de verdad. */
+  const destinoLd = {
+    "@context": "https://schema.org",
+    "@type": "TouristDestination",
+    name,
+    description: pickLocalized(destination.description, locale),
+    url: pageUrl(`/destinos/${destination.slug}`, locale),
+    ...(destination.image && !destination.image.includes("picsum.photos")
+      ? { image: destination.image }
+      : {}),
+    containedInPlace: { "@type": "Country", name: "Perú" },
+  };
+
   return (
     <div className="min-h-dvh bg-slate-50">
+      <JsonLd data={destinoLd} />
       {/* La foto con sus colores. Antes iba al 50% sobre el fondo verde de la
           marca y con un degradado hasta verde macizo: todas las cabeceras
           salían teñidas. Ahora solo hay una sombra neutra y transparente
@@ -79,13 +96,12 @@ export default async function DestinationPage({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
         </div>
         <div className="relative mx-auto w-full max-w-7xl px-4 pb-10 pt-16 [text-shadow:0_1px_3px_rgb(0_0_0/0.45)] sm:px-6 sm:pb-14 sm:pt-24">
-          <Link
-            href="/destinos"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition-colors hover:text-amber-300"
-          >
-            <ArrowLeft className="size-4" />
-            {t("back")}
-          </Link>
+
+          <Migas
+            locale={locale}
+            sobreFoto
+            migas={[{ nombre: tn("destinations"), ruta: "/destinos" }, { nombre: name }]}
+          />
           <p className="mt-6 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-amber-300">
             <MapPin className="size-3.5" />
             {t("toursCount", { count: tours.length })}

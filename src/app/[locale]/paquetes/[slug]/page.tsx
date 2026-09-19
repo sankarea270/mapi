@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
   CalendarRange,
   Map as MapIcon,
   MapPin,
@@ -16,7 +15,10 @@ import { getAjustes, getDestinations, getPackages, getReviews } from "@/lib/cont
 import { getCategoriesWithTours } from "@/lib/tours";
 import { enlaceWhatsapp } from "@/config/ajustes";
 import { pickLocalized, formatPrice } from "@/lib/format";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, pageUrl } from "@/lib/seo";
+import { Migas } from "@/components/layout/Migas";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { agenciaRef } from "@/lib/jsonld";
 import { TourCard } from "@/components/tours/TourCard";
 import { MosaicoFotos } from "@/components/tours/MosaicoFotos";
 import { FranjaDatos } from "@/components/tours/FranjaDatos";
@@ -141,30 +143,42 @@ export default async function PackagePage({
   const seccion =
     "scroll-mt-[calc(var(--alto-cabecera,8.25rem)+5.5rem)] border-t border-slate-200 py-12 sm:py-14";
 
+  /* Un paquete es un viaje que se compra: TouristTrip con su precio. Como en
+     las fichas de tour, sin foto de relleno ni valoración inventada. */
+  const paqueteLd = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name,
+    description: pickLocalized(pkg.description, locale),
+    url: pageUrl(`/paquetes/${pkg.slug}`, locale),
+    ...(pkg.image && !pkg.image.includes("picsum.photos") ? { image: pkg.image } : {}),
+    provider: agenciaRef,
+    ...(pkg.price > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: pkg.price,
+            priceCurrency: "USD",
+            availability: "https://schema.org/InStock",
+            url: pageUrl(`/paquetes/${pkg.slug}`, locale),
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="min-h-dvh bg-slate-50">
+      <JsonLd data={paqueteLd} />
       {/* Misma cabecera que la ficha de tour: fondo claro y fotos a plena
           luz. El mosaico se compone con la imagen del paquete y las de los
           tours que lo forman —que es literalmente lo que se compra— en vez
           de repetir una sola foto oscurecida a pantalla completa. */}
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-[88rem] px-4 py-8 sm:px-6 sm:py-10">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex flex-wrap items-center gap-2 text-sm text-slate-400"
-          >
-            <Link
-              href="/paquetes"
-              className="inline-flex items-center gap-1.5 font-semibold text-slate-500 transition-colors hover:text-slate-900"
-            >
-              <ArrowLeft className="size-4" />
-              {t("back")}
-            </Link>
-            <span aria-hidden>/</span>
-            <span className="font-semibold text-slate-700" aria-current="page">
-              {name}
-            </span>
-          </nav>
+          <Migas
+            locale={locale}
+            migas={[{ nombre: tn("packages"), ruta: "/paquetes" }, { nombre: name }]}
+          />
 
           <div className="mt-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <div className="min-w-0">

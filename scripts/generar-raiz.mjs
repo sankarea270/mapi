@@ -27,6 +27,11 @@ const html = `<!doctype html>
 <meta name="robots" content="noindex">
 <title>GoToMapi</title>
 <link rel="canonical" href="${BASE}/${DEFAULT}/">
+<meta name="theme-color" content="#0f3736">
+<link rel="icon" href="${BASE}/favicon.ico" sizes="48x48">
+<link rel="icon" href="${BASE}/icon.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="${BASE}/apple-icon.png">
+<link rel="manifest" href="${BASE}/manifest.webmanifest">
 <meta http-equiv="refresh" content="0;url=${BASE}/${DEFAULT}/">
 <script>
 (function () {
