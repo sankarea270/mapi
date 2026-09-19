@@ -70,7 +70,11 @@ prueba(
   http1.error ?? `${http1.estado} → ${http1.cab?.location}`
 );
 
-const www = await pedir("/es/", { https: false, host: `www.${DOMINIO}` });
+/* Por HTTPS y no por HTTP: algunos hostings (Namecheap incluido) fuerzan el
+   paso a HTTPS ANTES de leer el .htaccess, así que por HTTP el primer salto es
+   http://www → https://www y la regla de www solo actúa en el segundo. Lo que
+   importa es adónde acaba el visitante, y eso se ve por HTTPS. */
+const www = await pedir("/es/", { host: `www.${DOMINIO}` });
 prueba(
   "www redirige al dominio sin www (301)",
   www.estado === 301 && (www.cab?.location ?? "").startsWith(`https://${DOMINIO}/`),

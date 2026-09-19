@@ -1,5 +1,9 @@
 # Despliegue
 
+> **¿Cambiar de hosting?** Guía completa, con el DNS, el correo y la vuelta
+> atrás: [`MIGRACION-HOSTARMADA.md`](../MIGRACION-HOSTARMADA.md). Para comprobar
+> que un servidor sirve el sitio como debe: `node scripts/comprobar-hosting.mjs`.
+
 El sitio se publica en dos sitios a la vez, cada uno con su workflow. Ambos
 compilan el mismo código; lo único que cambia es dónde vive el sitio.
 

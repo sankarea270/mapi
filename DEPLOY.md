@@ -1,3 +1,8 @@
+> **Documento antiguo.** Describe Appwrite, que ya no se usa. El despliegue
+> actual (GitHub Actions + `rsync` por SSH a cPanel) está en
+> [`docs/despliegue.md`](docs/despliegue.md), y el paso a HostArmada, en
+> [`MIGRACION-HOSTARMADA.md`](MIGRACION-HOSTARMADA.md).
+
 # Despliegue
 
 El sitio es un export estático de Next.js: `npm run build` deja en `out/` un
