@@ -16,6 +16,7 @@ Guía paso a paso, hecha con los datos reales de tu configuración actual
 ## Índice
 
 1. [Resumen en un minuto](#1-resumen-en-un-minuto)
+   - **[Empieza aquí: los 6 primeros pasos](#empieza-aquí-los-6-primeros-pasos)**
 2. [Cómo está montado hoy](#2-cómo-está-montado-hoy)
 3. [Antes de empezar: preguntas para HostArmada](#3-antes-de-empezar-preguntas-para-hostarmada)
 4. [Fase 1 — Preparar HostArmada](#4-fase-1--preparar-hostarmada-sin-tocar-nada-de-lo-actual)
@@ -58,6 +59,105 @@ certificado HTTPS, la zona DNS y los buzones de correo `@gotomachupicchuperu.com
 **Tiempo real de trabajo:** 3-5 horas repartidas en 2 semanas. **Caída de la
 web esperable:** ninguna si sigues el orden (las dos webs coexisten). **Riesgo
 principal:** el correo, por eso tiene su propia fase.
+
+---
+
+## Empieza aquí: los 6 primeros pasos
+
+Tu plan de HostArmada **incluye SSH**, así que se usa el camino principal (rsync
+por SSH, el mismo que hoy con Namecheap). El workflow ya trae preparados los
+pasos de HostArmada, **dormidos** hasta que exista el secreto `HA_SSH_HOST`: no
+hay que editar ningún archivo del proyecto. Estos seis pasos resumen las fases 1
+y 2; el detalle de cada uno está en la sección que se enlaza.
+
+### Paso 1 — Anota los datos de HostArmada
+
+Del correo de bienvenida y del cPanel de HostArmada. Detalle: [1.1](#11-contratar-y-anotar-los-datos-de-acceso).
+
+- [ ] **IP del servidor**
+- [ ] **Nameservers** (dos)
+- [ ] **Usuario** de cPanel
+- [ ] **Puerto SSH** — confírmalo en cPanel → **Acceso SSH** o con su chat: no
+      asumas 22 ni 21098
+
+### Paso 2 — Mira la carpeta raíz del dominio
+
+**Dónde:** cPanel de HostArmada → **Dominios** → columna **Raíz del documento**.
+Detalle: [1.2](#12-añadir-el-dominio-en-hostarmada-y-anotar-la-carpeta-raíz).
+
+Es `public_html` **solo si** `gotomachupicchuperu.com` es el dominio principal de la
+cuenta. Si lo añadiste como dominio adicional, será otra ruta: cópiala tal cual.
+Es el valor de `HA_SSH_TARGET_DIR`, y equivocarse aquí es la causa nº 1 de «he subido
+todo y sale 404».
+
+### Paso 3 — Genera la clave SSH
+
+En tu equipo (PowerShell), **sin contraseña** (`-N ""`; GitHub no puede teclearla):
+
+```bash
+ssh-keygen -t ed25519 -f despliegue-hostarmada -N "" -C "despliegue-github-actions-hostarmada"
+```
+
+Crea dos archivos: `despliegue-hostarmada` (**privada**, no la compartas con nadie)
+y `despliegue-hostarmada.pub` (pública). Detalle: [1.4](#14-una-clave-ssh-nueva-para-hostarmada).
+
+### Paso 4 — Importa y autoriza la clave pública
+
+**Dónde:** cPanel de HostArmada → **Acceso SSH → Administrar claves SSH**.
+
+1. **Importar clave:** pega el contenido de `despliegue-hostarmada.pub` en *Clave
+   pública*. Deja vacíos la contraseña y la clave privada.
+2. En **Claves públicas**, junto a la recién importada: **Administrar → Autorizar**.
+   **Sin este paso el servidor la rechaza.**
+
+### Paso 5 — Comprueba que entra sin contraseña
+
+```bash
+ssh -i despliegue-hostarmada -p PUERTO USUARIO@IP_DEL_SERVIDOR
+```
+
+Debe dejarte entrar **sin** pedir contraseña. Escribe `exit` para salir. Si pide
+contraseña o dice «Permission denied», vuelve al paso 4 (casi siempre falta
+**Autorizar**).
+
+### Paso 6 — Crea los 5 secretos en GitHub
+
+**Dónde:** https://github.com/sankarea270/mapi → **Settings → Secrets and variables →
+Actions → New repository secret**. Detalle: [2.1](#21-crear-los-secretos-nuevos-en-github).
+
+| Secreto | Valor |
+|---|---|
+| `HA_SSH_HOST` | IP del servidor (paso 1) |
+| `HA_SSH_USER` | usuario de cPanel (paso 1) |
+| `HA_SSH_PORT` | puerto SSH (paso 1) |
+| `HA_SSH_KEY` | contenido **completo** de `despliegue-hostarmada`, con las líneas `-----BEGIN…` y `-----END…` |
+| `HA_SSH_TARGET_DIR` | carpeta raíz (paso 2) |
+
+Cuando hayas pegado la clave privada en GitHub, **bórrala de tu equipo**.
+
+### Y después: simular, subir, probar
+
+1. **GitHub → Actions → «Desplegar en cPanel (Namecheap)» → Run workflow →** marca
+   **Simular** → Run. En el paso **«Sincronizar con HostArmada»** verás qué subiría
+   **y qué borraría**. Los archivos de bienvenida del hosting saldrán como
+   «deleting»: es lo esperado. Detalle: [2.3](#23-primero-simulando-luego-en-real).
+2. Si el listado es razonable, lánzalo de nuevo **sin** marcar Simular (~125 MB la
+   primera vez; después solo se sube lo que cambia).
+3. Pruébalo **antes** de tocar el DNS: [2.4](#24-probar-hostarmada-antes-de-que-nadie-lo-vea).
+
+```bash
+node scripts/comprobar-hosting.mjs --ip IP_DEL_SERVIDOR
+```
+
+> **Ten presente esto:** en cuanto exista `HA_SSH_HOST`, **cada `push` y cada
+> «Publicar cambios» del panel subirá a los dos hostings** (primero Namecheap,
+> luego HostArmada). Es lo que se quiere durante la migración. Si creas
+> `HA_SSH_HOST` pero olvidas otro secreto, el paso de HostArmada falla con un
+> mensaje que dice cuál falta, y el despliegue sale en rojo; la web real de
+> Namecheap ya se habrá actualizado.
+>
+> **El DNS, el correo y el cambio de nameservers vienen después** (fases 3 y 4):
+> no los toques hasta que el script dé **0 fallos**.
 
 ---
 

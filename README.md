@@ -1,3 +1,20 @@
+# GoToMapi
+
+Sitio web de la agencia de viajes GoToMapi (gotomachupicchuperu.com). Next.js con
+exportación estática, contenido en Supabase y publicación automática desde GitHub
+Actions.
+
+## Documentación de despliegue
+
+| Si quieres… | Lee |
+|---|---|
+| Entender cómo se publica el sitio hoy (GitHub Actions + rsync por SSH) | [`docs/despliegue.md`](docs/despliegue.md) |
+| **Migrar de Namecheap a HostArmada** (DNS, correo, SSH, vuelta atrás) | [`MIGRACION-HOSTARMADA.md`](MIGRACION-HOSTARMADA.md) — empieza por «Empieza aquí» |
+| Comprobar que un hosting sirve el sitio como debe | `node scripts/comprobar-hosting.mjs` (con `--ip` para probar un servidor antes de cambiar el DNS) |
+| Usar el panel de administración | [`docs/panel-admin.md`](docs/panel-admin.md) |
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
