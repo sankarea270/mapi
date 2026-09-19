@@ -243,72 +243,39 @@ variables → Actions → New repository secret**. Crea estos cinco:
 | `HA_SSH_KEY` | contenido **completo** de `despliegue-hostarmada` (incluidas las líneas `-----BEGIN…` y `-----END…`) |
 | `HA_SSH_TARGET_DIR` | la carpeta raíz del paso 1.2 (`public_html` o la que sea) |
 
-### 2.2 Desplegar a los dos sitios a la vez (temporal)
+### 2.2 El despliegue doble ya está en el workflow
 
 Durante el solapamiento, cada `push` y cada «Publicar cambios» debe actualizar
 **los dos** servidores; si no, uno se queda desactualizado.
 
-Edita `.github/workflows/deploy-cpanel.yml`. **Después** del paso
-`Sincronizar por rsync` y **antes** de `Borrar la clave`, pega esto:
+**No tienes que editar nada:** los dos pasos de HostArmada («Preparar la clave
+SSH de HostArmada» y «Sincronizar con HostArmada») ya están en
+`.github/workflows/deploy-cpanel.yml`, pero **dormidos**: solo se ejecutan cuando
+existe el secreto `HA_SSH_HOST`. Mientras no lo crees, el despliegue es
+exactamente el de siempre. En cuanto lo crees (paso 2.1), cada despliegue sube
+primero a Namecheap y después a HostArmada.
 
-```yaml
-      - name: Preparar la clave SSH de HostArmada
-        env:
-          HA_SSH_KEY: ${{ secrets.HA_SSH_KEY }}
-          HA_SSH_HOST: ${{ secrets.HA_SSH_HOST }}
-          HA_SSH_PORT: ${{ secrets.HA_SSH_PORT }}
-        run: |
-          set -euo pipefail
-          printf '%s\n' "$HA_SSH_KEY" > ~/.ssh/id_hostarmada
-          chmod 600 ~/.ssh/id_hostarmada
-          ssh-keyscan -p "$HA_SSH_PORT" -H "$HA_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          test -s ~/.ssh/known_hosts || { echo "HostArmada no respondió al ssh-keyscan"; exit 1; }
+Detalles que conviene saber:
 
-      - name: Sincronizar con HostArmada
-        env:
-          HA_SSH_HOST: ${{ secrets.HA_SSH_HOST }}
-          HA_SSH_USER: ${{ secrets.HA_SSH_USER }}
-          HA_SSH_PORT: ${{ secrets.HA_SSH_PORT }}
-          HA_DESTINO: ${{ secrets.HA_SSH_TARGET_DIR || 'public_html' }}
-          SIMULACION: ${{ inputs.simulacion }}
-        run: |
-          set -euo pipefail
-          SECO=""
-          if [ "${SIMULACION:-false}" = "true" ]; then
-            SECO="--dry-run"
-            echo "MODO SIMULACIÓN: no se escribe nada en HostArmada."
-          fi
-          rsync -rlvz --human-readable --partial $SECO \
-            --delete \
-            --exclude '.well-known/' \
-            --exclude 'cgi-bin/' \
-            --exclude '.git*' \
-            -e "ssh -i $HOME/.ssh/id_hostarmada -p $HA_SSH_PORT" \
-            ./out/ "$HA_SSH_USER@$HA_SSH_HOST:$HA_DESTINO/" | tail -40
-```
-
-Y cambia el último paso para que borre también la clave nueva:
-
-```yaml
-      - name: Borrar la clave
-        if: always()
-        run: rm -f ~/.ssh/id_despliegue ~/.ssh/id_hostarmada
-```
-
-**Por qué `--delete` y las dos exclusiones:** `--delete` retira del servidor lo que
-ya no existe en el sitio. `.well-known/` guarda la validación del certificado SSL
-(borrarla rompe el HTTPS en la siguiente renovación) y `cgi-bin/` es de cPanel.
+- Van **después** del despliegue de Namecheap a propósito: si HostArmada falla, el
+  despliegue sale en rojo y lo ves, pero la web real ya se actualizó.
+- Si creas `HA_SSH_HOST` pero olvidas otro secreto, el paso falla con un mensaje
+  que dice cuál falta («Falta el secreto HA_SSH_PORT…»).
+- Usan las mismas opciones que el de Namecheap. `--delete` retira del servidor lo
+  que ya no existe en el sitio; `.well-known/` guarda la validación del
+  certificado SSL (borrarla rompe el HTTPS en la siguiente renovación) y
+  `cgi-bin/` es de cPanel. Ambos están excluidos.
 
 ### 2.3 Primero simulando, luego en real
 
-1. Haz commit y push del cambio del workflow.
-2. **GitHub → Actions → «Desplegar en cPanel (Namecheap)» → Run workflow →**
-   marca **Simular** → Run.
-3. Abre la ejecución y mira el paso «Sincronizar con HostArmada»: te lista qué
+1. Con los cinco secretos ya creados, ve a **GitHub → Actions → «Desplegar en
+   cPanel (Namecheap)» → Run workflow →** marca **Simular** → Run.
+2. Abre la ejecución y mira el paso **«Sincronizar con HostArmada»**: te lista qué
    subiría **y qué borraría**. Los archivos de bienvenida de HostArmada (un
    `index.html` de «sitio en construcción», por ejemplo) aparecerán como
-   «deleting»: es lo esperado.
-4. Si el listado es razonable, vuelve a lanzar **sin** marcar Simular. La primera
+   «deleting»: es lo esperado. El de Namecheap también corre, pero también en
+   simulación: no toca nada.
+3. Si el listado es razonable, vuelve a lanzar **sin** marcar Simular. La primera
    subida son ~125 MB: unos minutos. Las siguientes solo mandan lo que cambia.
 
 ### 2.4 Probar HostArmada antes de que nadie lo vea
@@ -544,8 +511,8 @@ HostArmada **con los mismos nombres**, y borra los `HA_*`:
 | `SSH_KEY` | el que era `HA_SSH_KEY` |
 | `SSH_TARGET_DIR` | el que era `HA_SSH_TARGET_DIR` |
 
-Después, en `deploy-cpanel.yml`, **borra** los dos pasos añadidos en 2.2 y deja
-`rm -f ~/.ssh/id_despliegue` como estaba. **No renombres el archivo del workflow:**
+Después, en `deploy-cpanel.yml`, **borra** los dos pasos de HostArmada, el `env:` con `HA_SSH_HOST` del principio del
+trabajo y la referencia a `id_hostarmada` en el último paso. **No renombres el archivo del workflow:**
 el botón «Publicar cambios» del panel enlaza a `deploy-cpanel.yml`
 (`src/components/admin/BarraPublicar.tsx`). Sí puedes cambiar el `name:` de la
 primera línea a `Desplegar en cPanel (HostArmada)`.
