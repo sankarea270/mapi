@@ -31,6 +31,18 @@ Guía paso a paso, hecha con los datos reales de tu configuración actual
 
 ---
 
+> ## ⚠️ Urgente: tu hospedaje de Namecheap vence el 1-oct-2026
+>
+> Es el plan «Stellar Plus», y es distinto del registro del dominio (ese vence en
+> 2027). Se renueva solo cada año salvo que lo desactives, así que mientras no
+> hagas nada seguirá funcionando — pero si algo se corta antes de terminar la
+> migración (un impago, una cancelación por error), la web y el correo se caen de
+> golpe. **No canceles ni desactives nada en Namecheap todavía**: la [Fase 6](#9-fase-6--limpieza-del-repositorio-y-de-namecheap)
+> ya se ocupa de eso, y solo cuando HostArmada lleve 7-14 días funcionando bien.
+> Con SSH ya confirmado en los dos lados, terminar los pasos 1-6 de abajo y el
+> cambio de DNS ([Fase 4](#7-fase-4--el-cambio-de-dns-día-d)) cabe de sobra antes
+> del 1 de octubre.
+
 ## 1. Resumen en un minuto
 
 **Qué se mueve:** los archivos del sitio (unos 790 archivos, 125 MB), el
@@ -70,55 +82,93 @@ pasos de HostArmada, **dormidos** hasta que exista el secreto `HA_SSH_HOST`: no
 hay que editar ningún archivo del proyecto. Estos seis pasos resumen las fases 1
 y 2; el detalle de cada uno está en la sección que se enlaza.
 
-### Paso 1 — Anota los datos de HostArmada
+> **Tu panel es «Meridian»**, el tema nuevo de cPanel (pestañas *Dashboard,
+> Websites & Apps, Email, Files, Databases, Security, Performance* arriba). Las
+> claves SSH ya no están en un icono aparte «Acceso SSH»: viven dentro de
+> **Security → Terminal Access (SSH)**, con dos botones directamente en esa
+> página, **Generate Key** e **Import Key**. Este documento usa los nombres del
+> tema clásico entre paréntesis por si en algún momento ves el otro.
+>
+> **Datos que ya sé de tu cuenta** (por lo que me enseñaste y por la propia
+> documentación de HostArmada):
+>
+> | Dato | Valor |
+> |---|---|
+> | Servidor (host SSH) | `naca1.armadaservers.com` (resuelve a `84.75.144.0`) |
+> | Puerto SSH | **`19199`, siempre** — es fijo en todos los servidores de HostArmada, no hay que preguntarlo ([fuente](https://hostarmada.com/kb/ssh-and-linux/how-can-i-connect-via-ssh-on-hostarmada/)) |
+> | Carpeta raíz | `public_html` — tu cuenta solo tiene ese dominio y la lista de archivos ya lo confirma |
+> | Estado del servidor | Ya probado: responde, y tiene forzado HTTPS a nivel de cuenta (Security → *HTTPS Redirect: All Redirected*). `public_html` está vacío todavía, así que ahora mismo da 404 en todo — es lo normal antes de subir nada |
+>
+> Solo falta un dato que no puedo ver: **tu usuario de cPanel en HostArmada**
+> (en Namecheap era `gotoninw`; en HostArmada será otro). Está en el correo de
+> bienvenida, o en **Dashboard → General Information** de este mismo panel.
 
-Del correo de bienvenida y del cPanel de HostArmada. Detalle: [1.1](#11-contratar-y-anotar-los-datos-de-acceso).
+### Paso 1 — Encuentra tu usuario de cPanel
 
-- [ ] **IP del servidor**
-- [ ] **Nameservers** (dos)
-- [ ] **Usuario** de cPanel
-- [ ] **Puerto SSH** — confírmalo en cPanel → **Acceso SSH** o con su chat: no
-      asumas 22 ni 21098
+**Dónde:** pestaña **Dashboard** de tu panel → panel «General Information»
+(el mismo sitio donde Namecheap te enseñaba `gotoninw`), o el correo de
+bienvenida de HostArmada. Detalle: [1.1](#11-contratar-y-anotar-los-datos-de-acceso).
 
-### Paso 2 — Mira la carpeta raíz del dominio
+- [ ] **Usuario** de cPanel de HostArmada
 
-**Dónde:** cPanel de HostArmada → **Dominios** → columna **Raíz del documento**.
-Detalle: [1.2](#12-añadir-el-dominio-en-hostarmada-y-anotar-la-carpeta-raíz).
+(El resto de la fase 1 —IP, nameservers, puerto— ya está resuelto arriba.)
 
-Es `public_html` **solo si** `gotomachupicchuperu.com` es el dominio principal de la
-cuenta. Si lo añadiste como dominio adicional, será otra ruta: cópiala tal cual.
-Es el valor de `HA_SSH_TARGET_DIR`, y equivocarse aquí es la causa nº 1 de «he subido
-todo y sale 404».
+### Paso 2 — La carpeta raíz ya se sabe: `public_html`
+
+Detalle: [1.2](#12-añadir-el-dominio-en-hostarmada-y-anotar-la-carpeta-raíz). Es el
+valor de `HA_SSH_TARGET_DIR`. Si en algún momento añades un segundo dominio a esta
+cuenta, confírmalo en **Websites & Apps → (tu dominio) → Document Root**; mientras
+sea el único, es `public_html`.
 
 ### Paso 3 — Genera la clave SSH
 
-En tu equipo (PowerShell), **sin contraseña** (`-N ""`; GitHub no puede teclearla):
+Dos formas; cualquiera sirve. **En las dos, deja la contraseña (passphrase) VACÍA:
+GitHub Actions no puede teclearla, y una clave con passphrase rompe el despliegue
+automático.**
+
+**A) En tu equipo (recomendado: la privada no sale de tu PC hasta que tú la pegas
+en GitHub).** PowerShell:
 
 ```bash
 ssh-keygen -t ed25519 -f despliegue-hostarmada -N "" -C "despliegue-github-actions-hostarmada"
 ```
 
-Crea dos archivos: `despliegue-hostarmada` (**privada**, no la compartas con nadie)
-y `despliegue-hostarmada.pub` (pública). Detalle: [1.4](#14-una-clave-ssh-nueva-para-hostarmada).
+Crea `despliegue-hostarmada` (**privada**, no la compartas con nadie) y
+`despliegue-hostarmada.pub` (pública). Sigue en el paso 4 con **Import Key**.
 
-### Paso 4 — Importa y autoriza la clave pública
+**B) Directamente en el panel** (Security → Terminal Access (SSH) → **Generate
+Key**): dale un nombre sin espacios, **deja la contraseña en blanco**, y genera.
+El panel te deja descargar la clave privada: guárdala para el paso 6 y bórrala de
+tus descargas en cuanto la hayas pegado en GitHub. Con esta vía te saltas el
+paso 4 (Import), pero **igual tienes que Autorizarla** — sigue leyendo.
 
-**Dónde:** cPanel de HostArmada → **Acceso SSH → Administrar claves SSH**.
+Detalle: [1.4](#14-una-clave-ssh-nueva-para-hostarmada).
 
-1. **Importar clave:** pega el contenido de `despliegue-hostarmada.pub` en *Clave
-   pública*. Deja vacíos la contraseña y la clave privada.
-2. En **Claves públicas**, junto a la recién importada: **Administrar → Autorizar**.
-   **Sin este paso el servidor la rechaza.**
+### Paso 4 — Importa (o localiza) la clave y AUTORÍZALA
+
+**Dónde:** Security → **Terminal Access (SSH)**, la sección que ya tienes abierta.
+
+1. Si generaste la clave en tu equipo (opción A): botón **Import Key** → pega el
+   contenido de `despliegue-hostarmada.pub` en *Clave pública* → nómbrala → Import.
+   Si la generaste en el panel (opción B), ya aparece en la lista: sáltate esto.
+2. **La clave queda en la lista, pero no sirve todavía.** Ábrela (clic en la clave
+   o en su menú «Manage») y pulsa **Authorize**. Debe pasar a estado *authorized*.
+   **Sin este paso el servidor la rechaza aunque la hayas importado bien** — es el
+   error más común en este paso, confirmado en la propia documentación de
+   HostArmada.
 
 ### Paso 5 — Comprueba que entra sin contraseña
 
 ```bash
-ssh -i despliegue-hostarmada -p PUERTO USUARIO@IP_DEL_SERVIDOR
+ssh -i despliegue-hostarmada -p 19199 USUARIO@naca1.armadaservers.com
 ```
 
+(Sustituye `USUARIO` por el del paso 1; si generaste la clave en el panel, usa la
+ruta donde descargaste la privada en vez de `despliegue-hostarmada`.)
+
 Debe dejarte entrar **sin** pedir contraseña. Escribe `exit` para salir. Si pide
-contraseña o dice «Permission denied», vuelve al paso 4 (casi siempre falta
-**Autorizar**).
+contraseña o dice «Permission denied», vuelve al paso 4 — casi siempre falta
+**Authorize**.
 
 ### Paso 6 — Crea los 5 secretos en GitHub
 
@@ -127,13 +177,14 @@ Actions → New repository secret**. Detalle: [2.1](#21-crear-los-secretos-nuevo
 
 | Secreto | Valor |
 |---|---|
-| `HA_SSH_HOST` | IP del servidor (paso 1) |
-| `HA_SSH_USER` | usuario de cPanel (paso 1) |
-| `HA_SSH_PORT` | puerto SSH (paso 1) |
-| `HA_SSH_KEY` | contenido **completo** de `despliegue-hostarmada`, con las líneas `-----BEGIN…` y `-----END…` |
-| `HA_SSH_TARGET_DIR` | carpeta raíz (paso 2) |
+| `HA_SSH_HOST` | `naca1.armadaservers.com` |
+| `HA_SSH_USER` | tu usuario de cPanel (paso 1) |
+| `HA_SSH_PORT` | `19199` |
+| `HA_SSH_KEY` | contenido **completo** de la clave privada (paso 3), con las líneas `-----BEGIN…` y `-----END…` |
+| `HA_SSH_TARGET_DIR` | `public_html` |
 
-Cuando hayas pegado la clave privada en GitHub, **bórrala de tu equipo**.
+Cuando hayas pegado la clave privada en GitHub, **bórrala de tu equipo** (y de tus
+descargas, si la generaste en el panel).
 
 ### Y después: simular, subir, probar
 
@@ -146,8 +197,12 @@ Cuando hayas pegado la clave privada en GitHub, **bórrala de tu equipo**.
 3. Pruébalo **antes** de tocar el DNS: [2.4](#24-probar-hostarmada-antes-de-que-nadie-lo-vea).
 
 ```bash
-node scripts/comprobar-hosting.mjs --ip IP_DEL_SERVIDOR
+node scripts/comprobar-hosting.mjs --ip 84.75.144.0
 ```
+
+(Ya lo probé así antes de que subieras nada: el servidor responde y tiene HTTPS
+forzado a nivel de cuenta; todo lo demás falla porque `public_html` está vacío,
+que es justo lo que se arregla en el paso 2 de arriba.)
 
 > **Ten presente esto:** en cuanto exista `HA_SSH_HOST`, **cada `push` y cada
 > «Publicar cambios» del panel subirá a los dos hostings** (primero Namecheap,
