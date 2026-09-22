@@ -119,39 +119,68 @@ y 2; el detalle de cada uno está en la sección que se enlaza.
 > |---|---|
 > | Servidor (host SSH) | `naca1.armadaservers.com` (resuelve a `84.75.144.0`) |
 > | Puerto SSH | **`19199`, siempre** — es fijo en todos los servidores de HostArmada, no hay que preguntarlo ([fuente](https://hostarmada.com/kb/ssh-and-linux/how-can-i-connect-via-ssh-on-hostarmada/)) |
-> | Carpeta raíz | `public_html` — tu cuenta solo tiene ese dominio y la lista de archivos ya lo confirma |
-> | Estado del servidor | Ya probado: responde, y tiene forzado HTTPS a nivel de cuenta (Security → *HTTPS Redirect: All Redirected*). `public_html` está vacío todavía, así que ahora mismo da 404 en todo — es lo normal antes de subir nada |
->
-> Solo falta un dato que no puedo ver: **tu usuario de cPanel en HostArmada**
-> (en Namecheap era `gotoninw`; en HostArmada será otro). Está en el correo de
-> bienvenida, o en **Dashboard → General Information** de este mismo panel.
+> | Estado del servidor | Ya probado: responde, y tiene forzado HTTPS a nivel de cuenta (Security → *HTTPS Redirect: All Redirected*) |
 
-### Paso 1 — Encuentra tu usuario de cPanel y los nameservers
+### Tu situación real: una cuenta, dos dominios
+
+Esa cuenta de HostArmada ya aloja **otro dominio tuyo**; `gotomachupicchuperu.com`
+todavía no está en ningún hospedaje de HostArmada. La buena noticia: **muy
+probablemente no hace falta comprar nada nuevo.** El disco de esa cuenta marca
+**30 GB**, y según la propia tabla de planes de HostArmada, ese tamaño coincide
+con el plan **«Web Warp»**, que admite **dominios ilimitados**
+([fuente](https://hostarmada.com/kb/web-hosting-services/how-many-sites-can-i-host-in-my-current-hostarmada-plan/)).
+Confírmalo sin ambigüedad en **Área de Cliente → Mis servicios → tu paquete**: si
+el nombre del plan no es «Start Dock» (ese sí limita a un solo sitio), puedes
+añadir `gotomachupicchuperu.com` a la misma cuenta gratis, como **addon domain**:
+mismo cPanel, mismo servidor, mismo usuario y la misma clave SSH que vamos a
+preparar — sin tocar en nada al otro dominio, que sigue funcionando aparte.
+
+> Si prefirieras separarlos del todo más adelante (por ejemplo, para no mezclar
+> este proyecto con el otro), siempre se puede mover a una cuenta propia después
+> repitiendo este mismo proceso — no es una decisión que ate para siempre.
+
+### Paso 1 — Añade el dominio a tu cuenta de HostArmada (addon domain)
+
+**Dónde:** en el cPanel `naca1.armadaservers.com` → pestaña **Websites & Apps**
+(en el tema clásico: *Domains*). Pasos exactos
+([fuente](https://hostarmada.com/tutorials/getting-started/cpanel/how-to-manage-your-domains-in-cpanel/)):
+
+1. Botón **Create A New Domain Name** (esquina derecha).
+2. **Domain**: escribe `gotomachupicchuperu.com`.
+3. **Share document root**: **desmárcalo**. Con la casilla marcada, este dominio
+   serviría lo mismo que el otro que ya tienes ahí — hay que separarlos.
+4. **New Document Root**: escribe exactamente `gotomachupicchuperu.com` (es
+   relativo a `public_html`, así que queda en `public_html/gotomachupicchuperu.com`).
+   Usa ese valor tal cual — es el que dan por sentado los pasos de más abajo.
+5. **Subdomain**: cPanel lo rellena solo; déjalo como está.
+6. **Submit**.
+
+Con esto queda **`HA_SSH_TARGET_DIR` = `public_html/gotomachupicchuperu.com`** — la
+carpeta a la que vamos a subir el sitio con rsync. (Detalle de qué pasa con el
+correo y el certificado de este dominio, en las fases 3 y 4 más abajo.)
+
+### Paso 2 — Encuentra tu usuario de cPanel y los nameservers
 
 Dos datos, en dos sitios **del Área de Cliente** (el panel morado; no el cPanel):
 
 - [ ] **Usuario de cPanel**: pestaña **Dashboard** del cPanel de hospedaje → panel
       «General Information» (donde Namecheap te enseñaba `gotoninw`), o el correo
-      «Welcome to HostArmada».
+      «Welcome to HostArmada». Es el mismo usuario para las dos webs: no cambia
+      por añadir el addon domain.
 - [ ] **Nameservers de tu hospedaje**: Área de Cliente → **Mis servicios** → tu
       paquete → icono de medidor junto a la fecha de vencimiento. **No** los de
       *Dominios → Transferencia* — detalle de por qué en la nota de arriba y en el
-      [paso 4.2](#42-cambiar-los-nameservers-en-namecheap).
+      [paso 4.2](#42-cambiar-los-nameservers-en-namecheap). Son los del servidor,
+      así que valen igual para tu otro dominio y para este.
 
-(El resto de la fase 1 —IP y puerto SSH— ya está resuelto arriba.)
+### Paso 3 — Genera la clave SSH (o reutiliza la que ya tengas)
 
-### Paso 2 — La carpeta raíz ya se sabe: `public_html`
-
-Detalle: [1.2](#12-añadir-el-dominio-en-hostarmada-y-anotar-la-carpeta-raíz). Es el
-valor de `HA_SSH_TARGET_DIR`. Si en algún momento añades un segundo dominio a esta
-cuenta, confírmalo en **Websites & Apps → (tu dominio) → Document Root**; mientras
-sea el único, es `public_html`.
-
-### Paso 3 — Genera la clave SSH
-
-Dos formas; cualquiera sirve. **En las dos, deja la contraseña (passphrase) VACÍA:
-GitHub Actions no puede teclearla, y una clave con passphrase rompe el despliegue
-automático.**
+Es la **misma cuenta** que usa tu otro dominio: si ya despliegas ese sitio por SSH
+y tienes una clave autorizada y sin passphrase, **puedes usar esa misma** y
+saltarte este paso y el siguiente — ve directa al paso 5 con esa clave. Si no,
+dos formas de crear una nueva; cualquiera sirve. **En las dos, deja la contraseña
+(passphrase) VACÍA: GitHub Actions no puede teclearla, y una clave con
+passphrase rompe el despliegue automático.**
 
 **A) En tu equipo (recomendado: la privada no sale de tu PC hasta que tú la pegas
 en GitHub).** PowerShell:
@@ -190,7 +219,7 @@ Detalle: [1.4](#14-una-clave-ssh-nueva-para-hostarmada).
 ssh -i despliegue-hostarmada -p 19199 USUARIO@naca1.armadaservers.com
 ```
 
-(Sustituye `USUARIO` por el del paso 1; si generaste la clave en el panel, usa la
+(Sustituye `USUARIO` por el del paso 2; si generaste la clave en el panel, usa la
 ruta donde descargaste la privada en vez de `despliegue-hostarmada`.)
 
 Debe dejarte entrar **sin** pedir contraseña. Escribe `exit` para salir. Si pide
@@ -205,10 +234,10 @@ Actions → New repository secret**. Detalle: [2.1](#21-crear-los-secretos-nuevo
 | Secreto | Valor |
 |---|---|
 | `HA_SSH_HOST` | `naca1.armadaservers.com` |
-| `HA_SSH_USER` | tu usuario de cPanel (paso 1) |
+| `HA_SSH_USER` | tu usuario de cPanel (paso 2) |
 | `HA_SSH_PORT` | `19199` |
 | `HA_SSH_KEY` | contenido **completo** de la clave privada (paso 3), con las líneas `-----BEGIN…` y `-----END…` |
-| `HA_SSH_TARGET_DIR` | `public_html` |
+| `HA_SSH_TARGET_DIR` | `public_html/gotomachupicchuperu.com` (paso 1) |
 
 Cuando hayas pegado la clave privada en GitHub, **bórrala de tu equipo** (y de tus
 descargas, si la generaste en el panel).
@@ -227,9 +256,10 @@ descargas, si la generaste en el panel).
 node scripts/comprobar-hosting.mjs --ip 84.75.144.0
 ```
 
-(Ya lo probé así antes de que subieras nada: el servidor responde y tiene HTTPS
-forzado a nivel de cuenta; todo lo demás falla porque `public_html` está vacío,
-que es justo lo que se arregla en el paso 2 de arriba.)
+(Ya lo probé así antes de que hicieras nada de esto: el servidor responde y tiene
+HTTPS forzado a nivel de cuenta; todo lo demás falla porque no hay ningún sitio
+en `gotomachupicchuperu.com` todavía — se arregla subiendo el sitio a la carpeta
+del paso 1.)
 
 > **Ten presente esto:** en cuanto exista `HA_SSH_HOST`, **cada `push` y cada
 > «Publicar cambios» del panel subirá a los dos hostings** (primero Namecheap,
@@ -316,6 +346,11 @@ respuestas cambian pasos concretos de esta guía:
 HTTPS gratuito · `.htaccess` con mod_rewrite · SSH+rsync (o alternativa de la
 sección [«Si no hay SSH»](#si-no-hay-ssh)) · correo IMAP/SMTP · cPanel o
 equivalente para DNS/correo.
+
+> Para HostArmada en concreto, las preguntas 2 y 5 ya están resueltas: el puerto
+> SSH es siempre `19199` y la IP de tu servidor es `84.75.144.0`
+> ([«Empieza aquí»](#empieza-aquí-los-6-primeros-pasos) tiene el resto de datos ya
+> rellenados).
 
 ---
 
