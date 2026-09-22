@@ -104,6 +104,15 @@ y 2; el detalle de cada uno está en la sección que se enlaza.
 > nameservers — **no son los que salían en esa pantalla de Dominios**, que son los
 > del sistema de registro de dominios y no tienen por qué coincidir con los de tu
 > servidor de hospedaje.
+>
+> **¿Ya le pediste a Namecheap el código EPP?** No pasa nada, no hay que usarlo
+> todavía — ni hace falta. Aunque lo pegues en HostArmada, **el registro `.com`
+> rechaza la transferencia igualmente mientras dure el bloqueo de 60 días**: no es
+> algo que dependa del código ni que ningún registrador pueda saltarse
+> ([confirmado por ICANN](https://www.icann.org/resources/pages/name-holder-faqs-2017-10-10-en);
+> [explicación técnica](https://www.namesilo.com/blog/en/domain-transfer/why-cant-i-transfer-my-domain)).
+> Guarda el código si quieres, pero no sigas ese formulario — ni falta que hace
+> escribir nada en «Configure servidores de nombres» de esa pantalla.
 
 > **Tu panel es «Meridian»**, el tema nuevo de cPanel (pestañas *Dashboard,
 > Websites & Apps, Email, Files, Databases, Security, Performance* arriba). Las
