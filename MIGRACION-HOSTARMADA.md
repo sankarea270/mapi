@@ -82,6 +82,29 @@ pasos de HostArmada, **dormidos** hasta que exista el secreto `HA_SSH_HOST`: no
 hay que editar ningún archivo del proyecto. Estos seis pasos resumen las fases 1
 y 2; el detalle de cada uno está en la sección que se enlaza.
 
+> **HostArmada tiene DOS paneles distintos y es fácil mezclarlos:**
+>
+> | Panel | Para qué | Cómo se ve |
+> |---|---|---|
+> | **Área de Cliente** (billing) | Comprar, ver facturas, **dominios que registras a través de HostArmada** | Menú lateral morado: *Salpicadero, Mi cuenta, Mis servicios, Dominios (Registro/Transferencia/Renovar), Mis facturas, Tickets* |
+> | **cPanel del hospedaje** | Donde vive de verdad el sitio: archivos, SSH, correo, DNS de tu dominio | Pestañas arriba: *Dashboard, Websites & Apps, Email, Files, Databases, Security, Performance* — el tema «Meridian» que ya viste (`naca1.armadaservers.com`) |
+>
+> **Tu dominio `gotomachupicchuperu.com` NO está registrado en HostArmada — sigue en
+> Namecheap, y así se queda.** Lo que viste en *Dominios → Registro/Transferencia*
+> (la búsqueda de disponibilidad y el campo «Código de transferencia EPP») es el
+> flujo para **cambiar de registrador**, algo que esta guía **no** pide hacer y que,
+> además, ahora mismo estaría bloqueado por la regla de ICANN de 60 días desde el
+> registro (1-sep-2026 → hasta ~31-oct-2026). **No rellenes el código EPP ni sigas
+> esa transferencia.** Lo único que hace falta es cambiar, en Namecheap, a QUÉ
+> nameservers apunta el dominio — eso no es una transferencia y no lo bloquea nada
+> ([lo confirma la propia documentación de HostArmada](https://hostarmada.com/kb/domain-and-dns/can-i-host-my-domain-with-you-without-transferring-it/):
+> *"You may host your domain name with HostArmada without needing to transfer it
+> from the registrar (...) point the domain name to the nameservers corresponding
+> to your server"*). El paso 4.2 más abajo dice exactamente dónde ver esos
+> nameservers — **no son los que salían en esa pantalla de Dominios**, que son los
+> del sistema de registro de dominios y no tienen por qué coincidir con los de tu
+> servidor de hospedaje.
+
 > **Tu panel es «Meridian»**, el tema nuevo de cPanel (pestañas *Dashboard,
 > Websites & Apps, Email, Files, Databases, Security, Performance* arriba). Las
 > claves SSH ya no están en un icono aparte «Acceso SSH»: viven dentro de
@@ -103,15 +126,19 @@ y 2; el detalle de cada uno está en la sección que se enlaza.
 > (en Namecheap era `gotoninw`; en HostArmada será otro). Está en el correo de
 > bienvenida, o en **Dashboard → General Information** de este mismo panel.
 
-### Paso 1 — Encuentra tu usuario de cPanel
+### Paso 1 — Encuentra tu usuario de cPanel y los nameservers
 
-**Dónde:** pestaña **Dashboard** de tu panel → panel «General Information»
-(el mismo sitio donde Namecheap te enseñaba `gotoninw`), o el correo de
-bienvenida de HostArmada. Detalle: [1.1](#11-contratar-y-anotar-los-datos-de-acceso).
+Dos datos, en dos sitios **del Área de Cliente** (el panel morado; no el cPanel):
 
-- [ ] **Usuario** de cPanel de HostArmada
+- [ ] **Usuario de cPanel**: pestaña **Dashboard** del cPanel de hospedaje → panel
+      «General Information» (donde Namecheap te enseñaba `gotoninw`), o el correo
+      «Welcome to HostArmada».
+- [ ] **Nameservers de tu hospedaje**: Área de Cliente → **Mis servicios** → tu
+      paquete → icono de medidor junto a la fecha de vencimiento. **No** los de
+      *Dominios → Transferencia* — detalle de por qué en la nota de arriba y en el
+      [paso 4.2](#42-cambiar-los-nameservers-en-namecheap).
 
-(El resto de la fase 1 —IP, nameservers, puerto— ya está resuelto arriba.)
+(El resto de la fase 1 —IP y puerto SSH— ya está resuelto arriba.)
 
 ### Paso 2 — La carpeta raíz ya se sabe: `public_html`
 
@@ -581,12 +608,29 @@ apuntan a `162.0.232.x` o a `jellyfish.systems` son de Namecheap y **no se copia
 
 ### 4.2 Cambiar los nameservers en Namecheap
 
+Primero hay que **encontrar los nameservers correctos de tu hospedaje** — los del
+servidor donde vive el sitio (`naca1.armadaservers.com`), no los que aparecían en
+*Dominios → Transferencia* del Área de Cliente (esos son del sistema de registro
+de dominios de HostArmada, un servicio que no estás usando).
+
+**Dónde encontrarlos** ([fuente](https://hostarmada.com/kb/domain-and-dns/where-can-i-find-my-nameservers/)):
+
+1. En el **Área de Cliente** (el panel morado, `Salpicadero`) → **Mis servicios**.
+2. Haz clic en tu paquete de hospedaje (el que tiene `naca1.armadaservers.com`).
+3. En esa página, junto a la fecha de próximo vencimiento, hay un icono de
+   medidor/velocímetro — pulsa ahí. Se abre la información del servidor, y ahí están
+   los **nameservers** (normalmente dos, del estilo `ns1…` / `ns2…`).
+4. Si no los ves, están también en el correo **«Welcome to HostArmada»**: icono de
+   sobre (✉) arriba a la derecha del Área de Cliente → historial de correos.
+
+Con esos dos nameservers (no los de la pantalla de Dominios):
+
 **Dónde:** [namecheap.com](https://www.namecheap.com) → **Domain List** →
 `gotomachupicchuperu.com` → **Manage** → sección **Nameservers**.
 
 1. Hoy dice «Namecheap Web Hosting DNS» (o «Custom DNS» con `dns1/dns2.namecheaphosting.com`).
 2. Cámbialo a **Custom DNS**.
-3. Escribe los **dos nameservers de HostArmada** (correo de bienvenida).
+3. Escribe los **dos nameservers de HostArmada** del paso anterior.
 4. Pulsa el ✔ para guardar.
 
 Desde este momento el mundo empieza a resolver hacia HostArmada. Tarda entre 30
