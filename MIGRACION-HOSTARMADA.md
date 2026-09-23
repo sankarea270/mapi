@@ -216,6 +216,13 @@ pública», con Nombre de clave / Contraseña / Tipo / Tamaño). Rellénala así
   defecto; si no, 2048 también sirve.
 - **Generar clave**.
 
+> **Si el formulario rechaza la contraseña vacía** («me pide contraseña» aunque la
+> dejes en blanco): algunas cuentas de HostArmada tienen activada una política que
+> exige contraseña al **generar** la clave ahí mismo. No luches contra eso — usa la
+> **opción A** en su lugar (generarla en tu equipo) y vuelve aquí solo para
+> **Importar clave** (más abajo): al importar una clave ya hecha, esa política no
+> se aplica, porque no se está generando nada nuevo en el servidor.
+
 El panel te deja ver/descargar la clave privada: guárdala para el paso 6 y
 bórrala de tus descargas en cuanto la hayas pegado en GitHub. Con esta vía te
 saltas el paso 4 (Import), pero **igual tienes que Autorizarla** — sigue leyendo.
@@ -226,8 +233,12 @@ Detalle: [1.4](#14-una-clave-ssh-nueva-para-hostarmada).
 
 **Dónde:** Security → **Terminal Access (SSH)**, la sección que ya tienes abierta.
 
-1. Si generaste la clave en tu equipo (opción A): botón **Import Key** → pega el
-   contenido de `despliegue-hostarmada.pub` en *Clave pública* → nómbrala → Import.
+1. Si generaste la clave en tu equipo (opción A): botón **Import Key**. Si el
+   formulario clásico te pide más de un campo (Nombre, Clave privada, Passphrase,
+   Clave pública), rellena **solo el nombre y la Clave pública** — pega ahí el
+   contenido de `despliegue-hostarmada.pub`. Deja **Clave privada** y
+   **Passphrase** en blanco: la privada se queda únicamente en tu equipo y en
+   GitHub, nunca hace falta dársela también al panel. Import.
    Si la generaste en el panel (opción B), ya aparece en la lista: sáltate esto.
 2. **La clave queda en la lista, pero no sirve todavía.** Ábrela (clic en la clave
    o en su menú «Manage») y pulsa **Authorize**. Debe pasar a estado *authorized*.
