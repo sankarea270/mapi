@@ -202,10 +202,23 @@ Crea `despliegue-hostarmada` (**privada**, no la compartas con nadie) y
 `despliegue-hostarmada.pub` (pública). Sigue en el paso 4 con **Import Key**.
 
 **B) Directamente en el panel** (Security → Terminal Access (SSH) → **Generate
-Key**): dale un nombre sin espacios, **deja la contraseña en blanco**, y genera.
-El panel te deja descargar la clave privada: guárdala para el paso 6 y bórrala de
-tus descargas en cuanto la hayas pegado en GitHub. Con esta vía te saltas el
-paso 4 (Import), pero **igual tienes que Autorizarla** — sigue leyendo.
+Key**): puede llevarte a una pantalla de estilo clásico («Generación de una clave
+pública», con Nombre de clave / Contraseña / Tipo / Tamaño). Rellénala así:
+
+- **Nombre de clave**: algo identificable, sin espacios (p. ej. `despliegue_github`).
+- **Contraseña clave** y **Volver a introducir la contraseña**: **déjalos vacíos**
+  los dos. Aunque el formulario los muestre como si hicieran falta, es opcional
+  — confirmado en la [documentación de cPanel](https://www.namecheap.com/support/knowledgebase/article.aspx/9428/89/how-to-connect-via-ssh-using-keys/)
+  y en la [de HostArmada](https://hostarmada.com/tutorials/getting-started/cpanel/how-to-manage-the-ssh-access-keys-for-your-cpanel-web-hosting-account/).
+  Con algo escrito ahí, GitHub Actions no podrá usar la clave.
+- **Tipo de clave**: deja **RSA**.
+- **Tamaño de la llave**: si el desplegable ofrece **4096**, mejor que el 2048 por
+  defecto; si no, 2048 también sirve.
+- **Generar clave**.
+
+El panel te deja ver/descargar la clave privada: guárdala para el paso 6 y
+bórrala de tus descargas en cuanto la hayas pegado en GitHub. Con esta vía te
+saltas el paso 4 (Import), pero **igual tienes que Autorizarla** — sigue leyendo.
 
 Detalle: [1.4](#14-una-clave-ssh-nueva-para-hostarmada).
 
