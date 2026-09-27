@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# La plantilla SÍ se sube: es lo que otra persona copia a `.env.local`. Solo lleva
+# nombres de variables y valores de ejemplo, nunca claves reales.
+!.env.example
 
 # vercel
 .vercel
@@ -49,3 +52,4 @@ next-env.d.ts
 # Capturas de referencia sueltas en la raíz: material de trabajo, no del sitio.
 /Captura de pantalla*.png
 /Screenshot_*.png
+/WhatsApp Image*

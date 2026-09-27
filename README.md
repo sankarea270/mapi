@@ -8,6 +8,7 @@ Actions.
 
 | Si quieres… | Lee |
 |---|---|
+| **Colaborar en el proyecto** (poner en marcha, ramas y Pull Requests, trabajar con Claude) | [`docs/CONTRIBUIR.md`](docs/CONTRIBUIR.md) y [`CLAUDE.md`](CLAUDE.md) |
 | Entender cómo se publica el sitio hoy (GitHub Actions + rsync por SSH) | [`docs/despliegue.md`](docs/despliegue.md) |
 | **Migrar de Namecheap a HostArmada** (DNS, correo, SSH, vuelta atrás) | [`MIGRACION-HOSTARMADA.md`](MIGRACION-HOSTARMADA.md) — empieza por «Empieza aquí» |
 | Comprobar que un hosting sirve el sitio como debe | `node scripts/comprobar-hosting.mjs` (con `--ip` para probar un servidor antes de cambiar el DNS) |

@@ -1,0 +1,62 @@
+name: Verificar cambios (sin desplegar)
+
+# Se ejecuta en cada Pull Request hacia main y comprueba que el cambio compila.
+# NO despliega nada: desplegar es lo que hace `deploy-cpanel.yml` al llegar a
+# main, y por eso conviene que nadie llegue a main sin haber pasado por aquí.
+#
+# Comprueba tres cosas, de la más barata a la más cara, y para en la primera
+# que falle:
+#
+#   1. Tipos (tsc)   — un tipo mal puesto se ve aquí en segundos.
+#   2. Lint          — solo errores; los avisos no bloquean.
+#   3. Compilación   — la de producción, con la misma exportación estática.
+#                      Si un dato nuevo de Supabase o una migración pendiente
+#                      tumbara el build, se ve aquí y no en producción.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Un PR que recibe un commit nuevo cancela la comprobación anterior: no tiene
+# sentido terminar la de una versión que ya no es la última.
+concurrency:
+  group: verificar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      - name: Lint (solo errores)
+        run: npx eslint . --quiet
+
+      # Con las claves de Supabase el build usa el contenido real; sin ellas
+      # —un PR desde un fork no las recibe— cae al respaldo de src/data/ y
+      # compila igual, así que la comprobación sirve en los dos casos.
+      - name: Compilar como en producción
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://gotomachupicchuperu.com
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Comprobar que salió el sitio
+        run: |
+          test -f out/index.html || { echo "Falta out/index.html"; exit 1; }
+          test -d out/es         || { echo "Falta out/es";         exit 1; }
+          echo "Páginas generadas: $(find out -name index.html | wc -l)"
