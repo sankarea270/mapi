@@ -113,8 +113,17 @@ jobs:
           # pero evita tener que desactivar la verificación por completo, que
           # es lo que se suele hacer y deja la conexión abierta a suplantación
           # durante toda la ejecución.
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          test -s ~/.ssh/known_hosts || { echo "El servidor no respondió al ssh-keyscan"; exit 1; }
+          #
+          # Con reintentos: `ssh-keyscan` espera solo 5 s por defecto y un
+          # servidor compartido puede tardar más en un momento dado. Sin
+          # reintento, un corte puntual —el 27-sep-2026 el servidor sí
+          # respondía y la web estaba bien— marcaba el despliegue entero como
+          # fallido y obligaba a lanzarlo otra vez a mano.
+          for intento in 1 2 3; do
+            ssh-keyscan -T 20 -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null && test -s ~/.ssh/known_hosts && break
+            echo "ssh-keyscan sin respuesta (intento $intento de 3)"; sleep 10
+          done
+          test -s ~/.ssh/known_hosts || { echo "El servidor no respondió al ssh-keyscan tras 3 intentos"; exit 1; }
 
       - name: Sincronizar por rsync
         env:
@@ -167,8 +176,11 @@ jobs:
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$HA_SSH_KEY" > ~/.ssh/id_hostarmada
           chmod 600 ~/.ssh/id_hostarmada
-          ssh-keyscan -p "$HA_SSH_PORT" -H "$HA_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          test -s ~/.ssh/known_hosts || { echo "HostArmada no respondió al ssh-keyscan (¿puerto o IP incorrectos?)"; exit 1; }
+          for intento in 1 2 3; do
+            ssh-keyscan -T 20 -p "$HA_SSH_PORT" -H "$HA_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null && test -s ~/.ssh/known_hosts && break
+            echo "ssh-keyscan sin respuesta (intento $intento de 3)"; sleep 10
+          done
+          test -s ~/.ssh/known_hosts || { echo "HostArmada no respondió al ssh-keyscan tras 3 intentos (¿puerto o IP incorrectos?)"; exit 1; }
 
       - name: Sincronizar con HostArmada
         if: env.HA_SSH_HOST != ''
