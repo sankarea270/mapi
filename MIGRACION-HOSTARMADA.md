@@ -31,17 +31,28 @@ Guía paso a paso, hecha con los datos reales de tu configuración actual
 
 ---
 
-> ## ⚠️ Urgente: tu hospedaje de Namecheap vence el 1-oct-2026
+> ## ⚠️ Urgente: el hospedaje de Namecheap era de UN MES y vence el 1-oct-2026
 >
-> Es el plan «Stellar Plus», y es distinto del registro del dominio (ese vence en
-> 2027). Se renueva solo cada año salvo que lo desactives, así que mientras no
-> hagas nada seguirá funcionando — pero si algo se corta antes de terminar la
-> migración (un impago, una cancelación por error), la web y el correo se caen de
-> golpe. **No canceles ni desactives nada en Namecheap todavía**: la [Fase 6](#9-fase-6--limpieza-del-repositorio-y-de-namecheap)
-> ya se ocupa de eso, y solo cuando HostArmada lleve 7-14 días funcionando bien.
-> Con SSH ya confirmado en los dos lados, terminar los pasos 1-6 de abajo y el
-> cambio de DNS ([Fase 4](#7-fase-4--el-cambio-de-dns-día-d)) cabe de sobra antes
-> del 1 de octubre.
+> Se compró por un solo mes (plan «Stellar Plus», 1-sep → 1-oct-2026); el
+> **dominio** es otra cosa: se pagó por un año y vence el 1-sep-2027. Consecuencias
+> que cambian el plan de esta guía:
+>
+> 1. **No hay margen de 7-14 días** con el hospedaje viejo como red de seguridad.
+>    Cuando venza, desaparece con él **la zona DNS** (los nameservers actuales son
+>    `dns1/dns2.namecheaphosting.com`, que solo existen mientras haya hospedaje) y
+>    **los buzones de correo**. Si para entonces el dominio no apunta a HostArmada,
+>    web y correo se caen.
+> 2. **Fecha límite práctica para cambiar los nameservers: el martes 29-sep**, para
+>    que la propagación (hasta 24 h) y el certificado HTTPS estén resueltos antes del
+>    jueves 1-oct. Ver el [calendario de 4 días](#11-cronograma-sugerido).
+> 3. **Desactiva ya la renovación automática** del hospedaje (Namecheap → **Hosting
+>    List** → tu paquete → casilla «Se renueva automáticamente»): si no, el 1-oct te
+>    cobrarán otro periodo de un servicio que ya no vas a usar. Seguirá funcionando
+>    hasta el 1-oct igualmente. Si por algún motivo la migración se atrasara, el botón
+>    **Renovar** de esa misma pantalla es tu salida de emergencia (revisa antes
+>    cuánto cuesta y por cuánto tiempo).
+> 4. **Antes del 1-oct, haz una copia de seguridad** del correo y de lo que haya en
+>    ese cPanel: [Fase 3, paso 3.0](#30-copia-de-seguridad-del-cpanel-de-namecheap).
 
 ## 1. Resumen en un minuto
 
@@ -592,6 +603,25 @@ Tres alternativas, de más a menos recomendable:
 en el servidor de Namecheap. En cuanto cambies el DNS, empezará a entrar en
 HostArmada. Lo que ya está guardado en Namecheap **no se mueve solo**.
 
+### 3.0 Copia de seguridad del cPanel de Namecheap
+
+Hazla **antes del 1-oct** y **antes** de cambiar nada más: cuando el hospedaje venza,
+el correo guardado en él desaparece, y esta copia es lo único que quedaría.
+
+**Dónde:** cPanel de **Namecheap** → **Copia de seguridad** (*Backup*) o **Asistente de
+copia de seguridad** (*Backup Wizard*) → **Copia de seguridad** (*Back Up*) →
+**Directorio de inicio** (*Home Directory*) → **Descargar**. Esa copia incluye los
+buzones, porque el correo vive dentro de tu carpeta personal. Si además ves
+«Reenviadores y filtros de correo», descárgalos también (son archivos pequeños).
+
+Guarda el `.tar.gz` fuera de la carpeta del proyecto.
+
+> **Ojo con la magnitud:** el dominio se registró hace menos de un mes, así que lo más
+> probable es que los buzones estén casi vacíos. Antes de nada, **entra al webmail de
+> Namecheap** (cPanel → *Cuentas de correo* → *Consultar el correo*) y mira cuántos
+> mensajes hay. Si son cuatro, basta con copiarlos a mano o reenviarlos a tu Gmail;
+> el resto del paso 3.1 solo importa si hay correo que quieras conservar.
+
 ### 3.1 Copiar los mensajes existentes
 
 Elige **una** vía (de más fácil a más técnica):
@@ -810,13 +840,19 @@ Comprueba `/es/legal/privacidad/` y haz commit y push.
 - [ ] Cambia la contraseña del cPanel de HostArmada por una propia y guárdala en tu
       gestor de contraseñas.
 
-### 6.4 Cancelar el hosting de Namecheap (sin cancelar el dominio)
+### 6.4 El hospedaje de Namecheap: dejar que venza (sin tocar el dominio)
 
-1. Comprueba **cuándo vence** el hosting y **no lo renueves**.
-2. **Nunca canceles el dominio:** es el `gotomachupicchuperu.com` y vence el
-   2027-09-01. Solo se cancela el *hosting* (Namecheap → **Hosting List**).
-3. Cuando el hosting caduque, la zona DNS vieja desaparece; no importa, porque ya
-   usas la de HostArmada.
+Era un hospedaje de un mes: **no hay nada que cancelar, solo no renovarlo**.
+
+1. **Desactiva la renovación automática ya** (Namecheap → **Hosting List** → tu
+   paquete → casilla «Se renueva automáticamente»), no al final: el cobro se
+   genera antes del vencimiento. Seguirá funcionando hasta el 1-oct.
+2. **Nunca toques el dominio:** `gotomachupicchuperu.com` está pagado hasta el
+   2027-09-01 y **su** renovación automática conviene dejarla como está. Son dos
+   productos distintos en Namecheap (*Domain List* y *Hosting List*).
+3. Cuando el hospedaje venza, la zona DNS vieja desaparece; no importa, porque
+   para entonces el dominio ya usa los nameservers de HostArmada. **Esto solo es
+   verdad si el cambio de nameservers se hizo antes** — ver la fecha límite arriba.
 
 ---
 
@@ -825,24 +861,34 @@ Comprueba `/es/legal/privacidad/` y haz commit y push.
 | Si el problema aparece… | Cómo volver |
 |---|---|
 | **En la Fase 2** (pruebas) | No hace falta nada: el sitio real sigue en Namecheap. Quita la línea del `hosts`. |
-| **Tras cambiar los nameservers** | Namecheap → **Manage → Nameservers → Namecheap Web Hosting DNS** (o `dns1.namecheaphosting.com` / `dns2.namecheaphosting.com`). En 1-24 h todo vuelve al hosting viejo, que sigue con la web y el correo intactos **mientras no lo hayas cancelado**. |
-| **El correo pierde mensajes** | Los mensajes que llegaron al servidor nuevo siguen en HostArmada: cópialos con la segunda pasada del paso 3.2. |
+| **Tras cambiar los nameservers, y antes del 1-oct** | Namecheap → **Domain List → Manage → Nameservers → Namecheap Web Hosting DNS** (o `dns1.namecheaphosting.com` / `dns2.namecheaphosting.com`). En 1-24 h todo vuelve al hospedaje viejo, que sigue con la web y el correo intactos **hasta que venza**. |
+| **Tras el 1-oct** | **Ya no hay hospedaje viejo al que volver** (era de un mes). La única vuelta atrás sería **renovarlo** desde Namecheap (botón *Renovar* de *Hosting List*) — cuesta dinero y no es inmediato. Por eso la comprobación completa tiene que estar hecha **antes** de esa fecha. |
+| **El correo pierde mensajes** | Los mensajes que llegaron al servidor nuevo siguen en HostArmada: cópialos con la segunda pasada del paso 3.2. Los del hospedaje viejo están en la copia de seguridad del paso 3.0. |
 
-**Por eso no se cancela Namecheap hasta pasar 7-14 días sin problemas.**
+**Con un hospedaje de un solo mes, la red de seguridad es la fecha límite, no un
+periodo de espera:** todo lo importante (nameservers, HTTPS, correo) debe estar
+comprobado antes del 1-oct. Si el martes 29 por la noche algo no funciona y no ves
+cómo arreglarlo, **renovar un mes** el hospedaje viejo cuesta poco frente a
+quedarte sin web ni correo.
 
 ---
 
 ## 11. Cronograma sugerido
 
+Calendario **real**, con el hospedaje de Namecheap venciendo el jueves 1-oct-2026
+(hoy es domingo 27-sep). Cuatro días con un margen final de un día completo:
+
 | Día | Qué | Riesgo |
 |---|---|---|
-| **1** | Preguntas a soporte, contratar, fases 1.1-1.5 | Ninguno |
-| **2** | Secretos, doble despliegue, simulación y subida real (2.1-2.3) | Ninguno |
-| **3** | Pruebas con `hosts` y `comprobar-hosting.mjs` (2.4-2.5), buzones creados y primera copia de correo | Ninguno |
-| **4** (mar-jue, mañana) | **Día D:** zona DNS + nameservers (4.1-4.2), AutoSSL (4.4) | Bajo |
-| **4-5** | Pruebas de Fase 5, segunda copia de correo | Bajo |
-| **6-18** | Observación (Search Console, correo, panel) | Ninguno |
-| **~18** | Limpieza (Fase 6), cancelar hosting de Namecheap | Ninguno |
+| **Lun 28-sep** | Añadir el dominio como *addon domain* (paso 1), clave SSH importada y autorizada (pasos 3-5), los 5 secretos (paso 6). **Desactivar la renovación automática** de Namecheap. Copia de seguridad del cPanel de Namecheap (3.0). Crear los buzones en HostArmada. | Ninguno: nada visible cambia |
+| **Mar 29-sep, mañana** | Despliegue en **simulación** y luego **real** (2.3). Pruebas con `comprobar-hosting.mjs --ip 84.75.144.0` y con el archivo `hosts` (2.4). Primera copia del correo (3.1). | Ninguno |
+| **Mar 29-sep, mediodía** | **Día D:** recrear la zona DNS (4.1) y **cambiar los nameservers** (4.2). Lanzar AutoSSL (4.4) cuando ya resuelva. | Bajo |
+| **Mié 30-sep** | Comprobar HTTPS, correo (enviar y recibir), «Publicar cambios» del panel, Search Console (Fase 5). Segunda copia del correo. | Bajo |
+| **Jue 1-oct** | El hospedaje de Namecheap vence. Ya no se usa. Solo queda la [limpieza](#9-fase-6--limpieza-del-repositorio-y-de-namecheap). | Ninguno |
+
+**Si el martes a las 18:00 la simulación o las pruebas siguen sin salir**, no cambies
+los nameservers con prisa: valora renovar un mes el hospedaje viejo (ver el [plan de
+vuelta atrás](#10-plan-de-vuelta-atrás)) y termina con calma la semana siguiente.
 
 ---
 
