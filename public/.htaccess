@@ -44,6 +44,12 @@ ErrorDocument 404 /404.html
   # Es 302 y no 301 porque el destino depende de quién pregunta. Los idiomas
   # que la web no tiene (francés, alemán…) NO entran en ninguna regla y caen
   # al index.html de siempre, que sí recorre la lista de preferencias.
+  #
+  # La raíz se marca (variable RAIZ) para que más abajo se le diga a la caché
+  # que NO guarde su respuesta. HostArmada tiene delante una caché (nginx) que
+  # guarda la primera redirección de «/» y se la da a todo el mundo sin mirar
+  # el idioma: medido el 6-oct-2026, inglés y portugués acababan en /es/.
+  RewriteRule ^$ - [E=RAIZ:1]
   RewriteCond %{HTTP:Accept-Language} ^\s*pt [NC]
   RewriteRule ^$ /pt/ [R=302,L]
   RewriteCond %{HTTP:Accept-Language} ^\s*en [NC]
@@ -59,6 +65,20 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 # 3. Caché.
+
+# La raíz «/» no se cachea nunca: su respuesta depende del idioma del
+# visitante (redirige a /es/, /en/ o /pt/), y una caché que la guardara
+# mandaría a todos al mismo. `Vary` lo dice en términos de protocolo y
+# `no-store` lo garantiza aunque la caché no mire `Vary`. REDIRECT_RAIZ cubre
+# el caso en que Apache sirve el index.html de la raíz por una subpetición
+# interna, que renombra la variable.
+<IfModule mod_headers.c>
+  Header always set Cache-Control "private, no-store, max-age=0" env=RAIZ
+  Header always merge Vary "Accept-Language" env=RAIZ
+  Header always set Cache-Control "private, no-store, max-age=0" env=REDIRECT_RAIZ
+  Header always merge Vary "Accept-Language" env=REDIRECT_RAIZ
+</IfModule>
+
 <IfModule mod_expires.c>
   ExpiresActive On
 
