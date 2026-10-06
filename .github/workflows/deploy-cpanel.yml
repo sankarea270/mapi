@@ -1,6 +1,7 @@
-name: Desplegar en cPanel (Namecheap)
+name: Desplegar en cPanel (HostArmada)
 
-# Cada push a main reconstruye el sitio y sincroniza public_html por SSH.
+# Cada push a main reconstruye el sitio y lo sincroniza por SSH con la
+# carpeta del dominio en HostArmada.
 #
 # Se puede lanzar a mano desde la pestaña Actions, con la casilla `simulacion`
 # marcada, para ver qué archivos SE SUBIRÍAN sin tocar el servidor. Conviene
@@ -31,12 +32,6 @@ concurrency:
 jobs:
   desplegar:
     runs-on: ubuntu-latest
-    env:
-      # Los `if:` de un paso no pueden leer `secrets` directamente, pero sí
-      # `env`. Con esto, los pasos de HostArmada de más abajo solo se ejecutan
-      # cuando el secreto HA_SSH_HOST existe; sin él se saltan y el despliegue
-      # sigue siendo el de siempre.
-      HA_SSH_HOST: ${{ secrets.HA_SSH_HOST }}
     steps:
       - uses: actions/checkout@v4
 
@@ -98,39 +93,60 @@ jobs:
       # no hay nada que disparar. Y rsync compara contenido de verdad, no
       # fechas, de modo que los despliegues siguientes mandan solo lo que
       # cambió y tardan segundos en vez de minutos.
-      - name: Preparar la clave SSH
+      # ── Destino: HostArmada ────────────────────────────────────────────────
+      # Desde el 1-oct-2026 el sitio vive en HostArmada, como dominio adicional
+      # de la cuenta `naca1.armadaservers.com`. El hospedaje de Namecheap venció
+      # y su paso se quitó: con él dentro, cada publicación fallaba al no poder
+      # entrar en un servidor que ya no es nuestro.
+      #
+      # Secretos (Settings → Secrets and variables → Actions):
+      #   HA_SSH_KEY         clave privada SIN contraseña (obligatorio)
+      #   HA_SSH_USER        usuario de cPanel (obligatorio)
+      #   HA_SSH_TARGET_DIR  carpeta del dominio, p. ej. public_html/gotomachupicchuperu.com (obligatorio)
+      #   HA_SSH_HOST        opcional; por defecto naca1.armadaservers.com
+      #   HA_SSH_PORT        opcional; por defecto 19199, el puerto fijo de HostArmada
+      - name: Preparar la clave SSH de HostArmada
         env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '21098' }}
+          HA_SSH_KEY: ${{ secrets.HA_SSH_KEY }}
+          HA_SSH_USER: ${{ secrets.HA_SSH_USER }}
+          HA_SSH_HOST: ${{ secrets.HA_SSH_HOST || 'naca1.armadaservers.com' }}
+          HA_SSH_PORT: ${{ secrets.HA_SSH_PORT || '19199' }}
+          HA_DESTINO: ${{ secrets.HA_SSH_TARGET_DIR }}
         run: |
           set -euo pipefail
+          : "${HA_SSH_KEY:?Falta el secreto HA_SSH_KEY (la clave privada, ver MIGRACION-HOSTARMADA.md)}"
+          : "${HA_SSH_USER:?Falta el secreto HA_SSH_USER (el usuario de cPanel)}"
+          : "${HA_DESTINO:?Falta el secreto HA_SSH_TARGET_DIR (la carpeta del dominio)}"
+
+          # Salvaguarda: esa cuenta aloja OTRA web en public_html. Con
+          # --delete, desplegar ahí borraría esa otra web entera. El sitio
+          # tiene que ir a su propia carpeta de dominio adicional.
+          limpio="${HA_DESTINO%/}"
+          if [ "$limpio" = "public_html" ] || [ "$limpio" = "~/public_html" ] || [ -z "$limpio" ] || [ "$limpio" = "." ]; then
+            echo "HA_SSH_TARGET_DIR vale «$HA_DESTINO»: es la carpeta de la OTRA web de la cuenta."
+            echo "Debe ser la carpeta del dominio adicional, p. ej. public_html/gotomachupicchuperu.com"
+            exit 1
+          fi
+
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_despliegue
-          chmod 600 ~/.ssh/id_despliegue
-          # Se apunta la huella del servidor al empezar. No es una
-          # comprobación fuerte —se confía en quien responda la primera vez—,
-          # pero evita tener que desactivar la verificación por completo, que
-          # es lo que se suele hacer y deja la conexión abierta a suplantación
-          # durante toda la ejecución.
-          #
-          # Con reintentos: `ssh-keyscan` espera solo 5 s por defecto y un
-          # servidor compartido puede tardar más en un momento dado. Sin
-          # reintento, un corte puntual —el 27-sep-2026 el servidor sí
-          # respondía y la web estaba bien— marcaba el despliegue entero como
-          # fallido y obligaba a lanzarlo otra vez a mano.
+          printf '%s\n' "$HA_SSH_KEY" > ~/.ssh/id_hostarmada
+          chmod 600 ~/.ssh/id_hostarmada
+          # Se apunta la huella del servidor al empezar, con reintentos: un
+          # servidor compartido puede tardar más de los 5 s que espera
+          # ssh-keyscan por defecto, y un corte puntual no debe tumbar la
+          # publicación entera.
           for intento in 1 2 3; do
-            ssh-keyscan -T 20 -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null && test -s ~/.ssh/known_hosts && break
+            ssh-keyscan -T 20 -p "$HA_SSH_PORT" -H "$HA_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null && test -s ~/.ssh/known_hosts && break
             echo "ssh-keyscan sin respuesta (intento $intento de 3)"; sleep 10
           done
-          test -s ~/.ssh/known_hosts || { echo "El servidor no respondió al ssh-keyscan tras 3 intentos"; exit 1; }
+          test -s ~/.ssh/known_hosts || { echo "HostArmada no respondió al ssh-keyscan tras 3 intentos (¿puerto o host incorrectos?)"; exit 1; }
 
-      - name: Sincronizar por rsync
+      - name: Sincronizar con HostArmada
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '21098' }}
-          DESTINO: ${{ secrets.SSH_TARGET_DIR || 'public_html' }}
+          HA_SSH_USER: ${{ secrets.HA_SSH_USER }}
+          HA_SSH_HOST: ${{ secrets.HA_SSH_HOST || 'naca1.armadaservers.com' }}
+          HA_SSH_PORT: ${{ secrets.HA_SSH_PORT || '19199' }}
+          HA_DESTINO: ${{ secrets.HA_SSH_TARGET_DIR }}
           SIMULACION: ${{ inputs.simulacion }}
         run: |
           set -euo pipefail
@@ -139,74 +155,19 @@ jobs:
             SECO="--dry-run"
             echo "MODO SIMULACIÓN: no se escribe nada en el servidor."
           fi
-
           # --delete quita del servidor lo que ya no existe en el sitio, para
           # que no queden páginas viejas accesibles. Las exclusiones son
           # críticas: .well-known guarda la validación del certificado SSL, y
-          # borrarla rompería el HTTPS en la siguiente renovación.
-          rsync -rlvz --human-readable --partial $SECO \
-            --delete \
-            --exclude '.well-known/' \
-            --exclude 'cgi-bin/' \
-            --exclude '.ftp-deploy-sync-state.json' \
-            --exclude '.git*' \
-            -e "ssh -i $HOME/.ssh/id_despliegue -p $SSH_PORT" \
-            ./out/ "$SSH_USER@$SSH_HOST:$DESTINO/" | tail -40
-
-      # ── HostArmada (migración) ─────────────────────────────────────────────
-      # Dormidos hasta que existan los secretos HA_* (ver MIGRACION-HOSTARMADA.md).
-      # Mientras conviven los dos hostings, cada despliegue actualiza LOS DOS:
-      # si no, uno se quedaría desactualizado. Terminada la migración, se borran
-      # estos dos pasos y los secretos SSH_* pasan a apuntar a HostArmada.
-      #
-      # Va DESPUÉS del de Namecheap a propósito: un fallo aquí marca el
-      # despliegue en rojo y se ve, pero la web que está en producción ya se
-      # actualizó.
-      - name: Preparar la clave SSH de HostArmada
-        if: env.HA_SSH_HOST != ''
-        env:
-          HA_SSH_KEY: ${{ secrets.HA_SSH_KEY }}
-          HA_SSH_USER: ${{ secrets.HA_SSH_USER }}
-          HA_SSH_PORT: ${{ secrets.HA_SSH_PORT }}
-        run: |
-          set -euo pipefail
-          : "${HA_SSH_KEY:?Falta el secreto HA_SSH_KEY}"
-          : "${HA_SSH_USER:?Falta el secreto HA_SSH_USER}"
-          : "${HA_SSH_PORT:?Falta el secreto HA_SSH_PORT (el puerto SSH que indica HostArmada)}"
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$HA_SSH_KEY" > ~/.ssh/id_hostarmada
-          chmod 600 ~/.ssh/id_hostarmada
-          for intento in 1 2 3; do
-            ssh-keyscan -T 20 -p "$HA_SSH_PORT" -H "$HA_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null && test -s ~/.ssh/known_hosts && break
-            echo "ssh-keyscan sin respuesta (intento $intento de 3)"; sleep 10
-          done
-          test -s ~/.ssh/known_hosts || { echo "HostArmada no respondió al ssh-keyscan tras 3 intentos (¿puerto o IP incorrectos?)"; exit 1; }
-
-      - name: Sincronizar con HostArmada
-        if: env.HA_SSH_HOST != ''
-        env:
-          HA_SSH_USER: ${{ secrets.HA_SSH_USER }}
-          HA_SSH_PORT: ${{ secrets.HA_SSH_PORT }}
-          HA_DESTINO: ${{ secrets.HA_SSH_TARGET_DIR || 'public_html' }}
-          SIMULACION: ${{ inputs.simulacion }}
-        run: |
-          set -euo pipefail
-          SECO=""
-          if [ "${SIMULACION:-false}" = "true" ]; then
-            SECO="--dry-run"
-            echo "MODO SIMULACIÓN: no se escribe nada en HostArmada."
-          fi
-          # Mismas opciones y exclusiones que el de Namecheap: --delete retira
-          # lo que ya no existe en el sitio; .well-known guarda la validación
-          # del certificado SSL y cgi-bin es de cPanel.
+          # borrarla rompería el HTTPS en la siguiente renovación; cgi-bin es
+          # de cPanel.
           rsync -rlvz --human-readable --partial $SECO \
             --delete \
             --exclude '.well-known/' \
             --exclude 'cgi-bin/' \
             --exclude '.git*' \
             -e "ssh -i $HOME/.ssh/id_hostarmada -p $HA_SSH_PORT" \
-            ./out/ "$HA_SSH_USER@$HA_SSH_HOST:$HA_DESTINO/" | tail -40
+            ./out/ "$HA_SSH_USER@$HA_SSH_HOST:${HA_DESTINO%/}/" | tail -40
 
       - name: Borrar la clave
         if: always()
-        run: rm -f ~/.ssh/id_despliegue ~/.ssh/id_hostarmada
+        run: rm -f ~/.ssh/id_hostarmada
