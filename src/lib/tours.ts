@@ -1,5 +1,5 @@
 import type { LocalizedText, TourCategory } from "@/types/tour";
-import { getMockCategories } from "@/data/tours";
+import { getMockCategories, ORDEN_MACHU_PICCHU } from "@/data/tours";
 import { supabase } from "@/lib/supabase";
 
 type RawRow = {
@@ -29,6 +29,7 @@ type RawRow = {
     location_es?: string | null;
     location_en?: string | null;
     location_pt?: string | null;
+    sort_order?: number | null;
     itinerary: Array<{
       day: string;
       title: { es: string; en: string; pt: string };
@@ -54,6 +55,12 @@ const COLUMNAS_TOUR = `
         excerpt_es, excerpt_en, excerpt_pt,
         included, itinerary`;
 
+function posicion(tour: RawRow["tours"][number]): number {
+  if (tour.sort_order != null) return tour.sort_order;
+  const i = ORDEN_MACHU_PICCHU.indexOf(tour.slug);
+  return i === -1 ? Number.MAX_SAFE_INTEGER : (i + 1) * 10;
+}
+
 async function fetchFromSupabase(): Promise<TourCategory[]> {
   const pedir = (tour: string) =>
     supabase!
@@ -61,15 +68,21 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
       .select(`slug, name_es, name_en, name_pt, image_url, tours (${tour})`)
       .order("sort_order");
 
-  /* Primero con la ubicación propia; si la migración 008 todavía no se ha
-     ejecutado, sin ella. Sin este segundo intento, pedir una columna que no
-     existe tumbaba la consulta y la web entera caía a los nueve tours de
-     ejemplo. */
-  let { data, error } = await pedir(
-    `${COLUMNAS_TOUR}, location_image_url, location_es, location_en, location_pt`
-  );
-  if ((error as { code?: string } | null)?.code === "42703") {
-    ({ data, error } = await pedir(COLUMNAS_TOUR));
+  /* De la consulta más completa a la mínima: primero con el orden propio
+     (migración 011) y la ubicación (008), luego sin el orden y al final sin
+     ninguna de las dos. Pedir una columna que no existe tumba la consulta
+     entera, y sin estos reintentos la web caía a los nueve tours de ejemplo
+     solo por tener una migración pendiente. */
+  const ubicacion = "location_image_url, location_es, location_en, location_pt";
+  const intentos = [
+    `${COLUMNAS_TOUR}, ${ubicacion}, sort_order`,
+    `${COLUMNAS_TOUR}, ${ubicacion}`,
+    COLUMNAS_TOUR,
+  ];
+  let { data, error } = await pedir(intentos[0]);
+  for (const columnas of intentos.slice(1)) {
+    if ((error as { code?: string } | null)?.code !== "42703") break;
+    ({ data, error } = await pedir(columnas));
   }
 
   if (error) throw error;
@@ -81,8 +94,14 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
       slug: category.slug,
       name: loc(category.name_es, category.name_en, category.name_pt, category.slug),
       ...(category.image_url ? { image: category.image_url } : {}),
+      /* El orden que la agencia fija en el panel manda; los tours sin orden
+         (recién creados) van detrás, mejor valorados primero. Sin la
+         migración 011 no hay orden en la base de datos, y Machu Picchu usa
+         el del documento de revisión para no volver al de valoración.
+         Este orden es el de la web entera: el listado, el menú y las páginas
+         de destino reciben los tours ya colocados. */
       tours: category.tours
-        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+        .sort((a, b) => posicion(a) - posicion(b) || (b.rating ?? 0) - (a.rating ?? 0))
         .map((tour) => {
           const gallery = (tour.gallery ?? []).filter((url): url is string => Boolean(url));
           const included = (tour.included ?? []).map((item) =>

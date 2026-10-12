@@ -240,6 +240,27 @@
   .font-condensada {
     word-spacing: 0.14em;
   }
+
+  /*
+   * Texto corrido justificado en toda la web, como pidió la revisión de 2026
+   * («justificar todos los textos homogéneamente»). Solo los párrafos del
+   * contenido público (`#contenido`): ni el pie, ni los menús, ni el panel.
+   *
+   * Lo que ya va centrado o a la derecha se respeta: el párrafo o su bloque
+   * llevan `text-center`/`text-right` (también con prefijo, `sm:text-center`)
+   * y entonces no se toca. Sin esa excepción, una regla sobre `p` gana a la
+   * alineación que el párrafo hereda, y los textos de bloques centrados se
+   * quedaban torcidos a la izquierda.
+   *
+   * `hyphens: auto` parte palabras según el `lang` de la página (es, en, pt)
+   * en vez de abrir huecos entre ellas, que es lo que estropea el justificado
+   * en columnas estrechas como las de móvil o las tarjetas.
+   */
+  #contenido p:not([class*="text-center"], [class*="text-center"] *, [class*="text-right"], [class*="text-right"] *, [class*="text-end"], [class*="text-end"] *) {
+    text-align: justify;
+    hyphens: auto;
+  }
+
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
   }

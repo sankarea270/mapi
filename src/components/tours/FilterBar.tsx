@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Search, X } from "lucide-react";
 import type { TourCategory } from "@/types/tour";
@@ -21,12 +20,17 @@ interface FilterBarProps {
   locale: string;
   filters: TourFilters;
   onChange: (patch: Partial<TourFilters>) => void;
+  /** Al pulsar Intro o la lupa: llevar la vista a los resultados. */
+  onBuscar?: () => void;
   /** Sobre la foto de la cabecera: controles translúcidos y texto claro. */
   sobreFoto?: boolean;
 }
 
-const SORT_OPTIONS = ["rating", "price-asc", "price-desc", "name"] as const;
+/* «Recomendados» es el orden que fija la agencia en el panel, categoría a
+   categoría; va primero porque es el que se ve sin tocar nada. */
+const SORT_OPTIONS = ["recommended", "rating", "price-asc", "price-desc", "name"] as const;
 const SORT_KEYS: Record<(typeof SORT_OPTIONS)[number], string> = {
+  recommended: "sortRecommended",
   rating: "sortRating",
   "price-asc": "sortPriceAsc",
   "price-desc": "sortPriceDesc",
@@ -36,20 +40,17 @@ const PRICE_CAPS = ["", "100", "200", "300", "500", "1000"] as const;
 const RATINGS = ["", "4.5", "4.8", "5.0"] as const;
 const DURATIONS = ["", "1", "2", "3", "4+"] as const;
 
-export function FilterBar({ categories, locale, filters, onChange, sobreFoto = false }: FilterBarProps) {
+export function FilterBar({ categories, locale, filters, onChange, onBuscar, sobreFoto = false }: FilterBarProps) {
   const t = useTranslations("tours");
-  const [query, setQuery] = useState(filters.q);
-
-  // La query puede venir de la URL o de un reset externo.
-  useEffect(() => {
-    setQuery(filters.q);
-  }, [filters.q]);
 
   const updateParams = (patch: Partial<TourFilters>) => onChange(patch);
 
+  /* La búsqueda se aplica mientras se escribe. Antes solo contaba al pulsar
+     Intro —la lupa era un dibujo, no un botón— y quien escribía y esperaba
+     no veía cambiar nada: «el buscador no funciona». */
   const submitQuery = (e: React.FormEvent) => {
     e.preventDefault();
-    onChange({ q: query });
+    onBuscar?.();
   };
 
   /* Los controles, en cristal esmerilado sobre la foto. Blancos del todo
@@ -74,28 +75,33 @@ export function FilterBar({ categories, locale, filters, onChange, sobreFoto = f
         className="grid grid-cols-2 gap-2 lg:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))]"
       >
         <div className="relative col-span-2 lg:col-span-1">
-          {/* `z-10`: el campo lleva `backdrop-blur`, que lo pinta como capa propia
-              por encima del icono, y la lupa desaparecía. */}
-          <Search className="pointer-events-none absolute top-1/2 left-3.5 z-10 size-4 -translate-y-1/2 text-slate-500" />
           <input
             type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={filters.q}
+            onChange={(e) => updateParams({ q: e.target.value })}
             placeholder={t("searchPlaceholder")}
             aria-label={t("searchLabel")}
-            className={cn("w-full rounded-full border py-2.5 pr-10 pl-10 text-sm text-slate-900 placeholder:text-slate-500 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30", control)}
+            enterKeyHint="search"
+            className={cn("w-full rounded-full border py-2.5 pr-10 pl-11 text-sm text-slate-900 placeholder:text-slate-500 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30 [&::-webkit-search-cancel-button]:hidden", control)}
           />
-          {query && (
+          {/* Va DESPUÉS del campo para pintarse encima: el campo lleva
+              `backdrop-blur`, que lo convierte en capa propia, y la lupa
+              quedaba tapada. */}
+          <button
+            type="submit"
+            aria-label={t("searchSubmit")}
+            className="absolute top-1/2 left-1.5 grid size-8 -translate-y-1/2 place-items-center rounded-full text-slate-500 transition-colors hover:bg-amber-50 hover:text-amber-700 focus-visible:outline-2 focus-visible:outline-amber-500"
+          >
+            <Search className="size-4" aria-hidden />
+          </button>
+          {filters.q && (
             <button
               type="button"
-              onClick={() => {
-                setQuery("");
-                updateParams({ q: "" });
-              }}
-              aria-label={t("reset")}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              onClick={() => updateParams({ q: "" })}
+              aria-label={t("searchClear")}
+              className="absolute top-1/2 right-1.5 grid size-8 -translate-y-1/2 place-items-center rounded-full text-slate-400 hover:text-slate-600"
             >
-              <X className="size-4" />
+              <X className="size-4" aria-hidden />
             </button>
           )}
         </div>

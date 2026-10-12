@@ -45,8 +45,9 @@ export default async function ToursPage({ params }: ToursPageProps) {
   const tripadvisor = tripadvisorEn(ajustes, "tours") ? await getTripadvisor(ajustes) : null;
   const allTours = categories.flatMap((c) => c.tours);
 
-  // El JSON-LD se genera en el build con el orden por defecto (mejor valorados).
-  const featured = [...allTours].sort((a, b) => b.rating - a.rating).slice(0, PER_PAGE);
+  // El JSON-LD se genera en el build con el orden por defecto del listado:
+  // el de la agencia, categoría a categoría.
+  const featured = allTours.slice(0, PER_PAGE);
 
   const t = await getTranslations("tours");
   const tn = await getTranslations("nav");

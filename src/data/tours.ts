@@ -101,6 +101,21 @@ const seeds: TourSeed[] = [
   ["chachapoyas-3d", "Chachapoyas + Sarcófagos 3D/2N", "Chachapoyas + Sarcophagi 3D/2N", "Chachapoyas + Sarcófagos 3D/2N", "3 días / 2 noches", "3 days / 2 nights", "3 dias / 2 noites", 210, "norte", 4.7],
 ];
 
+/* Orden correlativo de Machu Picchu que pidió la agencia en la revisión de
+   2026. Es el mismo que siembra la migración 011; aquí sirve de respaldo
+   mientras esa migración no se haya ejecutado. */
+export const ORDEN_MACHU_PICCHU = [
+  "camino-inca-clasico",
+  "camino-inca-corto",
+  "machu-picchu-valle-sagrado",
+  "machu-picchu-maras-moray",
+  "machu-picchu-clasico",
+  "machu-picchu-huayna-picchu",
+  "machu-picchu-vistadome",
+  "machu-picchu-montana",
+  "machu-picchu-privado",
+];
+
 const categoryMeta: Array<{ slug: string; order: number; name: LocalizedText }> = [
   { slug: "machu-picchu", order: 1, name: t("Machu Picchu", "Machu Picchu", "Machu Picchu") },
   { slug: "cusco", order: 2, name: t("Cusco", "Cusco", "Cusco") },
@@ -207,10 +222,19 @@ export function getMockCategories(): TourCategory[] {
     byCategory.set(category, list);
   }
 
+  /* Machu Picchu en el orden de la agencia y el resto por valoración, como
+     la web real: el respaldo no debe enseñar otro orden. */
+  const posicion = (slug: string) => {
+    const i = ORDEN_MACHU_PICCHU.indexOf(slug);
+    return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+  };
+
   return categoryMeta
     .map((meta) => ({
       ...meta,
-      tours: (byCategory.get(meta.slug) ?? []).sort((a, b) => b.rating - a.rating),
+      tours: (byCategory.get(meta.slug) ?? []).sort(
+        (a, b) => posicion(a.slug) - posicion(b.slug) || b.rating - a.rating
+      ),
     }))
     .filter((c) => c.tours.length > 0);
 }

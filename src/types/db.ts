@@ -53,6 +53,8 @@ export interface FilaTour {
   location_es?: string | null;
   location_en?: string | null;
   location_pt?: string | null;
+  /* Desde la migración 011: posición dentro de su categoría. */
+  sort_order?: number | null;
   updated_at: string | null;
 }
 
