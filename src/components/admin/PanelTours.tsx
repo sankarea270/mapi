@@ -32,6 +32,8 @@ interface Borrador {
   itinerary: DiaItinerario[];
   location_image_url: string;
   location: TextoML;
+  /** Posición en su categoría; vacío = al final. */
+  sort_order: string;
 }
 
 const ML_VACIO: TextoML = { es: "", en: "", pt: "" };
@@ -65,6 +67,7 @@ function aBorrador(t: FilaTour): Borrador {
     itinerary: t.itinerary ?? [],
     location_image_url: t.location_image_url ?? "",
     location: ml(t.location_es ?? null, t.location_en ?? null, t.location_pt ?? null),
+    sort_order: t.sort_order == null ? "" : String(t.sort_order),
   };
 }
 
@@ -88,6 +91,7 @@ function nuevoBorrador(category_id: string): Borrador {
     itinerary: [],
     location_image_url: "",
     location: { ...ML_VACIO },
+    sort_order: "",
   };
 }
 
@@ -116,14 +120,22 @@ function aFila(b: Borrador) {
     location_es: b.location.es || null,
     location_en: b.location.en || null,
     location_pt: b.location.pt || null,
+    sort_order: b.sort_order.trim() === "" ? null : Math.round(Number(b.sort_order)) || 0,
   };
 }
 
-/* Columnas que llegan con la migración 008. Si todavía no se ha ejecutado,
-   Supabase rechaza el guardado ENTERO por no conocerlas; se reintenta sin
-   ellas para que editar un tour siga funcionando, y se avisa de lo que no
-   se guardó. */
-const COLUMNAS_008 = ["location_image_url", "location_es", "location_en", "location_pt"];
+/* Columnas que llegan con migraciones posteriores. Si alguna todavía no se
+   ha ejecutado, Supabase rechaza el guardado ENTERO por no conocerlas; se
+   reintenta quitándolas, de la más nueva a la más vieja, para que editar un
+   tour siga funcionando, y se avisa de lo que no se guardó. */
+const COLUMNAS_OPCIONALES = [
+  { columnas: ["sort_order"], que: "el orden en su categoría", migracion: "011_orden_tours.sql" },
+  {
+    columnas: ["location_image_url", "location_es", "location_en", "location_pt"],
+    que: "el mapa y el texto de ubicación",
+    migracion: "008_ubicacion_resenas.sql",
+  },
+];
 
 function faltaColumna(fallo: { code?: string } | null): boolean {
   return fallo?.code === "PGRST204" || fallo?.code === "42703";
@@ -156,11 +168,29 @@ export function PanelTours({ revision, onCambio }: { revision: number; onCambio:
     };
   }, [revision]);
 
+  /* El listado va en el mismo orden que la web —categoría a categoría y,
+     dentro, por su número de orden—, para ver de un vistazo qué tour sale
+     primero. Antes iba por nombre y el orden de la web no se veía en
+     ninguna parte. */
   const visibles = useMemo(() => {
+    const posicionCategoria = new Map(categorias.map((c, i) => [c.id, i]));
+    const ordenados = [...tours].sort(
+      (a, b) =>
+        (posicionCategoria.get(a.category_id ?? "") ?? 999) -
+          (posicionCategoria.get(b.category_id ?? "") ?? 999) ||
+        (a.sort_order ?? Number.MAX_SAFE_INTEGER) - (b.sort_order ?? Number.MAX_SAFE_INTEGER) ||
+        Number(b.rating ?? 0) - Number(a.rating ?? 0) ||
+        a.name_es.localeCompare(b.name_es, "es")
+    );
     const q = normalize(busqueda.trim());
-    if (!q) return tours;
-    return tours.filter((t) => normalize(`${t.name_es} ${t.slug}`).includes(q));
-  }, [tours, busqueda]);
+    if (!q) return ordenados;
+    return ordenados.filter((t) => normalize(`${t.name_es} ${t.slug}`).includes(q));
+  }, [tours, categorias, busqueda]);
+
+  const nombreCategoria = useMemo(
+    () => new Map(categorias.map((c) => [c.id, c.name_es])),
+    [categorias]
+  );
 
   async function guardar(b: Borrador) {
     if (!supabase) return;
@@ -175,22 +205,26 @@ export function PanelTours({ revision, onCambio }: { revision: number; onCambio:
       b.id ? supabase!.from("tours").update(f).eq("id", b.id) : supabase!.from("tours").insert(f);
 
     let { error: fallo } = await escribir(fila);
-    let sinUbicacion = false;
-    if (faltaColumna(fallo)) {
-      const reducida = Object.fromEntries(
-        Object.entries(fila).filter(([k]) => !COLUMNAS_008.includes(k))
+    const omitidas: typeof COLUMNAS_OPCIONALES = [];
+    let reducida = fila;
+    for (const grupo of COLUMNAS_OPCIONALES) {
+      if (!faltaColumna(fallo)) break;
+      omitidas.push(grupo);
+      reducida = Object.fromEntries(
+        Object.entries(reducida).filter(([k]) => !grupo.columnas.includes(k))
       );
       ({ error: fallo } = await escribir(reducida));
-      sinUbicacion = !fallo;
     }
 
-    if (sinUbicacion) {
-      /* Guardado, pero sin el mapa: se dice claro en el listado. El editor
-         se cierra igualmente; dejarlo abierto con un tour NUEVO haría que
-         volver a pulsar Guardar lo insertara dos veces. */
+    if (!fallo && omitidas.length > 0) {
+      /* Guardado, pero sin esas columnas: se dice claro en el listado. El
+         editor se cierra igualmente; dejarlo abierto con un tour NUEVO haría
+         que volver a pulsar Guardar lo insertara dos veces. */
       setEditando(null);
       setError(
-        "El tour se guardó, pero el mapa y el texto de ubicación NO: falta ejecutar 008_ubicacion_resenas.sql en Supabase."
+        `El tour se guardó, pero ${omitidas.map((g) => g.que).join(" ni ")} NO: falta ejecutar ${omitidas
+          .map((g) => g.migracion)
+          .join(" y ")} en Supabase.`
       );
       onCambio();
       return;
@@ -290,7 +324,8 @@ export function PanelTours({ revision, onCambio }: { revision: number; onCambio:
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-slate-900">{t.name_es}</p>
                 <p className="truncate text-xs text-slate-400">
-                  /{t.slug}
+                  {nombreCategoria.get(t.category_id ?? "") ?? "Sin categoría"}
+                  {t.sort_order != null && ` · orden ${t.sort_order}`} · /{t.slug}
                   {!t.name_en && " · sin traducir"}
                 </p>
               </div>
@@ -432,6 +467,14 @@ function EditorTour({
             valor={b.rating}
             onChange={(v) => set("rating", v)}
             ayuda="De 0 a 5."
+          />
+          <Campo
+            etiqueta="Orden en su categoría"
+            tipo="number"
+            valor={b.sort_order}
+            onChange={(v) => set("sort_order", v)}
+            placeholder="10"
+            ayuda="El más bajo sale primero en la web. Van de diez en diez para poder meter uno entre dos; vacío, al final."
           />
           <div className="sm:col-span-2">
             <CampoImagen

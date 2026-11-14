@@ -64,6 +64,7 @@ const comprobaciones = [
     (await existe("reviews", "target_type"))],
   ["009_ajustes.sql", () => existe("site_settings")],
   ["010_portada_leyendas.sql", () => existe("hero_slides", "link_url")],
+  ["011_orden_tours.sql", () => existe("tours", "sort_order")],
 ];
 
 const extra = process.argv.slice(2);
