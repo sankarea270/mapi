@@ -1,7 +1,10 @@
 import type { LocalizedText, Tour } from "@/types/tour";
 
+/* `||` y no `??`: el panel guarda las traducciones que se dejan en blanco
+   como cadena vacía, no como null. Con `??` la versión inglesa de un tour
+   creado solo en español decía «The experience lasts .», sin duración. */
 export const pickLocalized = (text: LocalizedText, locale: string): string =>
-  text[locale as keyof LocalizedText] ?? text.es;
+  text[locale as keyof LocalizedText] || text.es;
 
 export function formatPrice(price: number, locale: string, code: string): string {
   return new Intl.NumberFormat(locale, {

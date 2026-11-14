@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { moverFila } from "@/lib/admin/orden";
 import { Boton, Campo, Etiqueta } from "./campos";
 import { CampoImagen } from "./CampoImagen";
 import { LEYENDAS_PORTADA } from "@/data/portada";
@@ -54,9 +55,9 @@ type Borrador = Omit<FilaPortada, "id"> & { id: string | null };
  *
  * Dos cosas que este panel hace y que no se ven:
  *
- *  · El orden se guarda como número, no como posición en la lista. Subir una
- *    foto reescribe `sort_order` de las dos implicadas y nada más; si fuera
- *    la posición habría que reescribir la tabla entera en cada movimiento.
+ *  · El orden se guarda como número, de diez en diez. Subir o bajar una foto
+ *    renumera la lista y escribe solo las filas cuyo número cambia (ver
+ *    `moverFila`).
  *
  *  · El texto alternativo es obligatorio. No es burocracia: es lo que lee un
  *    lector de pantalla y lo que entiende Google de una foto a pantalla
@@ -184,18 +185,9 @@ export function PanelPortada({
     onCambio();
   }
 
-  /* Mover = intercambiar el orden con la vecina. Dos escrituras, no toda la
-     tabla. */
   async function mover(i: number, direccion: -1 | 1) {
-    if (!supabase) return;
-    const a = filas[i];
-    const b = filas[i + direccion];
-    if (!a || !b) return;
     setError("");
-    const { error: fallo } = await supabase.from("hero_slides").upsert([
-      { id: a.id, sort_order: b.sort_order },
-      { id: b.id, sort_order: a.sort_order },
-    ]);
+    const fallo = await moverFila("hero_slides", filas, i, direccion);
     if (fallo) return setError(mensaje(fallo));
     onCambio();
   }

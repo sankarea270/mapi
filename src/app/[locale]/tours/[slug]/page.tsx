@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
@@ -13,6 +14,7 @@ import {
   MessageSquare,
   Route,
   Sun,
+  X,
 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -35,6 +37,35 @@ import { TarjetaResena } from "@/components/reviews/TarjetaResena";
 import { BloqueUbicacion } from "@/components/tours/BloqueUbicacion";
 import { cn } from "@/lib/utils";
 import { TourSidebar } from "@/components/tours/TourSidebar";
+import type { LocalizedText } from "@/types/tour";
+
+/* La descripción larga se escribe en el panel con una línea en blanco entre
+   párrafo y párrafo. */
+function parrafos(texto: string): string[] {
+  return texto
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+/* Para la meta descripción, que Google corta hacia los 160 caracteres: mejor
+   cortar en una palabra que a mitad. */
+function recortar(texto: string, max = 160): string {
+  const limpio = texto.replace(/\s+/g, " ").trim();
+  if (limpio.length <= max) return limpio;
+  return `${limpio.slice(0, limpio.lastIndexOf(" ", max - 1)).replace(/[,.;:]$/, "")}…`;
+}
+
+/* La frase corta del tour: el resumen o, si no lo hay, el principio de la
+   descripción larga. */
+function entradilla(
+  tour: { excerpt?: LocalizedText; description?: LocalizedText },
+  locale: string
+): string | undefined {
+  if (tour.excerpt) return pickLocalized(tour.excerpt, locale);
+  if (tour.description) return recortar(pickLocalized(tour.description, locale));
+  return undefined;
+}
 
 export async function generateStaticParams() {
   const categories = await getCategoriesWithTours();
@@ -54,9 +85,7 @@ export async function generateMetadata({
   const tour = categories.flatMap((c) => c.tours).find((t) => t.slug === slug);
   if (!tour) return {};
   const name = pickLocalized(tour.name, locale);
-  const description = tour.excerpt
-    ? pickLocalized(tour.excerpt, locale)
-    : undefined;
+  const description = entradilla(tour, locale);
   /* La duración va en el título porque es el primer filtro mental de quien
      compara tours ("de 1 día", "4 días"), y porque estira títulos de 20
      caracteres hasta acercarse a los 60 que Google muestra. El precio NO:
@@ -178,7 +207,7 @@ export default async function TourDetailPage({
     "@context": "https://schema.org",
     "@type": "TouristTrip",
     name,
-    description: tour.excerpt ? pickLocalized(tour.excerpt, l) : undefined,
+    description: entradilla(tour, l),
     image: gallery.map((img) => img.replace("/600/600", "/1200/630")),
     url,
     ...(valoracion ? { aggregateRating: valoracion } : {}),
@@ -239,11 +268,19 @@ export default async function TourDetailPage({
      tours: sin esto parecerían escritas sobre este. */
   const fichas = construirFichas(l, { categorias: categories, paquetes, experiencias });
 
+  const textoDescripcion = tour.description
+    ? parrafos(pickLocalized(tour.description, l))
+    : tour.excerpt
+      ? [pickLocalized(tour.excerpt, l)]
+      : [];
+  const incluye = (tour.included ?? []).map((item) => pickLocalized(item, l));
+  const noIncluye = (tour.notIncluded ?? []).map((item) => pickLocalized(item, l));
+
   const propias = tourReviews.length > 0;
   const resenasVisibles = propias ? tourReviews : resenas.slice(0, 4);
 
   const secciones = [
-    { id: "resumen", label: t("navSummary"), icon: <Compass /> },
+    { id: "descripcion", label: t("description"), icon: <Compass /> },
     { id: "itinerario", label: paradas > 0 ? t("itinerary") : t("navFaq"), icon: <Calendar /> },
     { id: "temporada", label: t("tabSeason"), icon: <Sun /> },
     { id: "ubicacion", label: t("tabLocation"), icon: <MapIcon /> },
@@ -354,33 +391,63 @@ export default async function TourDetailPage({
                 una de ellas —«Confirmación inmediata»— contradecía al panel
                 de reserva, que dice que la confirmación llega en menos de 24
                 horas. */}
-            <section id="resumen" className={cn(seccion, "border-t-0 pt-10")}>
-              {tour.excerpt && (
-                <p className="border-l-2 border-teal-500 pl-6 font-logo text-xl leading-relaxed text-slate-700 sm:text-[1.4rem] sm:leading-relaxed">
-                  {pickLocalized(tour.excerpt, l)}
-                </p>
+            {/* «Descripción» y no «Resumen». Antes aquí solo cabía el
+                resumen de la tarjeta del listado, dos o tres líneas iguales
+                a las que ya se habían leído antes de entrar. Ahora sale la
+                descripción larga que se escribe en el panel; sin ella, el
+                resumen, como hasta ahora. */}
+            <section id="descripcion" className={cn(seccion, "border-t-0 pt-10")}>
+              <div className="escena-texto">
+                <h2 className="font-heading text-2xl font-bold text-slate-900">
+                  {t("description")}
+                </h2>
+              </div>
+
+              {textoDescripcion.length > 0 && (
+                <div className="mt-6 max-w-3xl">
+                  {/* El primer párrafo hace de entradilla, con la letra del
+                      resumen de antes; el resto, en cuerpo de lectura. */}
+                  <p className="whitespace-pre-line border-l-2 border-teal-500 pl-6 font-logo text-xl leading-relaxed text-slate-700 sm:text-[1.4rem] sm:leading-relaxed">
+                    {textoDescripcion[0]}
+                  </p>
+                  {textoDescripcion.length > 1 && (
+                    <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-slate-600 sm:text-base sm:leading-relaxed">
+                      {textoDescripcion.slice(1).map((parrafo, i) => (
+                        <p key={i} className="whitespace-pre-line">
+                          {parrafo}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
 
-              {tour.included && tour.included.length > 0 && (
-                <div className={tour.excerpt ? "mt-12" : undefined}>
-                  <div className="escena-texto">
-                    <h2 className="font-heading text-2xl font-bold text-slate-900">
-                      {t("included")}
-                    </h2>
-                  </div>
-                  <ul className="mt-6 grid gap-x-10 sm:grid-cols-2">
-                    {tour.included.map((item, index) => (
-                      <li
-                        key={index}
-                        className="flex items-baseline gap-3 border-b border-slate-200/80 py-3.5"
-                      >
-                        <Check className="size-3.5 shrink-0 translate-y-0.5 text-teal-600" />
-                        <span className="text-[15px] leading-relaxed text-slate-700">
-                          {pickLocalized(item, l)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+              {(incluye.length > 0 || noIncluye.length > 0) && (
+                /* Lado a lado cuando están las dos listas: lo que entra y lo
+                   que no se leen como una comparación, que es para lo que se
+                   miran. Con una sola, a dos columnas como antes. */
+                <div
+                  className={cn(
+                    "mt-12 grid gap-x-10 gap-y-12",
+                    incluye.length > 0 && noIncluye.length > 0 && "md:grid-cols-2"
+                  )}
+                >
+                  {incluye.length > 0 && (
+                    <ListaServicios
+                      titulo={t("included")}
+                      items={incluye}
+                      icono={<Check className="size-3.5 shrink-0 translate-y-0.5 text-teal-600" />}
+                      dosColumnas={noIncluye.length === 0}
+                    />
+                  )}
+                  {noIncluye.length > 0 && (
+                    <ListaServicios
+                      titulo={t("notIncluded")}
+                      items={noIncluye}
+                      icono={<X className="size-3.5 shrink-0 translate-y-0.5 text-slate-400" />}
+                      dosColumnas={incluye.length === 0}
+                    />
+                  )}
                 </div>
               )}
             </section>
@@ -540,6 +607,37 @@ export default async function TourDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(migas) }}
       />
+    </div>
+  );
+}
+
+function ListaServicios({
+  titulo,
+  items,
+  icono,
+  dosColumnas,
+}: {
+  titulo: string;
+  items: string[];
+  icono: ReactNode;
+  dosColumnas: boolean;
+}) {
+  return (
+    <div>
+      <div className="escena-texto">
+        <h3 className="font-heading text-xl font-bold text-slate-900 sm:text-2xl">{titulo}</h3>
+      </div>
+      <ul className={cn("mt-5 grid gap-x-10", dosColumnas && "sm:grid-cols-2")}>
+        {items.map((item, index) => (
+          <li
+            key={index}
+            className="flex items-baseline gap-3 border-b border-slate-200/80 py-3.5"
+          >
+            {icono}
+            <span className="text-[15px] leading-relaxed text-slate-700">{item}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
