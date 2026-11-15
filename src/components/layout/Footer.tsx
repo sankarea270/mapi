@@ -124,6 +124,17 @@ export default async function Footer() {
                   {t("nav.about")}
                 </Link>
               </li>
+              {/* Ninguna página enlazaba a «Contacto» en el HTML: el menú que la
+                  lleva se monta al abrirse. Para Google era una página
+                  huérfana, solo conocida por el sitemap. */}
+              <li>
+                <Link
+                  href="/contacto"
+                  className="text-slate-400 transition-colors hover:text-amber-300"
+                >
+                  {t("nav.contact")}
+                </Link>
+              </li>
             </ul>
           </div>
 

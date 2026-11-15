@@ -37,9 +37,12 @@ export async function generateMetadata({
   const lista = await getExperiences();
   const experience = lista.find((e) => e.slug === slug);
   if (!experience) return {};
+  /* El nombre solo («Astroturismo», «Perú Clásico 9D/8N») no dice que es un
+     viaje por Perú; el título lo completa. */
+  const t = await getTranslations({ locale, namespace: "experiencias" });
   return buildMetadata({
     locale,
-    title: pickLocalized(experience.name, locale),
+    title: t("seoTitleItem", { name: pickLocalized(experience.name, locale) }),
     description: pickLocalized(experience.description, locale),
     path: `/experiencias/${experience.slug}`,
     image: experience.image,

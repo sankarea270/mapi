@@ -62,6 +62,7 @@
     "lima": "Lima",
     "manu": "Reserva de Manu",
     "title": "Destinos no Peru",
+    "seoTitleHub": "Destinos no Peru: o que ver e quando ir",
     "subtitle": "Da cidadela de Machu Picchu à Amazônia: explore cada canto do Peru conosco.",
     "count": "{count} destinos para explorar",
     "toursCount": "{count} tours",
@@ -92,6 +93,8 @@
     "family": "Viagens em família",
     "students": "Grupos e estudantes",
     "title": "Pacotes e Circuitos",
+    "seoTitle": "Pacotes de viagem ao Peru: circuitos e roteiros sob medida",
+    "seoTitleItem": "{name}: pacote de viagem pelo Peru",
     "subtitle": "Circuitos clássicos e viagens especiais montados pelos nossos especialistas, com todos os detalhes incluídos.",
     "count": "{count} pacotes disponíveis",
     "view": "Ver roteiro",
@@ -114,6 +117,8 @@
     "photoTour": "Tour fotográfico",
     "starlight": "Astroturismo",
     "title": "Experiências",
+    "seoTitle": "Experiências no Peru: cultura, gastronomia e astroturismo",
+    "seoTitleItem": "{name} no Peru: tours e experiências",
     "subtitle": "Cultura, gastronomia, fotografia e astroturismo: viva o Peru além dos tours clássicos.",
     "count": "{count} experiências para viver",
     "explore": "Explorar",
@@ -133,6 +138,8 @@
     "faqLink": "Perguntas frequentes",
     "contactUs": "Fale conosco",
     "title": "Guia de Viagem",
+    "seoTitle": "Guia de viagem ao Peru: clima, altitude, vistos e bagagem",
+    "seoTitleItem": "{title} · Guia de viagem ao Peru",
     "subtitle": "Dicas práticas antes de viajar: como chegar, clima, o que levar, segurança, vistos e perguntas frequentes.",
     "count": "{count} artigos de ajuda",
     "read": "Ler artigo",
@@ -162,6 +169,7 @@
   },
   "tours": {
     "title": "Nossos Tours",
+    "seoTitle": "Tours no Peru: Machu Picchu, Cusco e Vale Sagrado",
     "subtitle": "Explore nossa seleção de experiências por todo o Peru: Machu Picchu, Vale Sagrado, Amazônia e mais.",
     "found": "{count, plural, =0 {Nenhum tour encontrado} one {# tour disponível} other {# tours disponíveis}}",
     "searchPlaceholder": "Buscar tours, destinos...",
@@ -236,6 +244,7 @@
   },
   "reserva": {
     "title": "Reserve sua viagem",
+    "seoTitle": "Reserve seu tour no Peru, sem pagamento online",
     "subtitle": "Conte-nos sua data e preferências; confirmamos a disponibilidade em até 24 horas, sem pagamentos on-line.",
     "step": "Formulário de reserva",
     "sectionTrip": "A viagem",
@@ -329,6 +338,7 @@
   },
   "contact": {
     "title": "Fale Conosco",
+    "seoTitle": "Contato: agência de viagens em Cusco, Peru",
     "subtitle": "Conte-nos sobre sua viagem dos sonhos e responderemos em até 24 horas.",
     "quick": "Contato direto",
     "hours": "Horário de atendimento",
@@ -381,7 +391,7 @@
   },
   "about": {
     "meta": {
-      "title": "Sobre nós",
+      "title": "Quem somos: agência de viagens em Cusco desde 2012",
       "description": "Conheça a história, missão e equipe da GoToMapi. Agência autorizada especializada em tours para Machu Picchu e todo o Peru."
     },
     "hero": {
