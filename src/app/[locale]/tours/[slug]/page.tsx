@@ -134,12 +134,23 @@ export default async function TourDetailPage({
   const destination = destinos.find((d) =>
     d.categorySlugs?.includes(tour.categorySlug)
   );
-  const related = tour.categorySlug
-    ? categories
-        .find((c) => c.slug === tour.categorySlug)
-        ?.tours.filter((t) => t.slug !== tour.slug)
-        .slice(0, 3) ?? []
+  /* Los tres que SIGUEN a este en su categoría, dando la vuelta al final.
+     Antes eran siempre los tres primeros: los primeros de cada categoría se
+     llevaban todos los enlaces y los últimos ninguno (Vinicunca + Humantay,
+     Cuatrimotos o la Tirolesa tenían un solo enlace en toda la web, y Google
+     los dejaba en «Descubierta: actualmente sin indexar»). Así cada tour
+     recibe enlace de los tres que le preceden. */
+  const hermanos = tour.categorySlug
+    ? categories.find((c) => c.slug === tour.categorySlug)?.tours ?? []
     : [];
+  const posicion = hermanos.findIndex((x) => x.slug === tour.slug);
+  const related =
+    posicion === -1
+      ? hermanos.slice(0, 3)
+      : Array.from(
+          { length: Math.min(3, hermanos.length - 1) },
+          (_, i) => hermanos[(posicion + 1 + i) % hermanos.length]
+        );
 
   const tourReviews = resenas.filter((r) => esDe(r, "tour", tour.slug));
 

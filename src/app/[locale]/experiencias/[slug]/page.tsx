@@ -9,9 +9,12 @@ import { TarjetaResena } from "@/components/reviews/TarjetaResena";
 import { Link } from "@/i18n/navigation";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { pickLocalized } from "@/lib/format";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, completarDescripcion } from "@/lib/seo";
 import { Migas } from "@/components/layout/Migas";
 import { TourCard } from "@/components/tours/TourCard";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { Apartado, Lugares, Preguntas, Presentacion, preguntasLd } from "@/components/guia/BloquesGuia";
+import { GUIAS_EXPERIENCIA, traducidoOGuia } from "@/data/experiencias-guia";
 
 /* Dirección de relleno para cuando no hay ninguna experiencia publicada. */
 const SIN_EXPERIENCIAS = "sin-experiencias";
@@ -40,10 +43,16 @@ export async function generateMetadata({
   /* El nombre solo («Astroturismo», «Perú Clásico 9D/8N») no dice que es un
      viaje por Perú; el título lo completa. */
   const t = await getTranslations({ locale, namespace: "experiencias" });
+  const guia = GUIAS_EXPERIENCIA[experience.slug];
   return buildMetadata({
     locale,
-    title: t("seoTitleItem", { name: pickLocalized(experience.name, locale) }),
-    description: pickLocalized(experience.description, locale),
+    title: t("seoTitleItem", { name: traducidoOGuia(experience.name, guia?.nombre, locale) }),
+    /* La frase del panel ronda los 80 caracteres; se completa con la
+       presentación de la guía hasta lo que Google enseña. */
+    description: completarDescripcion(
+      traducidoOGuia(experience.description, guia?.resumen, locale),
+      guia ? pickLocalized(guia.intro[0], locale) : ""
+    ),
     path: `/experiencias/${experience.slug}`,
     image: experience.image,
   });
@@ -78,10 +87,13 @@ export default async function ExperiencePage({
   const propias = resenas.filter((r) => esDe(r, "experiencia", experience.slug));
   const deSusTours = resenas.filter((r) => tours.some((x) => esDe(r, "tour", x!.slug)));
   const resenasExperiencia = [...propias, ...deSusTours];
-  const name = pickLocalized(experience.name, locale);
+  const guia = GUIAS_EXPERIENCIA[experience.slug];
+  const name = traducidoOGuia(experience.name, guia?.nombre, locale);
+  const existentes = new Set(bySlug.keys());
 
   return (
     <div className="min-h-dvh bg-slate-50">
+      {guia && <JsonLd data={preguntasLd(guia.preguntas, locale)} />}
       {/* La foto con sus colores. Antes iba al 50% sobre el fondo verde de la
           marca y con un degradado hasta verde macizo: todas las cabeceras
           salían teñidas. Ahora solo hay una sombra neutra y transparente
@@ -110,12 +122,19 @@ export default async function ExperiencePage({
             {name}
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg">
-            {pickLocalized(experience.description, locale)}
+            {traducidoOGuia(experience.description, guia?.resumen, locale)}
           </p>
         </div>
       </div>
 
+      {guia && <Presentacion parrafos={guia.intro} locale={locale} />}
+
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        {guia && tours.length > 0 && (
+          <h2 className="mb-8 font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
+            {t("toursTitle", { name })}
+          </h2>
+        )}
         {tours.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
             <p className="text-base text-slate-600">{t("empty")}</p>
@@ -137,6 +156,27 @@ export default async function ExperiencePage({
           </div>
         )}
       </section>
+
+      {guia && (
+        <section className="border-t border-slate-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
+            <h2 className="font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
+              {t("guideTitle", { name })}
+            </h2>
+            <Lugares
+              titulo={t("whereTitle")}
+              lugares={guia.lugares}
+              locale={locale}
+              existentes={existentes}
+              verTour={t("seeTour")}
+            />
+            <div className="mt-14 max-w-3xl">
+              <Apartado titulo={t("tipsTitle")} parrafos={guia.consejos} locale={locale} />
+            </div>
+            <Preguntas titulo={t("faqTitle")} preguntas={guia.preguntas} locale={locale} />
+          </div>
+        </section>
+      )}
 
       {resenasExperiencia.length > 0 && (
         <section className="mx-auto max-w-7xl border-t border-slate-200 px-4 py-12 sm:px-6">

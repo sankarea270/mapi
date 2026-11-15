@@ -1,20 +1,29 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowRight, ChevronDown, MapPin } from "lucide-react";
+import { CalendarRange, MapPin } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { getCategoriesWithTours } from "@/lib/tours";
 import { getDestinationTours } from "@/lib/destinations";
-import { getDestinations } from "@/lib/content";
-import { pickLocalized } from "@/lib/format";
-import { buildMetadata, pageUrl } from "@/lib/seo";
+import { getDestinations, getExperiences, getPackages } from "@/lib/content";
+import { formatPrice, pickLocalized } from "@/lib/format";
+import { buildMetadata, completarDescripcion, pageUrl } from "@/lib/seo";
 import { Migas } from "@/components/layout/Migas";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { TourCard } from "@/components/tours/TourCard";
 import { SeasonPanel } from "@/components/tours/SeasonPanel";
 import { GUIAS_DESTINO } from "@/data/destinos-guia";
+import {
+  Apartado,
+  Lugares,
+  Preguntas,
+  Presentacion,
+  TarjetasEnlace,
+  preguntasLd,
+} from "@/components/guia/BloquesGuia";
+import { GUIAS_EXPERIENCIA, traducidoOGuia } from "@/data/experiencias-guia";
 
 /* Asíncrona: la lista de destinos sale de Supabase al compilar, así que
    hay que esperarla antes de saber qué páginas generar. */
@@ -40,7 +49,12 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     title: t("seoTitle", { name: pickLocalized(destination.name, locale) }),
-    description: pickLocalized(destination.description, locale),
+    /* La frase del panel se queda en 70-100 caracteres; se completa con la
+       presentación de la guía hasta lo que Google enseña. */
+    description: completarDescripcion(
+      pickLocalized(destination.description, locale),
+      GUIAS_DESTINO[destination.slug] ? pickLocalized(GUIAS_DESTINO[destination.slug].intro[0], locale) : ""
+    ),
     path: `/destinos/${destination.slug}`,
     image: destination.image,
   });
@@ -54,10 +68,15 @@ export default async function DestinationPage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const destination = (await getDestinations()).find((d) => d.slug === slug);
+  const destinos = await getDestinations();
+  const destination = destinos.find((d) => d.slug === slug);
   if (!destination) notFound();
 
-  const categories = await getCategoriesWithTours();
+  const [categories, paquetes, experiencias] = await Promise.all([
+    getCategoriesWithTours(),
+    getPackages(),
+    getExperiences(),
+  ]);
   const tours = getDestinationTours(destination, categories);
   const t = await getTranslations("destinos");
   const tn = await getTranslations("nav");
@@ -66,7 +85,30 @@ export default async function DestinationPage({
   /* Solo se enlazan los tours que existen hoy: si uno se retira desde el
      panel, su enlace desaparece en vez de llevar a un 404. */
   const existentes = new Set(categories.flatMap((c) => c.tours.map((x) => x.slug)));
-  const clima = destination.categorySlugs?.[0];
+  /* Colca, Manu, Iquitos… no tienen categoría propia y se quedaban sin el
+     panel del clima; la guía dice a qué región pertenecen. */
+  const clima = guia?.clima ?? destination.categorySlugs?.[0];
+  /* Paquetes que pasan por aquí. Los paquetes solo se enlazaban desde su
+     listado —un enlace en toda la web cada uno— y el destino es justo donde
+     alguien que planea el viaje los busca. */
+  const deAqui = new Set(tours.map((x) => x.slug));
+  const paquetesDeAqui = paquetes.filter((p) => p.tourSlugs.some((s) => deAqui.has(s)));
+  const experienciasDeAqui = experiencias
+    .filter((e) => e.tourSlugs.some((s) => deAqui.has(s)))
+    .map((e) => ({
+      href: `/experiencias/${e.slug}`,
+      nombre: traducidoOGuia(e.name, GUIAS_EXPERIENCIA[e.slug]?.nombre, locale),
+      imagen: e.image,
+    }));
+  /* Solo destinos que existen hoy en el panel, en el orden de la guía. */
+  const cercanos = (guia?.cerca ?? [])
+    .map((s) => destinos.find((d) => d.slug === s))
+    .filter((d) => d !== undefined)
+    .map((d) => ({
+      href: `/destinos/${d.slug}`,
+      nombre: pickLocalized(d.name, locale),
+      imagen: d.image,
+    }));
 
   /* TouristDestination: dice a Google que la página es un lugar y no solo un
      listado de tours. Sin fotos de relleno: `image` solo si es una de verdad. */
@@ -90,24 +132,12 @@ export default async function DestinationPage({
       : {}),
   };
 
-  /* Las preguntas van visibles más abajo; el FAQPage solo repite lo que ya
-     está en la página, que es lo que pide Google. */
-  const preguntasLd = guia
-    ? {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: guia.preguntas.map((p) => ({
-          "@type": "Question",
-          name: pickLocalized(p.pregunta, locale),
-          acceptedAnswer: { "@type": "Answer", text: pickLocalized(p.respuesta, locale) },
-        })),
-      }
-    : undefined;
+  const faqLd = guia ? preguntasLd(guia.preguntas, locale) : undefined;
 
   return (
     <div className="min-h-dvh bg-slate-50">
       <JsonLd data={destinoLd} />
-      {preguntasLd && <JsonLd data={preguntasLd} />}
+      {faqLd && <JsonLd data={faqLd} />}
       {/* La foto con sus colores. Antes iba al 50% sobre el fondo verde de la
           marca y con un degradado hasta verde macizo: todas las cabeceras
           salían teñidas. Ahora solo hay una sombra neutra y transparente
@@ -147,20 +177,7 @@ export default async function DestinationPage({
 
       {/* La presentación del destino, antes de los tours: quien llega desde
           Google buscando «qué ver en Cusco» lee primero de qué va el sitio. */}
-      {guia && (
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-14">
-            <p className="font-logo text-xl leading-relaxed text-slate-700 sm:text-[1.4rem] sm:leading-relaxed">
-              {pickLocalized(guia.intro[0], locale)}
-            </p>
-            {guia.intro.slice(1).map((parrafo, i) => (
-              <p key={i} className="mt-5 text-base leading-relaxed text-slate-600">
-                {pickLocalized(parrafo, locale)}
-              </p>
-            ))}
-          </div>
-        </section>
-      )}
+      {guia && <Presentacion parrafos={guia.intro} locale={locale} />}
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         {/* «Tours en Cusco» como encabezado: es literalmente lo que se busca,
@@ -190,6 +207,46 @@ export default async function DestinationPage({
         )}
       </section>
 
+      {paquetesDeAqui.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6">
+          <h2 className="mb-6 font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
+            {t("packagesTitle", { name })}
+          </h2>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {paquetesDeAqui.map((pkg) => (
+              <li key={pkg.slug}>
+                <Link
+                  href={`/paquetes/${pkg.slug}`}
+                  className="group flex h-full gap-4 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition-shadow hover:shadow-md"
+                >
+                  <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-lg sm:w-28">
+                    <Image
+                      src={pkg.image}
+                      alt=""
+                      fill
+                      sizes="112px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none"
+                    />
+                  </div>
+                  <div className="flex min-w-0 flex-col justify-center py-1">
+                    <p className="font-heading text-lg font-bold leading-tight text-slate-900 transition-colors group-hover:text-teal-700">
+                      {pickLocalized(pkg.name, locale)}
+                    </p>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">
+                      <CalendarRange className="size-4 shrink-0 text-amber-500" aria-hidden />
+                      {pickLocalized(pkg.duration, locale)}
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-slate-900">
+                      {tn("from")} {formatPrice(pkg.price, locale, "USD")}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {guia && (
         <section className="border-t border-slate-200 bg-white">
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
@@ -197,57 +254,17 @@ export default async function DestinationPage({
               {t("guideTitle", { name })}
             </h2>
 
-            <h3 className="mt-10 font-heading text-xl font-bold text-slate-900 sm:text-2xl">
-              {t("whatToSee")}
-            </h3>
-            <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {guia.queVer.map((lugar) => (
-                <li
-                  key={lugar.nombre.es}
-                  className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-5"
-                >
-                  <p className="font-heading text-lg font-bold text-slate-900">
-                    {pickLocalized(lugar.nombre, locale)}
-                  </p>
-                  {/* `text-left`: en una tarjeta tan estrecha el justificado de
-                      la web abría huecos grandes entre palabras. */}
-                  <p className="mt-2 flex-1 text-left text-[15px] leading-relaxed text-slate-600">
-                    {pickLocalized(lugar.texto, locale)}
-                  </p>
-                  {lugar.tour && existentes.has(lugar.tour) && (
-                    <Link
-                      href={`/tours/${lugar.tour}`}
-                      className="mt-4 inline-flex items-center gap-1.5 self-start text-sm font-bold text-teal-700 transition-colors hover:text-teal-900"
-                    >
-                      {t("seeTour")}
-                      <ArrowRight className="size-4" aria-hidden />
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <Lugares
+              titulo={t("whatToSee")}
+              lugares={guia.queVer}
+              locale={locale}
+              existentes={existentes}
+              verTour={t("seeTour")}
+            />
 
             <div className="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-14">
-              <div>
-                <h3 className="font-heading text-xl font-bold text-slate-900 sm:text-2xl">
-                  {t("whenToGo")}
-                </h3>
-                {guia.cuandoIr.map((parrafo, i) => (
-                  <p key={i} className="mt-4 text-base leading-relaxed text-slate-600">
-                    {pickLocalized(parrafo, locale)}
-                  </p>
-                ))}
-              </div>
-              <div>
-                <h3 className="font-heading text-xl font-bold text-slate-900 sm:text-2xl">
-                  {t("gettingThere")}
-                </h3>
-                {guia.comoLlegar.map((parrafo, i) => (
-                  <p key={i} className="mt-4 text-base leading-relaxed text-slate-600">
-                    {pickLocalized(parrafo, locale)}
-                  </p>
-                ))}
-              </div>
+              <Apartado titulo={t("whenToGo")} parrafos={guia.cuandoIr} locale={locale} />
+              <Apartado titulo={t("gettingThere")} parrafos={guia.comoLlegar} locale={locale} />
             </div>
 
             {/* El clima mes a mes de la región, el mismo panel de las fichas
@@ -258,27 +275,16 @@ export default async function DestinationPage({
               </div>
             )}
 
-            {/* `<details>` y no un acordeón de JavaScript: la respuesta está en
-                el HTML desde el principio, plegada, y Google la lee. */}
-            <h3 className="mt-14 font-heading text-xl font-bold text-slate-900 sm:text-2xl">
-              {t("faqTitle")}
-            </h3>
-            <div className="mt-6 max-w-3xl divide-y divide-slate-200 border-y border-slate-200">
-              {guia.preguntas.map((p) => (
-                <details key={p.pregunta.es} className="group py-1">
-                  <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-4 font-heading text-[17px] font-bold leading-snug text-slate-900 transition-colors hover:text-teal-700 [&::-webkit-details-marker]:hidden">
-                    {pickLocalized(p.pregunta, locale)}
-                    <ChevronDown
-                      className="mt-0.5 size-5 shrink-0 text-slate-400 transition-transform group-open:rotate-180 motion-reduce:transition-none"
-                      aria-hidden
-                    />
-                  </summary>
-                  <p className="pb-5 pr-10 text-[15px] leading-relaxed text-slate-600">
-                    {pickLocalized(p.respuesta, locale)}
-                  </p>
-                </details>
-              ))}
-            </div>
+            <Preguntas titulo={t("faqTitle")} preguntas={guia.preguntas} locale={locale} />
+          </div>
+        </section>
+      )}
+
+      {(experienciasDeAqui.length > 0 || cercanos.length > 0) && (
+        <section className="border-t border-slate-200">
+          <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6">
+            <TarjetasEnlace titulo={t("experiencesTitle", { name })} enlaces={experienciasDeAqui} />
+            <TarjetasEnlace titulo={t("nearbyTitle")} enlaces={cercanos} />
           </div>
         </section>
       )}

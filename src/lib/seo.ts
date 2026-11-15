@@ -29,9 +29,22 @@ export const LOGO_URL = `${BASE_URL}/gotomapi-mark.webp`;
  * existen, así que el canonical, los hreflang y el sitemap del español
  * apuntaban a páginas que devuelven 404.
  */
+/*
+ * Con barra final, como las sirve el hosting (`trailingSlash`).
+ *
+ * Antes salían sin ella («/pt/destinos/lima»). En el canonical y los
+ * hreflang no se notaba, porque Next la añade a los metadatos; pero en el
+ * JSON-LD (migas, `url` de cada tour, listas) iba tal cual, Google seguía esas
+ * direcciones, recibía un 301 y Search Console acabó con 172 «Página con
+ * redirección» (noviembre de 2026). La consulta (`?categoria=…`) va después
+ * de la barra: `/es/tours/?categoria=puno`, que es la dirección real.
+ */
 function localizedPath(path: string, locale: string): string {
-  const clean = path.replace(/^\//, "").replace(/\/+$/, "");
-  return clean ? `/${locale}/${clean}` : `/${locale}`;
+  const corte = path.search(/[?#]/);
+  const ruta = corte === -1 ? path : path.slice(0, corte);
+  const resto = corte === -1 ? "" : path.slice(corte);
+  const clean = ruta.replace(/^\//, "").replace(/\/+$/, "");
+  return `${clean ? `/${locale}/${clean}` : `/${locale}`}/${resto}`;
 }
 
 export function pageUrl(path: string, locale: string): string {
@@ -66,6 +79,30 @@ export function recortar(texto: string | undefined, max = MAX_DESCRIPCION): stri
   /* Si no hay espacio razonable (una sola palabra kilométrica), se corta duro. */
   const base = espacio > max * 0.6 ? corte.slice(0, espacio) : corte;
   return `${base.replace(/[\s,;:.\-—]+$/, "")}…`;
+}
+
+/**
+ * Alarga una descripción corta con frases enteras de `extra`, sin pasar de
+ * los 155 caracteres. Si ninguna frase entera cabe, se añade la primera y
+ * `recortar` la corta por la última palabra.
+ */
+export function completarDescripcion(base: string, extra: string): string {
+  const corta = base.replace(/\s+/g, " ").trim();
+  if (corta.length >= 110 || !extra) return corta;
+  const conPunto = /[.!?…]$/.test(corta) ? corta : `${corta}.`;
+  const frases =
+    extra
+      .replace(/[*#_>`]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .match(/[^.!?]+[.!?]+/g) ?? [extra];
+  let resultado = conPunto;
+  for (const frase of frases) {
+    const siguiente = `${resultado} ${frase.trim()}`;
+    if (siguiente.length > MAX_DESCRIPCION) break;
+    resultado = siguiente;
+  }
+  return resultado === conPunto ? `${conPunto} ${frases[0].trim()}` : resultado;
 }
 
 /** Longitud que el layout suma al título con su plantilla: « · GoToMapi». */
