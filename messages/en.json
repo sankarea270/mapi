@@ -62,6 +62,7 @@
     "lima": "Lima",
     "manu": "Manu Reserve",
     "title": "Destinations in Peru",
+    "seoTitleHub": "Peru Destinations: What to See and When to Go",
     "subtitle": "From the Machu Picchu citadel to the Amazon: explore every corner of Peru with us.",
     "count": "{count} destinations to explore",
     "toursCount": "{count} tours",
@@ -92,6 +93,8 @@
     "family": "Family trips",
     "students": "Groups & students",
     "title": "Packages & Circuits",
+    "seoTitle": "Peru Travel Packages: Classic Circuits and Custom Trips",
+    "seoTitleItem": "{name}: Peru Travel Package",
     "subtitle": "Classic circuits and special trips put together by our experts, all details included.",
     "count": "{count} packages available",
     "view": "View itinerary",
@@ -114,6 +117,8 @@
     "photoTour": "Photo tour",
     "starlight": "Astro tourism",
     "title": "Experiences",
+    "seoTitle": "Experiences in Peru: Culture, Food and Stargazing",
+    "seoTitleItem": "{name} in Peru: Tours and Experiences",
     "subtitle": "Culture, gastronomy, photography and astrotourism: experience Peru beyond classic tours.",
     "count": "{count} experiences to live",
     "explore": "Explore",
@@ -133,6 +138,8 @@
     "faqLink": "Frequently asked questions",
     "contactUs": "Contact us",
     "title": "Travel Guide",
+    "seoTitle": "Peru Travel Guide: Weather, Altitude, Visas and Packing",
+    "seoTitleItem": "{title} · Peru Travel Guide",
     "subtitle": "Practical tips before you travel: how to get there, weather, what to pack, safety, visas and FAQs.",
     "count": "{count} helpful articles",
     "read": "Read article",
@@ -162,6 +169,7 @@
   },
   "tours": {
     "title": "Our Tours",
+    "seoTitle": "Peru Tours: Machu Picchu, Cusco and the Sacred Valley",
     "subtitle": "Explore our selection of experiences across Peru: Machu Picchu, Sacred Valley, Amazon and more.",
     "found": "{count, plural, =0 {No matching tours} one {# tour available} other {# tours available}}",
     "searchPlaceholder": "Search tours, destinations...",
@@ -236,6 +244,7 @@
   },
   "reserva": {
     "title": "Book your trip",
+    "seoTitle": "Book Your Peru Tour, No Online Payment",
     "subtitle": "Tell us your date and preferences; we confirm availability within 24 hours, no online payments.",
     "step": "Booking form",
     "sectionTrip": "The trip",
@@ -329,6 +338,7 @@
   },
   "contact": {
     "title": "Contact Us",
+    "seoTitle": "Contact Us: Travel Agency in Cusco, Peru",
     "subtitle": "Tell us about your dream trip and we will reply within 24 hours.",
     "quick": "Direct contact",
     "hours": "Opening hours",
@@ -381,7 +391,7 @@
   },
   "about": {
     "meta": {
-      "title": "About us",
+      "title": "About Us: Cusco Travel Agency Since 2012",
       "description": "Learn about the history, mission and team of GoToMapi. Authorized agency specialized in tours to Machu Picchu and all of Peru."
     },
     "hero": {

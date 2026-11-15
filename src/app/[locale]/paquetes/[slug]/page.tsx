@@ -45,9 +45,12 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const pkg = (await getPackages()).find((p) => p.slug === slug);
   if (!pkg) return {};
+  /* El nombre solo («Astroturismo», «Perú Clásico 9D/8N») no dice que es un
+     viaje por Perú; el título lo completa. */
+  const t = await getTranslations({ locale, namespace: "paquetes" });
   return buildMetadata({
     locale,
-    title: pickLocalized(pkg.name, locale),
+    title: t("seoTitleItem", { name: pickLocalized(pkg.name, locale) }),
     description: pickLocalized(pkg.description, locale),
     path: `/paquetes/${pkg.slug}`,
     image: pkg.image,

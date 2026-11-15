@@ -32,9 +32,12 @@ export async function generateMetadata({
   const lista = await getGuides();
   const guide = lista.find((g) => g.slug === slug);
   if (!guide) return {};
+  /* El nombre solo («Qué llevar», «Seguridad») no dice que habla de
+     viajar a Perú; el título lo completa. */
+  const t = await getTranslations({ locale, namespace: "guia" });
   return buildMetadata({
     locale,
-    title: pickLocalized(guide.title, locale),
+    title: t("seoTitleItem", { title: pickLocalized(guide.title, locale) }),
     description: pickLocalized(guide.excerpt, locale),
     path: `/guia/${guide.slug}`,
     image: guide.image,
@@ -110,7 +113,12 @@ export default async function GuideArticlePage({
                 <AccordionTrigger className="text-left text-base font-bold text-slate-900">
                   {pickLocalized(section.heading, locale)}
                 </AccordionTrigger>
-                <AccordionContent className="text-base leading-relaxed text-slate-600">
+                {/* `forceMount`: la respuesta va en el HTML aunque esté
+                    plegada (con `hidden`). Sin él, el acordeón solo la creaba
+                    al hacer clic: Google no la veía y el FAQPage de abajo
+                    declaraba respuestas que no estaban en la página, que es
+                    justo lo que sus directrices prohíben. */}
+                <AccordionContent forceMount className="text-base leading-relaxed text-slate-600">
                   {pickLocalized(section.body, locale)}
                 </AccordionContent>
               </AccordionItem>

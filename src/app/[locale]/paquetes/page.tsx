@@ -20,9 +20,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "paquetes" });
+  /* El título de la pestaña no es el rótulo de la página: lleva las palabras
+     con las que se busca (Perú, Machu Picchu, Cusco…). Con el rótulo a secas
+     —«Nuestros Tours»— Google no sabía de qué iba la página. */
   return buildMetadata({
     locale,
-    title: t("title"),
+    title: t("seoTitle"),
     description: t("subtitle"),
     path: "/paquetes",
   });

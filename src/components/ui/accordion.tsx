@@ -63,7 +63,10 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
-      className="overflow-hidden text-sm data-open:animate-accordion-down data-closed:animate-accordion-up"
+      /* `data-[state=closed]:hidden`: con `forceMount` Radix deja el panel en
+         el HTML pero no lo oculta, y las preguntas salían todas abiertas. Así
+         sigue en el HTML —para Google— y plegado a la vista. */
+      className="overflow-hidden text-sm data-[state=closed]:hidden data-open:animate-accordion-down data-closed:animate-accordion-up"
       {...props}
     >
       <div
