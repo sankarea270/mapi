@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter_Tight, DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
+import { DM_Sans, Cormorant_Garamond, Barlow_Condensed } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -16,28 +16,16 @@ import { BASE_URL } from "@/lib/seo";
 import "../globals.css";
 
 
-/* La letra del titular de la portada, y solo de ahí.
- *
- * Grotesca de rótulo: trazo de grosor casi uniforme, terminales cortados en
- * horizontal y caja alta y ancha. Es la letra de los carteles de producto
- * de ahora, y el motivo de haber dejado las romanas: en una fotografía a
- * pantalla completa, el perfil de pelo de una didona se rompe y la palabra
- * pierde peso, mientras que esta se sostiene entera.
- *
- * La variante «Tight» viene ya ajustada de paso —las letras más juntas—,
- * que es justo lo que pedía el titular. */
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
-  subsets: ["latin"],
-  weight: ["700", "800"],
-  display: "swap",
-});
+/* La romana del logotipo y del titular de la portada: el nombre del lugar
+   en letra clásica es lo que da el aire de agencia de viajes cuidada, y lo
+   que ata el titular al logotipo en vez de dejarlos como dos marcas
+   distintas. Tres grosores, no la familia entera: el titular pide el más
+   grueso.
 
-/* La romana del logotipo, y desde ahora también la del titular de la
-   portada: el nombre del lugar en letra clásica de contraste alto es lo que
-   da el aire de agencia de viajes de lujo que se busca, y lo que ata el
-   titular al logotipo en vez de dejarlos como dos marcas distintas.
-   Tres grosores, no la familia entera: el titular pide el más grueso. */
+   Hubo una temporada con Inter Tight 800 en el titular, con contorno negro
+   para leerse sobre la foto. La agencia lo encontró «robótico» (noviembre
+   de 2026) y se volvió a esta en negrita, con un velo detrás (ver
+   .portada-velo). Quitarla ahorra además una familia entera de descarga. */
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
@@ -111,7 +99,7 @@ export default async function LocaleLayout({
   const ta = await getTranslations({ locale, namespace: "a11y" });
 
   return (
-    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable} ${interTight.variable}`}>
+    <html lang={locale} className={`${dmSans.variable} ${cormorant.variable} ${barlowCondensed.variable}`}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"

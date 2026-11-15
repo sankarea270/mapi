@@ -83,14 +83,11 @@
      panel condensado el inicio parecía de otro sitio. La referencia usa una
      sola condensada de arriba abajo. */
   --font-heading: var(--font-barlow);
-  /* Romana clásica, solo para el logotipo. El nombre del token y el de
-     la variable que crea next/font tienen que ser distintos: si coinciden,
-     `var()` se referencia a sí misma y la fuente nunca se aplica. */
+  /* Romana clásica: el logotipo y el titular de la portada. El nombre del
+     token y el de la variable que crea next/font tienen que ser distintos:
+     si coinciden, `var()` se referencia a sí misma y la fuente nunca se
+     aplica. */
   --font-logo: var(--font-cormorant);
-  /* La grotesca del titular de la portada: trazo uniforme y letras juntas.
-     Solo se usa ahí, y por eso tiene token propio en vez de sustituir a
-     ninguna de las otras. */
-  --font-portada: var(--font-inter-tight);
   /* El nombre de la variable de Next tiene que ser DISTINTO del token
      del tema: si coinciden, el token se define como var() de sí mismo, se
      vuelve circular y la fuente no se aplica sin dar ningún error. */
@@ -296,9 +293,11 @@
 /* ===== TEXTO DE LA PORTADA SOBRE LA FOTO ===== */
 
 /*
- * El texto de la portada va sin velo oscuro detrás, así que cada línea
- * lleva su propio contorno: un filo de 1px hecho con sombras en ocho
- * direcciones, sin desenfoque. No `-webkit-text-stroke`, que se come el
+ * Hoy solo los usa la cabecera de «Tours»: la portada pasó a llevar un velo
+ * (ver .portada-velo) porque con este contorno su texto parecía artificial.
+ *
+ * Texto sin velo oscuro detrás: cada línea lleva su propio contorno, un filo
+ * de 1px hecho con sombras en ocho direcciones, sin desenfoque. No `-webkit-text-stroke`, que se come el
  * interior de las letras finas de la romana; y no un halo difuso, que sobre
  * una foto con detalle se ve como una mancha gris alrededor de la letra.
  *
@@ -333,24 +332,62 @@
 }
 
 /*
+ * El velo de la portada: lo que hace legible el texto sobre la foto.
+ *
+ * Antes cada línea llevaba un contorno de 1px hecho con sombras en ocho
+ * direcciones (.portada-contorno-*). Se leía, pero las letras parecían
+ * recortadas con tijera y el conjunto «de inteligencia artificial», como
+ * dijo la agencia en la revisión de noviembre de 2026. Ahora lo que sostiene
+ * el texto es un degradado petróleo que oscurece solo la zona donde va: en
+ * escritorio, la mitad izquierda; en el móvil, donde el texto ocupa todo el
+ * ancho, la banda central de arriba abajo. La foto conserva su color donde
+ * no hay texto.
+ */
+.portada-velo {
+  background: linear-gradient(
+    180deg,
+    rgb(4 22 22 / 0.2) 0%,
+    rgb(4 22 22 / 0.52) 42%,
+    rgb(4 22 22 / 0.4) 72%,
+    rgb(4 22 22 / 0.15) 100%
+  );
+}
+
+@media (min-width: 1024px) {
+  .portada-velo {
+    background: linear-gradient(
+      90deg,
+      rgb(4 22 22 / 0.62) 0%,
+      rgb(4 22 22 / 0.42) 38%,
+      rgb(4 22 22 / 0) 68%
+    );
+  }
+}
+
+/*
  * El titular de la portada.
  *
- * Cuerpo fluido con `clamp()`: 3.2rem en el móvil más estrecho y hasta
- * 8.5rem en escritorio ancho, sin los saltos que daban los cortes de
- * Tailwind —a 1279px la letra medía 72px y a 1280px, 99—. El interlineado
- * va por debajo de 1 porque a este cuerpo las líneas tienen que tocarse, que
- * es lo que hace que un titular parezca un cartel y no un párrafo grande.
+ * La romana del logotipo en negrita, en el dorado de la marca. Sustituye a
+ * la grotesca muy gruesa (Inter Tight 800) con contorno negro, que parecía
+ * un cartel genérico. En negrita, Cormorant no se queda delgada, y con el
+ * velo detrás sus trazos finos no se pierden sobre la foto, que era lo que
+ * había hecho abandonarla. Además ata el titular al logotipo.
+ *
+ * Cuerpo fluido con `clamp()`: sin los saltos que daban los cortes de
+ * Tailwind —a 1279px la letra medía 72px y a 1280px, 99—. Es algo mayor que
+ * el de la grotesca porque la romana es más estrecha y de ojo más pequeño.
  */
 .portada-titular {
-  font-family: var(--font-portada), "Helvetica Neue", Arial, sans-serif;
-  font-weight: 800;
-  font-size: clamp(2.9rem, 7.8vw, 7.4rem);
-  /* Las líneas casi se tocan y las letras van cerradas: así se compone un
-     rótulo con una grotesca, y es lo que separa un titular de un párrafo
-     grande. En caja alta y baja, no en versales: el nombre propio se lee
-     antes, y la referencia va así. */
-  line-height: 0.92;
-  letter-spacing: -0.032em;
+  font-family: var(--font-logo), Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: clamp(3.2rem, 8.6vw, 8.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  /* Una sombra corta que asienta el borde de la letra sobre zonas claras y
+     otra ancha y suave. Nada de contorno: el velo hace el trabajo. */
+  text-shadow:
+    0 1px 3px rgb(0 0 0 / 0.25),
+    0 2px 30px rgb(0 0 0 / 0.3);
 }
 
 /*
@@ -395,20 +432,19 @@
 /*
  * La frase de la portada.
  *
- * Sin caja detrás: lo que la separa de la foto es la sombra proyectada, que
- * oscurece únicamente lo que queda detrás de cada letra —dos capas, una
- * corta y dura para el filo y otra ancha y suave que asienta el bloque—. Y
- * lo que la separa del titular es la letra: aquí la de texto del sitio en
- * grosor medio, frente a la grotesca de rótulo en oro de arriba.
+ * Sin caja detrás: la sostiene el velo y una sombra suave. Lo que la separa
+ * del titular es la letra: aquí la de texto del sitio en grosor medio,
+ * frente a la romana en oro de arriba. Va alineada a la izquierda y no
+ * justificada como el resto de párrafos: en líneas tan cortas y a este
+ * cuerpo, el justificado abría huecos enormes entre palabras.
  *
  * Entra deslizándose desde la izquierda, detrás del titular: primero el
  * nombre del lugar, después lo que se cuenta de él.
  */
 .portada-frase {
   text-shadow:
-    0 1px 2px rgb(0 0 0 / 0.55),
-    0 2px 6px rgb(0 0 0 / 0.45),
-    0 8px 28px rgb(0 0 0 / 0.4);
+    0 1px 2px rgb(0 0 0 / 0.3),
+    0 2px 16px rgb(0 0 0 / 0.35);
   animation: portada-frase-entra 0.8s cubic-bezier(0.22, 1, 0.36, 1) both 0.34s;
 }
 
@@ -1282,7 +1318,7 @@ html {
     padding-bottom: 8rem;
   }
   .portada-titular {
-    font-size: clamp(2.8rem, 6.4vw, 6rem);
+    font-size: clamp(3rem, 7.1vw, 6.7rem);
   }
 }
 
@@ -1292,7 +1328,7 @@ html {
     padding-bottom: 6rem;
   }
   .portada-titular {
-    font-size: clamp(2.5rem, 5.2vw, 4.6rem);
+    font-size: clamp(2.7rem, 5.8vw, 5.1rem);
   }
 }
 
