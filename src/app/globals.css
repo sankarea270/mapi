@@ -1892,3 +1892,41 @@ html {
     animation: none;
   }
 }
+
+/*
+ * Barra de reserva fija de las fichas de tour (móvil y tableta).
+ *
+ * Ocupa el borde inferior de la pantalla, justo donde viven el botón de
+ * contacto y el de «volver arriba», y taparía también la última línea del
+ * pie. El panel de reserva marca <html data-barra-reserva> mientras está en
+ * la página: los botones flotantes suben su `bottom` con esta variable y el
+ * cuerpo deja el hueco. En escritorio la barra no existe y la variable es 0.
+ */
+@media (max-width: 1023.98px) {
+  html[data-barra-reserva] {
+    --barra-reserva: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+  html[data-barra-reserva] body {
+    padding-bottom: var(--barra-reserva);
+  }
+}
+
+/*
+ * Entradas del panel de reserva. Propias y no las de tw-animate-css: aquellas
+ * leen variables (--tw-enter-translate-y…) que se heredan, y dentro de la
+ * hoja del móvil —que entra con `slide-in-from-bottom`— cada paso heredaba el
+ * 100 % de desplazamiento de la hoja y se quedaba invisible fuera de la vista.
+ */
+@keyframes reserva-entra {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes reserva-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+.reserva-entra { animation: reserva-entra 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.reserva-pop { animation: reserva-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@media (prefers-reduced-motion: reduce) {
+  .reserva-entra, .reserva-pop { animation: none; }
+}

@@ -132,7 +132,7 @@ export function PanelReservas({
       {visibles.length === 0 ? (
         <p className="max-w-xl text-sm leading-relaxed text-slate-500">
           {reservas.length === 0
-            ? "Todavía no hay solicitudes. Aparecerán aquí en cuanto alguien envíe el formulario de la web; el cliente sigue yendo a WhatsApp como siempre, pero ahora además queda registrada."
+            ? "Todavía no hay solicitudes. Aparecerán aquí en cuanto alguien envíe el formulario de reserva de un tour o de la página «Reservar»."
             : "Ninguna solicitud coincide con el filtro."}
         </p>
       ) : (
@@ -156,7 +156,7 @@ export function PanelReservas({
                       {r.travelers === 1 ? "viajero" : "viajeros"}
                     </span>
                   </span>
-                  <span className="text-sm text-slate-500">{r.travel_date}</span>
+                  <span className="text-sm text-slate-500">{fechaViaje(r.travel_date)}</span>
                   <Etiqueta estado={r.status} />
                 </button>
 
@@ -195,6 +195,27 @@ export function PanelReservas({
                       )}
                     </dl>
 
+                    {/* Responder con un clic, con el mensaje ya escrito en el
+                        idioma en que reservó el cliente. */}
+                    <div className="flex flex-wrap gap-2">
+                      {r.phone && (
+                        <a
+                          href={`https://wa.me/${r.phone.replace(/\D/g, "")}?text=${encodeURIComponent(saludo(r))}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-md bg-teal-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-800"
+                        >
+                          Responder por WhatsApp
+                        </a>
+                      )}
+                      <a
+                        href={`mailto:${r.email}?subject=${encodeURIComponent(asunto(r))}&body=${encodeURIComponent(saludo(r))}`}
+                        className="rounded-md bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition-colors hover:bg-slate-100"
+                      >
+                        Responder por correo
+                      </a>
+                    </div>
+
                     <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
                       {ESTADOS.map((e) => (
                         <button
@@ -227,6 +248,39 @@ export function PanelReservas({
       )}
     </div>
   );
+}
+
+/** «2026-12-15» → «mar 15 dic 2026». */
+function fechaViaje(iso: string): string {
+  const [a, m, d] = iso.split("-").map(Number);
+  if (!a || !m || !d) return iso;
+  return new Date(a, m - 1, d).toLocaleDateString("es-PE", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function asunto(r: FilaReserva): string {
+  const tour = r.tour_name ?? r.tour_slug;
+  if (r.locale === "en") return `Your booking request: ${tour}`;
+  if (r.locale === "pt") return `Sua solicitação de reserva: ${tour}`;
+  return `Tu solicitud de reserva: ${tour}`;
+}
+
+/* Primer mensaje al cliente. Se escribe en su idioma; el resto, el equipo. */
+function saludo(r: FilaReserva): string {
+  const nombre = r.full_name.split(" ")[0];
+  const tour = r.tour_name ?? r.tour_slug;
+  const [a, m, d] = r.travel_date.split("-").map(Number);
+  const loc = r.locale === "en" ? "en-GB" : r.locale === "pt" ? "pt-BR" : "es-PE";
+  const fecha = new Date(a, m - 1, d).toLocaleDateString(loc, { day: "numeric", month: "long" });
+  if (r.locale === "en")
+    return `Hello ${nombre}, this is GoToMapi. Thank you for your request for ${tour} on ${fecha} (${r.travelers} ${r.travelers === 1 ? "traveller" : "travellers"}). `;
+  if (r.locale === "pt")
+    return `Olá, ${nombre}! Aqui é a GoToMapi. Obrigado pela sua solicitação de ${tour} para ${fecha} (${r.travelers} ${r.travelers === 1 ? "viajante" : "viajantes"}). `;
+  return `Hola, ${nombre}. Te escribimos de GoToMapi por tu solicitud de ${tour} para el ${fecha} (${r.travelers} ${r.travelers === 1 ? "viajero" : "viajeros"}). `;
 }
 
 function Dato({ titulo, children }: { titulo: string; children: React.ReactNode }) {

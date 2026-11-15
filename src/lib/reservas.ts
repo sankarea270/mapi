@@ -34,7 +34,23 @@ export interface DatosReserva {
  *    llama abre WhatsApp primero y deja esto corriendo por detrás.
  */
 export async function guardarReserva(d: DatosReserva): Promise<void> {
-  if (!supabase) return;
+  await registrarReserva(d);
+}
+
+/**
+ * Igual que `guardarReserva`, pero dice si se guardó.
+ *
+ * El panel de reserva de las fichas de tour ya no depende de WhatsApp: la
+ * solicitud se envía desde la propia página y se confirma en pantalla solo
+ * si ha llegado a la base de datos. Si no llega, el formulario ofrece
+ * WhatsApp como salida, para que nadie se quede sin poder reservar.
+ *
+ * Se inserta sin pedir la fila de vuelta (`select()`): la política de la
+ * tabla deja crear reservas a cualquiera pero leerlas solo al administrador,
+ * y pedir la fila haría fallar la inserción entera.
+ */
+export async function registrarReserva(d: DatosReserva): Promise<boolean> {
+  if (!supabase) return false;
 
   try {
     const { error } = await supabase.from("reservations").insert({
@@ -51,8 +67,13 @@ export async function guardarReserva(d: DatosReserva): Promise<void> {
       locale: d.locale,
       source: "web",
     });
-    if (error) console.error("[reservas] No se pudo registrar la solicitud:", error.message);
+    if (error) {
+      console.error("[reservas] No se pudo registrar la solicitud:", error.message);
+      return false;
+    }
+    return true;
   } catch (error) {
     console.error("[reservas] No se pudo registrar la solicitud:", error);
+    return false;
   }
 }
