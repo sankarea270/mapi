@@ -203,9 +203,20 @@ export default async function TourDetailPage({
     })),
   };
 
+  /*
+   * `Product` además de `TouristTrip` cuando hay valoración.
+   *
+   * Google solo enseña estrellas en unos pocos tipos (Product, Event,
+   * LocalBusiness…) y TouristTrip no está entre ellos. Search Console marcaba
+   * los 6 tours con reseñas como «El tipo de objeto del campo <parent_node>
+   * no es válido» (noviembre de 2026): las estrellas nunca llegaron a salir.
+   * Un tour que se reserva con precio es un producto, así que se declara con
+   * los dos tipos y conserva sus datos de viaje. Sin valoración se queda solo
+   * en TouristTrip, para no meter 200 fichas en los informes de productos.
+   */
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "TouristTrip",
+    "@type": valoracion ? ["TouristTrip", "Product"] : "TouristTrip",
     name,
     description: entradilla(tour, l),
     image: gallery.map((img) => img.replace("/600/600", "/1200/630")),
