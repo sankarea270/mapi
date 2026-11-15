@@ -111,12 +111,14 @@ export function HeroCarousel({
         </div>
       ))}
 
-      {/* Sombra muy suave arriba y abajo: la foto conserva sus colores y el
-          texto lleva su propio contorno. */}
+      {/* Sombra muy suave arriba y abajo para la cabecera y los puntos, y el
+          velo petróleo que sostiene el texto solo donde va (ver
+          .portada-velo): sin él había que contornear cada letra. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/15 via-transparent to-black/25"
       />
+      <div aria-hidden className="portada-velo pointer-events-none absolute inset-0 z-10" />
 
       {/* El encabezado de la página es el de la agencia, aunque lo que se lea
           grande sea el nombre del lugar de la foto. */}
@@ -128,8 +130,11 @@ export function HeroCarousel({
         {/* Más ancho que el resto del bloque: a cuerpo de cartel, un nombre
             como «Machu Picchu» no cabía en una línea y se partía en dos. */}
         <div className="max-w-3xl lg:max-w-[58rem] xl:max-w-[66rem]">
-          <p className="portada-contorno-claro flex items-center gap-3 font-heading text-[0.95rem] font-bold uppercase tracking-[0.14em] text-teal-800 sm:text-[1.1rem]">
-            <span aria-hidden className="h-px w-8 bg-teal-800/50 sm:w-12" />
+          {/* El rótulo de la agencia, pequeño y espaciado, en la letra de
+              texto: antes era la condensada en verde con contorno blanco y
+              competía con el titular en vez de presentarlo. */}
+          <p className="flex items-center gap-3 font-sans text-[0.78rem] font-semibold uppercase tracking-[0.26em] text-white/90 sm:text-[0.85rem]">
+            <span aria-hidden className="h-px w-8 bg-oro/80 sm:w-12" />
             {textos.volante}
           </p>
 
@@ -154,7 +159,7 @@ export function HeroCarousel({
                 que asoman como en un letrero de cine y no aparecen de golpe.
                 El cuerpo lo fija `.portada-titular` con `clamp()`, que sube y
                 baja con el ancho de la ventana sin escalones. */}
-            <p className="portada-titular portada-contorno-oscuro text-oro" aria-label={titulo}>
+            <p className="portada-titular text-oro" aria-label={titulo}>
               {titulo.split(" ").map((palabra, i) => (
                 <span key={`${palabra}-${i}`} aria-hidden className="portada-palabra">
                   <span style={{ animationDelay: `${0.06 + i * 0.09}s` }}>{palabra}</span>
@@ -163,15 +168,13 @@ export function HeroCarousel({
             </p>
 
             {/* La frase. El contraste con el titular lo hace la letra, no
-                un fondo: arriba la grotesca de rótulo, muy gruesa y en oro;
-                aquí la de texto del sitio, de grosor medio y en blanco, con
-                el interlineado suelto. Dos letras distintas y dos pesos
-                distintos se separan solos, sin necesidad de una caja que
-                tape la foto. Lo que la sostiene sobre cualquier fotografía
-                es la sombra proyectada, que oscurece solo lo que hay detrás
-                de cada letra. */}
+                un fondo: arriba la romana en negrita y en oro; aquí la de
+                texto del sitio, de grosor medio y en blanco, con el
+                interlineado suelto. `text-left`: sin él heredaba el
+                justificado de los párrafos de la web y abría huecos grandes
+                entre palabras. */}
             <p
-              className="portada-frase mt-5 max-w-[44ch] font-sans text-[1.2rem] font-medium leading-relaxed text-white sm:mt-6 sm:text-[1.4rem] lg:text-[1.6rem]"
+              className="portada-frase mt-5 max-w-[44ch] text-left font-sans text-[1.15rem] font-medium leading-relaxed text-white sm:mt-6 sm:text-[1.35rem] lg:text-[1.5rem]"
             >
               {descripcion}
             </p>
@@ -182,7 +185,7 @@ export function HeroCarousel({
             >
               <Link
                 href={href}
-                className="group inline-flex items-center gap-2.5 bg-teal-700 px-8 py-4 font-heading text-sm font-bold uppercase tracking-[0.12em] text-white shadow-[0_14px_34px_-14px_rgb(3_33_32/0.8)] ring-1 ring-white/20 transition-all hover:scale-[1.02] hover:bg-teal-600 sm:px-11 sm:py-[1.15rem] sm:text-[0.95rem]"
+                className="group inline-flex items-center gap-2.5 bg-teal-700 px-8 py-4 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_14px_34px_-14px_rgb(3_33_32/0.8)] ring-1 ring-white/20 transition-all hover:scale-[1.02] hover:bg-teal-600 sm:px-11 sm:py-[1.15rem] sm:text-[0.88rem]"
               >
                 {cta}
                 <ArrowRight
@@ -194,7 +197,7 @@ export function HeroCarousel({
                 href={textos.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="portada-contorno-claro border-b-2 border-teal-800/70 pb-1.5 font-heading text-sm font-bold uppercase tracking-[0.12em] text-teal-800 transition-all hover:border-[var(--color-oro)] hover:text-teal-950 sm:text-[0.95rem]"
+                className="border-b-2 border-white/60 pb-1.5 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-white transition-colors hover:border-oro hover:text-oro sm:text-[0.88rem]"
               >
                 {textos.ctaContacto}
               </a>
