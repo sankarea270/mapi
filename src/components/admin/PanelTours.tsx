@@ -22,6 +22,8 @@ interface Borrador {
   name: TextoML;
   duration: TextoML;
   excerpt: TextoML;
+  /** Texto largo de la ficha; párrafos separados por una línea en blanco. */
+  description: TextoML;
   price: string;
   rating: string;
   featured: boolean;
@@ -29,6 +31,7 @@ interface Borrador {
   image_url: string;
   gallery: string[];
   included: TextoML[];
+  not_included: TextoML[];
   itinerary: DiaItinerario[];
   location_image_url: string;
   location: TextoML;
@@ -57,6 +60,7 @@ function aBorrador(t: FilaTour): Borrador {
     name: ml(t.name_es, t.name_en, t.name_pt),
     duration: ml(t.duration_es, t.duration_en, t.duration_pt),
     excerpt: ml(t.excerpt_es, t.excerpt_en, t.excerpt_pt),
+    description: ml(t.description_es ?? null, t.description_en ?? null, t.description_pt ?? null),
     price: String(t.price ?? ""),
     rating: String(t.rating ?? "4.8"),
     featured: Boolean(t.featured),
@@ -64,6 +68,7 @@ function aBorrador(t: FilaTour): Borrador {
     image_url: t.image_url ?? "",
     gallery: t.gallery ?? [],
     included: t.included ?? [],
+    not_included: t.not_included ?? [],
     itinerary: t.itinerary ?? [],
     location_image_url: t.location_image_url ?? "",
     location: ml(t.location_es ?? null, t.location_en ?? null, t.location_pt ?? null),
@@ -79,6 +84,7 @@ function nuevoBorrador(category_id: string): Borrador {
     name: { ...ML_VACIO },
     duration: { ...ML_VACIO },
     excerpt: { ...ML_VACIO },
+    description: { ...ML_VACIO },
     price: "",
     rating: "4.8",
     featured: false,
@@ -88,6 +94,7 @@ function nuevoBorrador(category_id: string): Borrador {
     image_url: "",
     gallery: [],
     included: [],
+    not_included: [],
     itinerary: [],
     location_image_url: "",
     location: { ...ML_VACIO },
@@ -108,6 +115,9 @@ function aFila(b: Borrador) {
     excerpt_es: b.excerpt.es,
     excerpt_en: b.excerpt.en,
     excerpt_pt: b.excerpt.pt,
+    description_es: b.description.es.trim() || null,
+    description_en: b.description.en.trim() || null,
+    description_pt: b.description.pt.trim() || null,
     price: Number(b.price) || 0,
     rating: Number(b.rating) || 0,
     featured: b.featured,
@@ -115,6 +125,7 @@ function aFila(b: Borrador) {
     image_url: b.image_url || null,
     gallery: b.gallery.filter(Boolean),
     included: b.included.filter((i) => i.es.trim()),
+    not_included: b.not_included.filter((i) => i.es.trim()),
     itinerary: b.itinerary.filter((d) => d.title.es.trim()),
     location_image_url: b.location_image_url || null,
     location_es: b.location.es || null,
@@ -129,6 +140,11 @@ function aFila(b: Borrador) {
    reintenta quitándolas, de la más nueva a la más vieja, para que editar un
    tour siga funcionando, y se avisa de lo que no se guardó. */
 const COLUMNAS_OPCIONALES = [
+  {
+    columnas: ["description_es", "description_en", "description_pt", "not_included"],
+    que: "la descripción detallada y lo que no incluye",
+    migracion: "012_descripcion_no_incluye.sql",
+  },
   { columnas: ["sort_order"], que: "el orden en su categoría", migracion: "011_orden_tours.sql" },
   {
     columnas: ["location_image_url", "location_es", "location_en", "location_pt"],
@@ -367,7 +383,7 @@ function EditorTour({
   const [idioma, setIdioma] = useState<Idioma>("es");
   const b = borrador;
   const set = <K extends keyof Borrador>(k: K, v: Borrador[K]) => onCambiar({ ...b, [k]: v });
-  const setML = (k: "name" | "duration" | "excerpt", v: string) =>
+  const setML = (k: "name" | "duration" | "excerpt" | "description", v: string) =>
     onCambiar({ ...b, [k]: { ...b[k], [idioma]: v } });
 
   const completado = {
@@ -419,10 +435,20 @@ function EditorTour({
             placeholder="1 día · 8 horas"
           />
           <Area
-            etiqueta="Resumen"
+            etiqueta="Resumen corto"
             valor={b.excerpt[idioma]}
             onChange={(v) => setML("excerpt", v)}
-            ayuda="Dos o tres líneas. Es lo que se lee en la tarjeta del listado."
+            ayuda="Dos o tres líneas. Es lo que se lee en la tarjeta del listado y en Google."
+          />
+          {/* La ficha tenía solo el resumen de la tarjeta; aquí se cuenta el
+              tour con detalle. Es lo que sale en el apartado «Descripción». */}
+          <Area
+            etiqueta="Descripción detallada"
+            valor={b.description[idioma]}
+            onChange={(v) => setML("description", v)}
+            filas={9}
+            placeholder={"Qué se vive en el tour, qué lo hace distinto, para quién es…\n\nDeja una línea en blanco entre párrafo y párrafo."}
+            ayuda="Sale en la ficha del tour, en «Descripción». Separa los párrafos con una línea en blanco; el primero se destaca. Si la dejas vacía, se usa el resumen corto."
           />
         </div>
       </div>
@@ -515,6 +541,16 @@ function EditorTour({
         valores={b.included}
         onChange={(v) => set("included", v)}
         placeholder="Traslado desde el hotel"
+      />
+
+      {/* Lo que el precio no cubre. Decirlo antes evita la discusión al
+          pagar: propinas, comidas, el boleto turístico… */}
+      <ListaTextos
+        titulo="Qué no incluye"
+        idioma={idioma}
+        valores={b.not_included}
+        onChange={(v) => set("not_included", v)}
+        placeholder="Propinas"
       />
 
       <EditorItinerario

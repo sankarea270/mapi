@@ -44,6 +44,23 @@ export function TourFaq({ tour, locale, bookingPolicy }: TourFaqProps) {
   const price = formatPrice(tour.price, l, "USD");
   const bestMonths = region.best.map((i) => monthsLong[i]).join(" · ");
 
+  const noIncluye =
+    tour.notIncluded && tour.notIncluded.length > 0 ? (
+      <>
+        <p className="mt-4">{t("aNotIncludedIntro")}</p>
+        <ul className="mt-3 space-y-1.5">
+          {tour.notIncluded.map((item, i) => (
+            <li key={i} className="flex gap-2.5">
+              <span aria-hidden="true" className="text-slate-400">
+                ×
+              </span>
+              <span>{pickLocalized(item, l)}</span>
+            </li>
+          ))}
+        </ul>
+      </>
+    ) : null;
+
   const items: FaqItem[] = [
     {
       q: t("qSeason"),
@@ -74,9 +91,16 @@ export function TourFaq({ tour, locale, bookingPolicy }: TourFaqProps) {
                 </li>
               ))}
             </ul>
+            {/* Lo que no entra, en la misma respuesta: quien pregunta qué
+                cubre el precio quiere saber también qué tendrá que pagar
+                aparte. */}
+            {noIncluye}
           </>
         ) : (
-          <p>{t("aIncludedNone", { price })}</p>
+          <>
+            <p>{t("aIncludedNone", { price })}</p>
+            {noIncluye}
+          </>
         ),
     },
     {

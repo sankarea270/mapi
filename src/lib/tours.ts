@@ -30,6 +30,10 @@ type RawRow = {
     location_en?: string | null;
     location_pt?: string | null;
     sort_order?: number | null;
+    description_es?: string | null;
+    description_en?: string | null;
+    description_pt?: string | null;
+    not_included?: Array<{ es: string; en: string; pt: string }> | null;
     itinerary: Array<{
       day: string;
       title: { es: string; en: string; pt: string };
@@ -38,13 +42,20 @@ type RawRow = {
   }>;
 };
 
+/* `||` y no `??`: el panel guarda en blanco las traducciones que no se
+   rellenan, y una cadena vacía no es null. Con `??` la ficha inglesa de un
+   tour escrito solo en español salía sin duración y con los «incluye» en
+   blanco. */
 function loc(es: string, en: string | null, pt: string | null, fallback: string): LocalizedText {
   return {
-    es,
-    en: en ?? es ?? fallback,
-    pt: pt ?? en ?? es ?? fallback,
+    es: es || fallback,
+    en: en || es || fallback,
+    pt: pt || en || es || fallback,
   };
 }
+
+const lista = (items: Array<{ es: string; en: string; pt: string }> | null | undefined) =>
+  (items ?? []).filter((item) => item?.es?.trim()).map((item) => loc(item.es, item.en, item.pt, ""));
 
 const COLUMNAS_TOUR = `
         slug,
@@ -68,17 +79,20 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
       .select(`slug, name_es, name_en, name_pt, image_url, tours (${tour})`)
       .order("sort_order");
 
-  /* De la consulta más completa a la mínima: primero con el orden propio
-     (migración 011) y la ubicación (008), luego sin el orden y al final sin
-     ninguna de las dos. Pedir una columna que no existe tumba la consulta
-     entera, y sin estos reintentos la web caía a los nueve tours de ejemplo
-     solo por tener una migración pendiente. */
-  const ubicacion = "location_image_url, location_es, location_en, location_pt";
-  const intentos = [
-    `${COLUMNAS_TOUR}, ${ubicacion}, sort_order`,
-    `${COLUMNAS_TOUR}, ${ubicacion}`,
-    COLUMNAS_TOUR,
+  /* Columnas que llegan con migraciones posteriores, de la más nueva a la
+     más vieja. Pedir una columna que no existe tumba la consulta entera, y
+     sin estos reintentos la web caía a los tours de ejemplo solo por tener
+     una migración pendiente: se prueba con todas y se va quitando un grupo
+     cada vez. */
+  const opcionales = [
+    "description_es, description_en, description_pt, not_included", // 012
+    "sort_order", // 011
+    "location_image_url, location_es, location_en, location_pt", // 008
   ];
+  const intentos = opcionales.map((_, i) =>
+    [COLUMNAS_TOUR, ...opcionales.slice(i)].join(", ")
+  );
+  intentos.push(COLUMNAS_TOUR);
   let { data, error } = await pedir(intentos[0]);
   for (const columnas of intentos.slice(1)) {
     if ((error as { code?: string } | null)?.code !== "42703") break;
@@ -104,9 +118,8 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
         .sort((a, b) => posicion(a) - posicion(b) || (b.rating ?? 0) - (a.rating ?? 0))
         .map((tour) => {
           const gallery = (tour.gallery ?? []).filter((url): url is string => Boolean(url));
-          const included = (tour.included ?? []).map((item) =>
-            loc(item.es, item.en, item.pt, "")
-          );
+          const included = lista(tour.included);
+          const notIncluded = lista(tour.not_included);
           const itinerary = (tour.itinerary ?? []).map((item) => ({
             day: item.day,
             title: loc(item.title.es, item.title.en, item.title.pt, item.day),
@@ -138,7 +151,18 @@ async function fetchFromSupabase(): Promise<TourCategory[]> {
                   ),
                 }
               : {}),
+            ...(tour.description_es?.trim()
+              ? {
+                  description: loc(
+                    tour.description_es,
+                    tour.description_en ?? null,
+                    tour.description_pt ?? null,
+                    ""
+                  ),
+                }
+              : {}),
             ...(included.length > 0 ? { included } : {}),
+            ...(notIncluded.length > 0 ? { notIncluded } : {}),
             ...(itinerary.length > 0 ? { itinerary } : {}),
             ...(tour.location_image_url ? { locationImage: tour.location_image_url } : {}),
             ...(tour.location_es

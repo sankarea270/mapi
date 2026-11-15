@@ -55,6 +55,11 @@ export interface FilaTour {
   location_pt?: string | null;
   /* Desde la migración 011: posición dentro de su categoría. */
   sort_order?: number | null;
+  /* Desde la migración 012: descripción larga y lo que no incluye. */
+  description_es?: string | null;
+  description_en?: string | null;
+  description_pt?: string | null;
+  not_included?: Array<{ es: string; en: string; pt: string }> | null;
   updated_at: string | null;
 }
 

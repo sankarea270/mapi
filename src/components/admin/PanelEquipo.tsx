@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { moverFila } from "@/lib/admin/orden";
 import { cn } from "@/lib/utils";
 import { Boton, Campo, Etiqueta, IDIOMAS } from "./campos";
 import { CampoImagen } from "./CampoImagen";
@@ -141,18 +142,9 @@ export function PanelEquipo({
     onCambio();
   }
 
-  /* Mover = intercambiar el orden con el vecino. Dos escrituras, no toda la
-     tabla. */
   async function mover(i: number, direccion: -1 | 1) {
-    if (!supabase) return;
-    const a = filas[i];
-    const b = filas[i + direccion];
-    if (!a || !b) return;
     setError("");
-    const { error: fallo } = await supabase.from("team_members").upsert([
-      { id: a.id, sort_order: b.sort_order },
-      { id: b.id, sort_order: a.sort_order },
-    ]);
+    const fallo = await moverFila("team_members", filas, i, direccion);
     if (fallo) return setError(mensaje(fallo));
     onCambio();
   }

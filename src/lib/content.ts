@@ -50,9 +50,11 @@ import type { FilaDestino, FilaPaquete, FilaResena } from "@/types/db";
  * `next build`. En la web publicada no queda ni rastro de Supabase.
  */
 
+/* `||` y no `??`: una traducción guardada en blanco es una cadena vacía, no
+   null, y con `??` dejaba el hueco vacío en la versión inglesa o portuguesa. */
 function loc(es: string | null, en: string | null, pt: string | null): LocalizedText {
-  const base = es ?? en ?? pt ?? "";
-  return { es: base, en: en ?? base, pt: pt ?? en ?? base };
+  const base = es || en || pt || "";
+  return { es: base, en: en || base, pt: pt || en || base };
 }
 
 /* Postgres devuelve DECIMAL como cadena para no perder precisión. */
