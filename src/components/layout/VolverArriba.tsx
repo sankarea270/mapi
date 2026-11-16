@@ -52,7 +52,7 @@ export function VolverArriba() {
       aria-label={t("top")}
       tabIndex={visible ? 0 : -1}
       className={cn(
-        "fixed bottom-5 left-4 z-40 grid size-11 place-items-center rounded-full bg-teal-700 text-white shadow-lg shadow-slate-950/25 ring-1 ring-white/25 transition-[opacity,transform,background-color] duration-300 hover:bg-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:bottom-6 sm:left-6",
+        "fixed bottom-[calc(1.25rem+var(--barra-reserva,0px))] left-4 z-40 grid size-11 place-items-center rounded-full bg-teal-700 text-white shadow-lg shadow-slate-950/25 ring-1 ring-white/25 transition-[opacity,transform,background-color] duration-300 hover:bg-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:bottom-[calc(1.5rem+var(--barra-reserva,0px))] sm:left-6",
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
       )}
     >

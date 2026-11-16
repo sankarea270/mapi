@@ -109,7 +109,7 @@ export function BotonContacto() {
         )}
       />
 
-      <div className="fixed right-5 bottom-5 z-40 flex flex-col items-end gap-3 sm:right-8 sm:bottom-8">
+      <div className="fixed right-5 bottom-[calc(1.25rem+var(--barra-reserva,0px))] z-40 flex flex-col items-end gap-3 sm:right-8 sm:bottom-[calc(2rem+var(--barra-reserva,0px))]">
         <ul
           id={idLista}
           aria-hidden={!abierto}

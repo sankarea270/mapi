@@ -37,6 +37,7 @@ import { TarjetaResena } from "@/components/reviews/TarjetaResena";
 import { BloqueUbicacion } from "@/components/tours/BloqueUbicacion";
 import { cn } from "@/lib/utils";
 import { TourSidebar } from "@/components/tours/TourSidebar";
+import { TextoItinerario } from "@/components/tours/TextoItinerario";
 import type { LocalizedText } from "@/types/tour";
 
 /* La descripción larga se escribe en el panel con una línea en blanco entre
@@ -513,9 +514,7 @@ export default async function TourDetailPage({
                               <h3 className="font-heading text-lg font-bold text-slate-900">
                                 {pickLocalized(item.title, l)}
                               </h3>
-                              <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-slate-600">
-                                {pickLocalized(item.description, l)}
-                              </p>
+                              <TextoItinerario texto={pickLocalized(item.description, l)} />
                             </div>
                           </li>
                         ))}
@@ -617,6 +616,14 @@ export default async function TourDetailPage({
             name={name}
             categoryName={categoryName}
             locale={locale}
+            valoracion={
+              tourReviews.length > 0
+                ? {
+                    media: tourReviews.reduce((a, x) => a + x.rating, 0) / tourReviews.length,
+                    total: tourReviews.length,
+                  }
+                : undefined
+            }
           />
         </div>
       </div>
