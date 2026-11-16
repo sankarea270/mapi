@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 import { getGuides } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
 import { pickLocalized } from "@/lib/format";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, completarDescripcion } from "@/lib/seo";
 import { Migas } from "@/components/layout/Migas";
 import {
   Accordion,
@@ -38,7 +38,14 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     title: t("seoTitleItem", { title: pickLocalized(guide.title, locale) }),
-    description: pickLocalized(guide.excerpt, locale),
+    /* El resumen de varias guías se queda en ~60 caracteres («Lista práctica
+       de equipaje según región…»), menos de la mitad de lo que Google
+       enseña. Si es corto, se completa con el arranque del primer apartado;
+       `buildMetadata` lo recorta por la última palabra entera. */
+    description: completarDescripcion(
+      pickLocalized(guide.excerpt, locale),
+      guide.sections[0] ? pickLocalized(guide.sections[0].body, locale) : ""
+    ),
     path: `/guia/${guide.slug}`,
     image: guide.image,
   });

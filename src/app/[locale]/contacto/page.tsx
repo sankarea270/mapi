@@ -27,7 +27,7 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     title: t("seoTitle"),
-    description: t("subtitle"),
+    description: t("seoDescription"),
     path: "/contacto",
   });
 }

@@ -134,12 +134,23 @@ export default async function TourDetailPage({
   const destination = destinos.find((d) =>
     d.categorySlugs?.includes(tour.categorySlug)
   );
-  const related = tour.categorySlug
-    ? categories
-        .find((c) => c.slug === tour.categorySlug)
-        ?.tours.filter((t) => t.slug !== tour.slug)
-        .slice(0, 3) ?? []
+  /* Los tres que SIGUEN a este en su categoría, dando la vuelta al final.
+     Antes eran siempre los tres primeros: los primeros de cada categoría se
+     llevaban todos los enlaces y los últimos ninguno (Vinicunca + Humantay,
+     Cuatrimotos o la Tirolesa tenían un solo enlace en toda la web, y Google
+     los dejaba en «Descubierta: actualmente sin indexar»). Así cada tour
+     recibe enlace de los tres que le preceden. */
+  const hermanos = tour.categorySlug
+    ? categories.find((c) => c.slug === tour.categorySlug)?.tours ?? []
     : [];
+  const posicion = hermanos.findIndex((x) => x.slug === tour.slug);
+  const related =
+    posicion === -1
+      ? hermanos.slice(0, 3)
+      : Array.from(
+          { length: Math.min(3, hermanos.length - 1) },
+          (_, i) => hermanos[(posicion + 1 + i) % hermanos.length]
+        );
 
   const tourReviews = resenas.filter((r) => esDe(r, "tour", tour.slug));
 
@@ -203,9 +214,20 @@ export default async function TourDetailPage({
     })),
   };
 
+  /*
+   * `Product` además de `TouristTrip` cuando hay valoración.
+   *
+   * Google solo enseña estrellas en unos pocos tipos (Product, Event,
+   * LocalBusiness…) y TouristTrip no está entre ellos. Search Console marcaba
+   * los 6 tours con reseñas como «El tipo de objeto del campo <parent_node>
+   * no es válido» (noviembre de 2026): las estrellas nunca llegaron a salir.
+   * Un tour que se reserva con precio es un producto, así que se declara con
+   * los dos tipos y conserva sus datos de viaje. Sin valoración se queda solo
+   * en TouristTrip, para no meter 200 fichas en los informes de productos.
+   */
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "TouristTrip",
+    "@type": valoracion ? ["TouristTrip", "Product"] : "TouristTrip",
     name,
     description: entradilla(tour, l),
     image: gallery.map((img) => img.replace("/600/600", "/1200/630")),

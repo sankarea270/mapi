@@ -56,6 +56,23 @@ ErrorDocument 404 /404.html
   RewriteRule ^$ /en/ [R=302,L]
   RewriteCond %{HTTP:Accept-Language} ^\s*(es|$) [NC]
   RewriteRule ^$ /es/ [R=302,L]
+
+  # Direcciones viejas que Google seguía visitando y daban 404 (Search
+  # Console, informe «Páginas», 15-nov-2026). Un 301 a la página que las
+  # sustituye recupera lo que Google ya sabía de ellas en vez de perderlo.
+  #
+  # Experiencias que cambiaron de dirección al pasar al panel:
+  RewriteRule ^(es|en|pt)/experiencias/textileria/?$ /$1/experiencias/textileria-andina/ [R=301,L]
+  RewriteRule ^(es|en|pt)/experiencias/festivales/?$ /$1/experiencias/festivales-y-fiestas/ [R=301,L]
+  RewriteRule ^(es|en|pt)/experiencias/(cocina|gastronomia)/?$ /$1/experiencias/cocina-peruana/ [R=301,L]
+  RewriteRule ^(es|en|pt)/experiencias/pisco/?$ /$1/experiencias/ruta-del-pisco/ [R=301,L]
+  RewriteRule ^(es|en|pt)/experiencias/fotografia/?$ /$1/experiencias/fotografia-de-viajes/ [R=301,L]
+  # Tour retirado: a la página del destino, que reúne los del Valle Sagrado.
+  RewriteRule ^(es|en|pt)/tours/valle-sagrado-fotografico/?$ /$1/destinos/valle-sagrado/ [R=301,L]
+  # Secciones sin idioma («/tours/tacna»). Con el prefijo de idioma
+  # obligatorio no existen; van a la versión en español, que es la de por
+  # defecto, y ya con la barra final para no encadenar otro salto.
+  RewriteRule ^(tours|destinos|paquetes|experiencias|guia|nosotros|contacto|reservar|reservas|legal)((?:/[^/.]+)*)/?$ /es/$1$2/ [R=301,L]
 </IfModule>
 
 # El manifiesto de la web (instalar en el móvil). Sin este tipo, algunos
