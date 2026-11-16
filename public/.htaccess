@@ -69,6 +69,11 @@ ErrorDocument 404 /404.html
   RewriteRule ^(es|en|pt)/experiencias/fotografia/?$ /$1/experiencias/fotografia-de-viajes/ [R=301,L]
   # Tour retirado: a la página del destino, que reúne los del Valle Sagrado.
   RewriteRule ^(es|en|pt)/tours/valle-sagrado-fotografico/?$ /$1/destinos/valle-sagrado/ [R=301,L]
+  # «tacna» fue un tour de prueba (descripción «re») que llegó a publicarse y
+  # Google lo indexó. Pasó a borrador en noviembre de 2026: 410 «ya no existe»
+  # en vez de 404, para que Google lo retire antes. Va antes de la regla de
+  # las secciones sin idioma, que si no lo mandaría a /es/tours/tacna/.
+  RewriteRule ^(?:(?:es|en|pt)/)?tours/tacna/?$ - [G,L]
   # Secciones sin idioma («/tours/tacna»). Con el prefijo de idioma
   # obligatorio no existen; van a la versión en español, que es la de por
   # defecto, y ya con la barra final para no encadenar otro salto.

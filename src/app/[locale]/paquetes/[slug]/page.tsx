@@ -15,7 +15,7 @@ import { getAjustes, getDestinations, getPackages, getReviews } from "@/lib/cont
 import { getCategoriesWithTours } from "@/lib/tours";
 import { enlaceWhatsapp } from "@/config/ajustes";
 import { pickLocalized, formatPrice } from "@/lib/format";
-import { buildMetadata, pageUrl } from "@/lib/seo";
+import { buildMetadata, completarDescripcion, pageUrl } from "@/lib/seo";
 import { Migas } from "@/components/layout/Migas";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { agenciaRef } from "@/lib/jsonld";
@@ -48,10 +48,20 @@ export async function generateMetadata({
   /* El nombre solo («Astroturismo», «Perú Clásico 9D/8N») no dice que es un
      viaje por Perú; el título lo completa. */
   const t = await getTranslations({ locale, namespace: "paquetes" });
+  /* La frase del panel ronda los 80 caracteres; se completa con los tours
+     que incluye («Incluye Líneas de Nazca, Colca…»), que es lo que se busca. */
+  const porSlug = new Map((await getCategoriesWithTours()).flatMap((c) => c.tours).map((x) => [x.slug, x]));
+  const nombres = pkg.tourSlugs
+    .map((s) => porSlug.get(s))
+    .filter((x) => x !== undefined)
+    .map((x) => pickLocalized(x.name, locale));
   return buildMetadata({
     locale,
     title: t("seoTitleItem", { name: pickLocalized(pkg.name, locale) }),
-    description: pickLocalized(pkg.description, locale),
+    description: completarDescripcion(
+      pickLocalized(pkg.description, locale),
+      nombres.length ? t("seoIncludes", { tours: nombres.join(", ") }) : ""
+    ),
     path: `/paquetes/${pkg.slug}`,
     image: pkg.image,
   });

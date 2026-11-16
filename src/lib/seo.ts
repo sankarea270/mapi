@@ -95,7 +95,10 @@ export function completarDescripcion(base: string, extra: string): string {
       .replace(/[*#_>`]/g, "")
       .replace(/\s+/g, " ")
       .trim()
-      .match(/[^.!?]+[.!?]+/g) ?? [extra];
+      .match(/[^.!?]+[.!?]+/g)
+      // «Sí.» o «No.» al principio de una respuesta no dicen nada solos.
+      ?.filter((f) => f.trim().length >= 25) ?? [extra];
+  if (frases.length === 0) return corta;
   let resultado = conPunto;
   for (const frase of frases) {
     const siguiente = `${resultado} ${frase.trim()}`;

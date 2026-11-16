@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 import { getExperiences } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
 import { pickLocalized } from "@/lib/format";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, completarDescripcion } from "@/lib/seo";
 import { MigasJsonLd } from "@/components/layout/Migas";
 
 export function generateStaticParams() {
@@ -26,7 +26,7 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     title: t("seoTitle"),
-    description: t("subtitle"),
+    description: completarDescripcion(t("subtitle"), t("intro")),
     path: "/experiencias",
   });
 }
@@ -54,6 +54,10 @@ export default async function ExperiencesPage({
             {t("title")}
           </h1>
           <p className="mt-3 max-w-2xl text-base text-slate-500">{t("subtitle")}</p>
+          {/* Unas líneas de contexto: la página era el título y las tarjetas
+              (74-129 palabras), poco para que Google la entienda como la
+              página principal de la sección. */}
+          <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-slate-600">{t("intro")}</p>
         </div>
       </div>
 

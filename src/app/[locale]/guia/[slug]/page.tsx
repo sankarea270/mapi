@@ -44,7 +44,13 @@ export async function generateMetadata({
        `buildMetadata` lo recorta por la última palabra entera. */
     description: completarDescripcion(
       pickLocalized(guide.excerpt, locale),
-      guide.sections[0] ? pickLocalized(guide.sections[0].body, locale) : ""
+      /* En las preguntas frecuentes, las propias preguntas: son lo que se
+         busca y dicen más que el arranque de la primera respuesta. */
+      guide.category === "faq"
+        ? guide.sections.map((s) => pickLocalized(s.heading, locale)).join(" ")
+        : guide.sections[0]
+          ? pickLocalized(guide.sections[0].body, locale)
+          : ""
     ),
     path: `/guia/${guide.slug}`,
     image: guide.image,
